@@ -151,6 +151,7 @@ SWITCH_STANDARD_API(call_bot_function)
 	char *mycmd = NULL, *argv[3] = {0};
 	int argc = 0;
 	switch_status_t status = SWITCH_STATUS_FALSE;
+	switch_core_session_t *lsession = NULL;
 
 	if (!zstr(cmd) && (mycmd = strdup(cmd)))
 	{
@@ -166,7 +167,6 @@ SWITCH_STANDARD_API(call_bot_function)
 		stream->write_function(stream, "-USAGE: %s\n", TRANSCRIBE_API_SYNTAX);
 		goto done;
 	}
-	switch_core_session_t *lsession;
 
 	if ((lsession = switch_core_session_locate(argv[0])))
 	{
