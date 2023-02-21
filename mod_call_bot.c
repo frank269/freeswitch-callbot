@@ -11,7 +11,6 @@ SWITCH_MODULE_DEFINITION(mod_call_bot, mod_call_bot_load, mod_call_bot_shutdown,
 
 static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 {
-	switch_status_t status = SWITCH_STATUS_SUCCESS;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	switch_media_bug_t *bug = switch_channel_get_private(channel, bugname);
 
@@ -24,9 +23,7 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 		}
 		switch_mutex_lock(cb->mutex);
 		// try release all resources
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO,
-						  "Call bot released!",
-						  switch_channel_get_name(channel));
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call bot released!");
 		switch_mutex_unlock(cb->mutex);
 
 		switch_core_media_bug_remove(session, &bug);
@@ -72,12 +69,6 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 			switch_frame_t frame = {0};
 			frame.data = data;
 			frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-
-			if (cb->start.tv_sec == 0)
-			{
-				gettimeofday(&cb->start, NULL);
-				gettimeofday(&cb->last_segment_start, NULL);
-			}
 
 			if (switch_mutex_trylock(cb->mutex) == SWITCH_STATUS_SUCCESS)
 			{
@@ -155,7 +146,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 }
 
 #define TRANSCRIBE_API_SYNTAX "<uuid> start|stop [<cid_num>] "
-SWITCH_STANDARD_API(transcribe_function)
+SWITCH_STANDARD_API(call_bot_function)
 {
 	char *mycmd = NULL, *argv[3] = {0};
 	int argc = 0;
@@ -175,7 +166,7 @@ SWITCH_STANDARD_API(transcribe_function)
 		stream->write_function(stream, "-USAGE: %s\n", TRANSCRIBE_API_SYNTAX);
 		goto done;
 	}
-	switch_core_session_t *lsession = NULL;
+	switch_core_session_t *lsession;
 
 	if ((lsession = switch_core_session_locate(argv[0])))
 	{
@@ -228,7 +219,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world \n");
 
-	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", transcribe_function, TRANSCRIBE_API_SYNTAX);
+	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
 	switch_console_set_complete("add start_call_with_bot secs");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
 
