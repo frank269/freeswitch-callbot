@@ -184,10 +184,14 @@ SWITCH_STANDARD_API(call_bot_function)
 		}
 		switch_core_session_rwunlock(lsession);
 	}
+	else
+	{
+		stream->write_function(stream, "ERRRRORRRRRRRRRRR\n");
+	}
 
 	if (status == SWITCH_STATUS_SUCCESS)
 	{
-		stream->write_function(stream, "+OK Success\n");
+		stream->write_function(stream, "+OK Success 1\n");
 	}
 	else
 	{
