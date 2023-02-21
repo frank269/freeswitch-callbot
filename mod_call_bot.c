@@ -15,7 +15,6 @@ SWITCH_STANDARD_API(transcribe_function)
 	char *mycmd = NULL, *argv[6] = {0};
 	int argc = 0;
 	switch_status_t status = SWITCH_STATUS_FALSE;
-	switch_media_bug_flag_t flags = SMBF_READ_STREAM /* | SMBF_WRITE_STREAM | SMBF_READ_PING */;
 
 	if (!zstr(cmd) && (mycmd = strdup(cmd)))
 	{
