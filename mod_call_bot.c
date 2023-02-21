@@ -23,14 +23,14 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 		}
 		switch_mutex_lock(cb->mutex);
 		// try release all resources
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call bot released!");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Call bot released!");
 		switch_mutex_unlock(cb->mutex);
 
 		switch_core_media_bug_remove(session, &bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped .\n");
 		return SWITCH_STATUS_SUCCESS;
 	}
-	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
 	return SWITCH_STATUS_FALSE;
 }
 
@@ -43,11 +43,11 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	switch (type)
 	{
 	case SWITCH_ABC_TYPE_INIT:
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Callbot got SWITCH_ABC_TYPE_INIT.\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot got SWITCH_ABC_TYPE_INIT.\n");
 		break;
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Callbot SWITCH_ABC_TYPE_CLOSE\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Callbot SWITCH_ABC_TYPE_CLOSE\n");
 		if (cb && cb->vad)
 		{
 			switch_vad_destroy(&cb->vad);
@@ -79,7 +79,7 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 						switch_vad_state_t state = switch_vad_process(cb->vad, frame.data, frame.samples);
 						if (state == SWITCH_VAD_STATE_START_TALKING)
 						{
-							switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "detected speech, connect to bot ....\n");
+							switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "detected speech, connect to bot ....\n");
 						}
 					}
 				}
@@ -105,7 +105,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (switch_channel_get_private(channel, MY_BUG_NAME))
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Already Running.\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Already Running.\n");
 		return SWITCH_STATUS_FALSE;
 	}
 
@@ -121,7 +121,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	cb->vad = switch_vad_init(read_impl.samples_per_second, 1);
 	if (!cb->vad)
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error allocating vad\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error allocating vad\n");
 		switch_mutex_destroy(cb->mutex);
 		return SWITCH_STATUS_FALSE;
 	}
@@ -133,7 +133,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	cb->speech_duration = 0;
 	cb->vad_state = SWITCH_VAD_STATE_NONE;
 
-	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call bot: starting .........\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Call bot: starting .........\n");
 
 	if ((status = switch_core_media_bug_add(session, MY_BUG_NAME, NULL, capture_callback, cb, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
@@ -163,7 +163,7 @@ SWITCH_STANDARD_API(call_bot_function)
 		(!strcasecmp(argv[1], "start") && argc < 3) ||
 		zstr(argv[0]))
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error with command %s %s %s.\n", cmd, argv[0], argv[1]);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error with command %s %s %s.\n", cmd, argv[0], argv[1]);
 		stream->write_function(stream, "-USAGE: %s\n", TRANSCRIBE_API_SYNTAX);
 		goto done;
 	}
