@@ -1,6 +1,3 @@
-#ifndef __MOD_CALL_BOT_H__
-#define __MOD_CALL_BOT_H__
-
 #include <switch.h>
 #include <unistd.h>
 
