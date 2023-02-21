@@ -28,9 +28,11 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 
 		switch_core_media_bug_remove(session, &bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped .\n");
+		stream->write_function(stream, "callbot stopped.\n");
 		return SWITCH_STATUS_SUCCESS;
 	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
+	stream->write_function(stream, "Bug is not attached.\n");
 	return SWITCH_STATUS_FALSE;
 }
 
@@ -44,10 +46,12 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	{
 	case SWITCH_ABC_TYPE_INIT:
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot got SWITCH_ABC_TYPE_INIT.\n");
+		stream->write_function(stream, "Callbot got SWITCH_ABC_TYPE_INIT.\n");
 		break;
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Callbot SWITCH_ABC_TYPE_CLOSE\n");
+		stream->write_function(stream, "Callbot SWITCH_ABC_TYPE_CLOSE.\n");
 		if (cb && cb->vad)
 		{
 			switch_vad_destroy(&cb->vad);
@@ -80,6 +84,7 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 						if (state == SWITCH_VAD_STATE_START_TALKING)
 						{
 							switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "detected speech, connect to bot ....\n");
+							stream->write_function(stream, "Callbot detected speech, connect to bot ....\n");
 						}
 					}
 				}
@@ -106,6 +111,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	if (switch_channel_get_private(channel, MY_BUG_NAME))
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Already Running.\n");
+		stream->write_function(stream, "Callbot already Running.\n");
 		return SWITCH_STATUS_FALSE;
 	}
 
@@ -122,6 +128,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	if (!cb->vad)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error allocating vad\n");
+		stream->write_function(stream, "Callbot error allocating vad\n");
 		switch_mutex_destroy(cb->mutex);
 		return SWITCH_STATUS_FALSE;
 	}
@@ -134,6 +141,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	cb->vad_state = SWITCH_VAD_STATE_NONE;
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Call bot: starting .........\n");
+	stream->write_function(stream, "Callbot starting .... \n");
 
 	if ((status = switch_core_media_bug_add(session, MY_BUG_NAME, NULL, capture_callback, cb, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
