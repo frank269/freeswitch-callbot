@@ -1,5 +1,5 @@
 #include "mod_call_bot.h"
-// #include "call_bot_glue.h"
+#include "call_bot_glue.h"
 #include <stdlib.h>
 #include <switch.h>
 
@@ -225,10 +225,10 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x1\n");
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
-	// if (SWITCH_STATUS_FALSE == call_bot_init())
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
-	// }
+	if (SWITCH_STATUS_FALSE == call_bot_init())
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
+	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
@@ -244,7 +244,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	// call_bot_cleanup();
+	call_bot_cleanup();
 	switch_event_free_subclass(EVENT_VAD_CHANGE);
 	switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
