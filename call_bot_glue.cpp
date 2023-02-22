@@ -6,7 +6,16 @@
 #include <grpc++/grpc++.h>
 #include "mod_call_bot.h"
 #include "simple_buffer.h"
+#include "smartivrphonegateway.pb.h"
+#include "smartivrphonegateway.grpc.pb.h"
 #define CHUNKSIZE (320)
+
+using smartivrphonegateway::Config;
+using smartivrphonegateway::SmartIVRRequest;
+using smartivrphonegateway::SmartIVRResponse;
+using smartivrphonegateway::SmartIVRResponseType;
+using smartivrphonegateway::Status;
+using smartivrphonegateway::SmartIVRPhonegateway::NewStub;
 
 namespace
 {
@@ -43,188 +52,33 @@ public:
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
-    // void createInitMessage()
-    // {
-    //     switch_channel_t *channel = switch_core_session_get_channel(m_session);
+    void createInitMessage()
+    {
+        switch_channel_t *channel = switch_core_session_get_channel(m_session);
 
-    //     const char *var = switch_channel_get_variable(channel, "NVIDIA_RIVA_URI");
-    //     std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(var, grpc::InsecureChannelCredentials());
-    //     if (!grpcChannel)
-    //     {
-    //         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, var);
-    //         throw std::runtime_error(std::string("Error creating grpc channel to ") + var);
-    //     }
+        const char *var = switch_channel_get_variable(channel, "CALLBOT_MASTER_URI");
+        std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(var, grpc::InsecureChannelCredentials());
+        if (!grpcChannel)
+        {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, var);
+            throw std::runtime_error(std::string("Error creating grpc channel to ") + var);
+        }
 
-    //     m_stub = std::move(nr_asr::RivaSpeechRecognition::NewStub(grpcChannel));
+        m_stub = std::move(NewStub(grpcChannel));
 
-    //     /* set configuration parameters which are carried in the RecognitionInitMessage */
-    //     auto streaming_config = m_request.mutable_streaming_config();
-    //     streaming_config->set_interim_results(m_interim);
-    //     auto config = streaming_config->mutable_config();
-    //     config->set_sample_rate_hertz(8000);
-    //     config->set_encoding(nr::AudioEncoding::LINEAR_PCM);
-    //     config->set_audio_channel_count(1);
-
-    //     /* language */
-    //     config->set_language_code(m_language);
-
-    //     /* model */
-    //     if ((var = switch_channel_get_variable(channel, "NVIDIA_MODEL")))
-    //     {
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "set model %s\n", var);
-    //         config->set_model(var);
-    //     }
-
-    //     /* max alternatives */
-    //     if ((var = switch_channel_get_variable(channel, "NVIDIA_MAX_ALTERNATIVES")))
-    //     {
-    //         int max_alternatives = atoi(var);
-    //         if (max_alternatives > 0)
-    //         {
-    //             config->set_max_alternatives(max_alternatives);
-    //             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "set max alternatives %d\n", max_alternatives);
-    //         }
-    //     }
-    //     else
-    //         config->set_max_alternatives(1);
-
-    //     /* profanity filter */
-    //     if (switch_true(switch_channel_get_variable(channel, "NVIDIA_PROFANITY_FILTER")))
-    //     {
-    //         config->set_profanity_filter(true);
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "enable profanity filter\n", var);
-    //     }
-    //     else
-    //         config->set_profanity_filter(false);
-
-    //     /* enable word time offsets */
-    //     if (switch_true(switch_channel_get_variable(channel, "NVIDIA_WORD_TIME_OFFSETS")))
-    //     {
-    //         config->set_enable_word_time_offsets(true);
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "enable word time offsets\n", var);
-    //     }
-    //     else
-    //         config->set_enable_word_time_offsets(false);
-
-    //     /* punctuation */
-    //     if (switch_true(switch_channel_get_variable(channel, "NVIDIA_PUNCTUATION")))
-    //     {
-    //         config->set_enable_automatic_punctuation(true);
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "enable punctuation\n", var);
-    //     }
-    //     else
-    //         config->set_enable_automatic_punctuation(false);
-
-    //     /* verbatim transcripts */
-    //     if (switch_true(switch_channel_get_variable(channel, "NVIDIA_VERBATIM_TRANSCRIPTS")))
-    //     {
-    //         config->set_verbatim_transcripts(true);
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "enable verbatim transcripts\n", var);
-    //     }
-    //     else
-    //         config->set_verbatim_transcripts(false);
-
-    //     /* hints */
-    //     const char *hints = switch_channel_get_variable(channel, "NVIDIA_HINTS");
-    //     if (hints)
-    //     {
-    //         float boost = -1;
-    //         nr_asr::SpeechContext *speech_context = config->add_speech_contexts();
-
-    //         // hints are either a simple comma-separated list of phrases, or a json array of objects
-    //         // containing a phrase and a boost value
-    //         auto *jHint = cJSON_Parse((char *)hints);
-    //         if (jHint)
-    //         {
-    //             int i = 0;
-    //             cJSON *jPhrase = NULL;
-    //             cJSON_ArrayForEach(jPhrase, jHint)
-    //             {
-    //                 cJSON *jItem = cJSON_GetObjectItem(jPhrase, "phrase");
-    //                 if (jItem)
-    //                 {
-    //                     nr_asr::SpeechContext *speech_context = config->add_speech_contexts();
-    //                     auto *phrase = cJSON_GetStringValue(jItem);
-    //                     speech_context->add_phrases(phrase);
-    //                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "hint: %s\n", phrase);
-    //                     if (cJSON_GetObjectItem(jPhrase, "boost"))
-    //                     {
-    //                         float boost = (float)cJSON_GetObjectItem(jPhrase, "boost")->valuedouble;
-    //                         speech_context->set_boost(boost);
-    //                         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "boost value: %f\n", boost);
-    //                     }
-    //                     i++;
-    //                 }
-    //             }
-    //             cJSON_Delete(jHint);
-    //             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "added %d hints\n", i);
-    //         }
-    //         else
-    //         {
-    //             /* single set of hints */
-    //             nr_asr::SpeechContext *speech_context = config->add_speech_contexts();
-    //             char *phrases[500] = {0};
-    //             int argc = switch_separate_string((char *)hints, ',', phrases, 500);
-    //             for (int i = 0; i < argc; i++)
-    //             {
-    //                 speech_context->add_phrases(phrases[i]);
-    //             }
-    //             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "added %d hints\n", argc);
-    //             const char *boost_str = switch_channel_get_variable(channel, "NVIDIA_HINTS_BOOST");
-    //             if (boost_str)
-    //             {
-    //                 float boost = (float)atof(boost_str);
-    //                 speech_context->set_boost(boost);
-    //                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "boost value: %f\n", boost);
-    //             }
-    //         }
-    //     }
-
-    //     /* speaker diarization */
-    //     if (switch_true(switch_channel_get_variable(channel, "NVIDIA_SPEAKER_DIARIZATION")))
-    //     {
-    //         nr_asr::SpeakerDiarizationConfig *diarization_config = config->mutable_diarization_config();
-    //         diarization_config->set_enable_speaker_diarization(true);
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "enable diarization\n", var);
-
-    //         if ((var = switch_channel_get_variable(channel, "NVIDIA_DIARIZATION_SPEAKER_COUNT")))
-    //         {
-    //             int max_speaker_count = atoi(var);
-    //             diarization_config->set_max_speaker_count(max_speaker_count);
-    //             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "set max speaker count %d\n", max_speaker_count);
-    //         }
-    //     }
-
-    //     /* custom config */
-    //     const char *custom = switch_channel_get_variable(channel, "NVIDIA_CUSTOM_CONFIGURATION");
-    //     if (custom)
-    //     {
-    //         auto *jConfig = cJSON_Parse((char *)custom);
-    //         if (jConfig)
-    //         {
-    //             auto custom_config = config->mutable_custom_configuration();
-    //             cJSON *jItem = NULL;
-    //             cJSON_ArrayForEach(jItem, jConfig)
-    //             {
-    //                 if (cJSON_IsString(jItem))
-    //                 {
-    //                     (*custom_config)[jItem->string] = jItem->valuestring;
-    //                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG,
-    //                                       "added custom config %s:%s\n", jItem->string, jItem->valuestring);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+        /* set configuration parameters which are carried in the RecognitionInitMessage */
+        auto streaming_config = m_request.mutable_config();
+        streaming_config->set_conversation_id(m_language);
+    }
 
     void connect()
     {
         assert(!m_connected);
         // Begin a stream.
 
-        // createInitMessage();
+        createInitMessage();
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p creating streamer\n", this);
-        // m_streamer = m_stub->StreamingRecognize(&m_context);
+        m_streamer = m_stub->CallToBot(&m_context);
         m_connected = true;
 
         // read thread is waiting on this
@@ -232,8 +86,8 @@ public:
 
         // Write the first request, containing the config only.
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p sending initial message\n", this);
-        // m_streamer->Write(m_request);
-        // m_request.clear_streaming_config();
+        m_streamer->Write(m_request);
+        // m_request.clear_config();
 
         // send any buffered audio
         int nFrames = m_audioBuffer.getNumItems();
@@ -264,27 +118,26 @@ public:
         }
         // m_request.clear_audio_content();
         // m_request.set_audio_content(data, datalen);
-        // bool ok = m_streamer->Write(m_request);
-        bool ok = true;
+        bool ok = m_streamer->Write(m_request);
         return ok;
     }
 
     uint32_t nextMessageSize(void)
     {
         uint32_t size = 0;
-        // m_streamer->NextMessageSize(&size);
+        m_streamer->NextMessageSize(&size);
         return size;
     }
 
-    // bool read(nr_asr::StreamingRecognizeResponse *response)
-    // {
-    //     return m_streamer->Read(response);
-    // }
+    bool read(nr_asr::StreamingRecognizeResponse *response)
+    {
+        return m_streamer->Read(response);
+    }
 
-    // grpc::Status finish()
-    // {
-    //     return m_streamer->Finish();
-    // }
+    grpc::Status finish()
+    {
+        return m_streamer->Finish();
+    }
 
     void startTimers()
     {
@@ -303,7 +156,7 @@ public:
         }
         else if (!m_writesDone)
         {
-            // m_streamer->WritesDone();
+            m_streamer->WritesDone();
             m_writesDone = true;
         }
     }
@@ -330,9 +183,9 @@ private:
     switch_core_session_t *m_session;
     grpc::ClientContext m_context;
     std::shared_ptr<grpc::Channel> m_channel;
-    // std::unique_ptr<nr_asr::RivaSpeechRecognition::Stub> m_stub;
-    // nr_asr::StreamingRecognizeRequest m_request;
-    // std::unique_ptr<grpc::ClientReaderWriterInterface<nr_asr::StreamingRecognizeRequest, nr_asr::StreamingRecognizeResponse>> m_streamer;
+    std::unique_ptr<smartivrphonegateway::SmartIVRPhonegateway::Stub> m_stub;
+    SmartIVRRequest m_request;
+    std::unique_ptr<grpc::ClientReaderWriterInterface<SmartIVRRequest, SmartIVRResponse>> m_streamer;
     bool m_writesDone;
     bool m_connected;
     bool m_interim;
@@ -601,7 +454,6 @@ extern "C"
     {
         switch_core_session_t *session = switch_core_media_bug_get_session(bug);
         struct cap_cb *cb = (struct cap_cb *)user_data;
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "6\n");
         if (cb->streamer && !cb->end_of_utterance)
         {
             GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -609,7 +461,6 @@ extern "C"
             switch_frame_t frame = {};
             frame.data = data;
             frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "7\n");
             if (switch_mutex_trylock(cb->mutex) == SWITCH_STATUS_SUCCESS)
             {
                 while (switch_core_media_bug_read(bug, &frame, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS && !switch_test_flag((&frame), SFF_CNG))

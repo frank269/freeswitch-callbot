@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "smartcall.ivr.master/proto/smartivr_phonegateway";
+option java_multiple_files = true;
+option java_package = "smartcall.ivr.master.proto.smartivr_phonegateway";
+option java_outer_classname = "SmartIVRPhonegateway";
+
+package smartivrphonegateway;
+
+service SmartIVRPhonegateway
+{
+    rpc CallToBot (stream SmartIVRRequest) returns (stream SmartIVRResponse);
+}
+
+message SmartIVRRequest
+{
+    bool is_playing = 1;
+    string key_press = 2;
+    Config config = 3;
+    bytes audio_content = 4;
+}
+
+message SmartIVRResponse
+{
+    SmartIVRResponseType type = 1;
+    string text_asr = 2;
+    string text_bot = 3;
+    string forward_sip_json = 4;
+    Status status = 5;
+    bytes audio_content = 6;
+}
+
+message Config
+{
+    string conversation_id = 1;
+}
+
+enum SmartIVRResponseType {
+    RECOGNIZE = 0;
+    RESULT_ASR = 1;
+    RESULT_TTS = 2;
+    CALL_WAIT = 3;
+    CALL_FORWARD = 4;
+    CALL_END = 5;
+}
+
+message Status {
+    int32 code = 1;
+    string message = 2;
+}

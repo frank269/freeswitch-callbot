@@ -92,8 +92,8 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 
 	case SWITCH_ABC_TYPE_READ:
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "5\n");
-		return call_bot_frame(bug, user_data);
+		// return call_bot_frame(bug, user_data);
+		return SWITCH_TRUE;
 	}
 	break;
 
@@ -113,7 +113,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	switch_codec_implementation_t read_impl = {0};
 	void *pUserData;
 	uint32_t samples_per_second;
-	// const char *var;
+	const char *var;
 
 	if (switch_channel_get_private(channel, bugname))
 	{
@@ -123,30 +123,27 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	switch_core_session_get_read_impl(session, &read_impl);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "1\n");
 	if (switch_channel_pre_answer(channel) != SWITCH_STATUS_SUCCESS)
 	{
 		return SWITCH_STATUS_FALSE;
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "2\n");
 	/* required channel vars */
-	// var = switch_channel_get_variable(channel, "NVIDIA_RIVA_URI");
+	var = switch_channel_get_variable(channel, "CALLBOT_MASTER_URI");
 
-	// if (!var)
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR,
-	// 					  "NVIDIA_RIVA_URI channel var must be defined\n");
-	// 	return SWITCH_STATUS_FALSE;
-	// }
+	if (!var)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR,
+						  "CALLBOT_MASTER_URI channel var must be defined\n");
+		return SWITCH_STATUS_FALSE;
+	}
 
 	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "3\n");
 	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
 		return SWITCH_STATUS_FALSE;
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "4\n");
+
 	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
 		return status;
