@@ -12,82 +12,83 @@ SWITCH_MODULE_DEFINITION(mod_call_bot, mod_call_bot_load, mod_call_bot_shutdown,
 
 static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 {
+	switch_status_t status = SWITCH_STATUS_SUCCESS;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	switch_media_bug_t *bug = switch_channel_get_private(channel, bugname);
 
 	if (bug)
 	{
-		struct cap_cb *cb = (struct cap_cb *)switch_core_media_bug_get_user_data(bug);
-		if (!cb)
-		{
-			return SWITCH_STATUS_FALSE;
-		}
-		switch_mutex_lock(cb->mutex);
-		// try release all resources
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Call bot released!");
-		switch_mutex_unlock(cb->mutex);
-
-		switch_core_media_bug_remove(session, &bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "callbot stopped .\n");
-		return SWITCH_STATUS_SUCCESS;
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
+		status = call_bot_session_cleanup(session, 0, bug);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped\n");
 	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
-	return SWITCH_STATUS_FALSE;
+	return status;
+}
+
+static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
+							const char *details)
+{
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
+	// switch_event_t *event;
+	// switch_channel_t *channel = switch_core_session_get_channel(session);
+
+	// if (0 == strcmp("vad_detected", json)) {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_VAD_DETECTED);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("start_of_speech", json)) {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_START_OF_SPEECH);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("end_of_transcription", json)) {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_TRANSCRIPTION_COMPLETE);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("error", json)) {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_ERROR);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_body(event, "%s", details);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
+
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_RESULTS);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// 	switch_event_add_body(event, "%s", json);
+	// }
+	// if (bugname) switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "media-bugname", bugname);
+	// switch_event_fire(&event);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
 {
 	switch_core_session_t *session = switch_core_media_bug_get_session(bug);
-	switch_channel_t *channel = switch_core_session_get_channel(session);
-	struct cap_cb *cb = (struct cap_cb *)user_data;
 
 	switch (type)
 	{
 	case SWITCH_ABC_TYPE_INIT:
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Callbot got SWITCH_ABC_TYPE_INIT.\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
 		break;
+
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Callbot SWITCH_ABC_TYPE_CLOSE\n");
-		if (cb && cb->vad)
-		{
-			switch_vad_destroy(&cb->vad);
-			cb->vad = NULL;
-		}
-		if (cb && cb->mutex)
-		{
-			switch_mutex_destroy(cb->mutex);
-			cb->mutex = NULL;
-		}
-		switch_channel_set_private(channel, MY_BUG_NAME, NULL);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
+		call_bot_session_cleanup(session, 1, bug);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
+
 	case SWITCH_ABC_TYPE_READ:
 
-		if (cb->vad)
-		{
-			uint8_t data[SWITCH_RECOMMENDED_BUFFER_SIZE];
-			switch_frame_t frame = {0};
-			frame.data = data;
-			frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-
-			if (switch_mutex_trylock(cb->mutex) == SWITCH_STATUS_SUCCESS)
-			{
-				while (switch_core_media_bug_read(bug, &frame, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS && !switch_test_flag((&frame), SFF_CNG))
-				{
-					if (frame.datalen)
-					{
-						switch_vad_state_t state = switch_vad_process(cb->vad, frame.data, frame.samples);
-						if (state == SWITCH_VAD_STATE_START_TALKING)
-						{
-							switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "detected speech, connect to bot ....\n");
-						}
-					}
-				}
-				switch_mutex_unlock(cb->mutex);
-			}
-		}
+		return call_bot_frame(bug, user_data);
 		break;
+
 	case SWITCH_ABC_TYPE_WRITE:
 	default:
 		break;
@@ -96,18 +97,20 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	return SWITCH_TRUE;
 }
 
-static switch_status_t start_capture(switch_core_session_t *session, switch_media_bug_flag_t flags, int mode)
+static switch_status_t start_capture(switch_core_session_t *session, switch_media_bug_flag_t flags, char *lang, int interim, char *bugname)
 {
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	switch_media_bug_t *bug;
 	switch_status_t status;
 	switch_codec_implementation_t read_impl = {0};
-	struct cap_cb *cb;
+	void *pUserData;
+	uint32_t samples_per_second;
+	const char *var;
 
-	if (switch_channel_get_private(channel, MY_BUG_NAME))
+	if (switch_channel_get_private(channel, bugname))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Already Running.\n");
-		return SWITCH_STATUS_FALSE;
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "removing bug from previous call_bot session\n");
+		do_stop(session, bugname);
 	}
 
 	switch_core_session_get_read_impl(session, &read_impl);
@@ -117,25 +120,30 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 		return SWITCH_STATUS_FALSE;
 	}
 
-	cb = switch_core_session_alloc(session, sizeof(*cb));
-	switch_mutex_init(&cb->mutex, SWITCH_MUTEX_NESTED, switch_core_session_get_pool(session));
-	cb->vad = switch_vad_init(read_impl.samples_per_second, 1);
-	if (!cb->vad)
+	/* required channel vars */
+	// var = switch_channel_get_variable(channel, "NVIDIA_RIVA_URI");
+
+	// if (!var)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR,
+	// 					  "NVIDIA_RIVA_URI channel var must be defined\n");
+	// 	return SWITCH_STATUS_FALSE;
+	// }
+
+	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
+
+	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error allocating vad\n");
-		switch_mutex_destroy(cb->mutex);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
 		return SWITCH_STATUS_FALSE;
 	}
-	switch_vad_set_mode(cb->vad, mode);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Call bot: starting .........\n");
-
-	if ((status = switch_core_media_bug_add(session, MY_BUG_NAME, NULL, capture_callback, cb, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
+	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
 		return status;
 	}
 
-	switch_channel_set_private(channel, MY_BUG_NAME, bug);
+	switch_channel_set_private(channel, bugname, bug);
 
 	return SWITCH_STATUS_SUCCESS;
 }
@@ -146,6 +154,7 @@ SWITCH_STANDARD_API(call_bot_function)
 	char *mycmd = NULL, *argv[3] = {0};
 	int argc = 0;
 	switch_status_t status = SWITCH_STATUS_FALSE;
+	switch_media_bug_flag_t flags = SMBF_READ_STREAM;
 	switch_core_session_t *lsession = NULL;
 
 	if (!zstr(cmd) && (mycmd = strdup(cmd)))
@@ -171,8 +180,8 @@ SWITCH_STANDARD_API(call_bot_function)
 		}
 		else if (!strcasecmp(argv[1], "start"))
 		{
-			switch_media_bug_flag_t flags = SMBF_READ_STREAM;
-			status = start_capture(lsession, flags, 0);
+
+			status = start_capture(lsession, flags, "", 1, MY_BUG_NAME);
 		}
 		switch_core_session_rwunlock(lsession);
 	}
@@ -212,10 +221,17 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	/* connect my internal structure to the blank pointer passed to me */
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world \n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x1\n");
+
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
+	if (SWITCH_STATUS_FALSE == call_bot_init())
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
+	}
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
-	switch_console_set_complete("add start_call_with_bot secs");
+	switch_console_set_complete("add start_call_with_bot uuid start number");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
 
 	/* indicate that the module should continue to be loaded */
@@ -227,6 +243,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
+	nvidia_speech_cleanup();
 	switch_event_free_subclass(EVENT_VAD_CHANGE);
 	switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
