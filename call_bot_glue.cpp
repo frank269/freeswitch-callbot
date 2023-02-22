@@ -474,7 +474,8 @@ extern "C"
         }
         cb->responseHandler = responseHandler;
 
-        allocate vad if we are delaying connecting to the recognizer until we detect speech if (switch_channel_var_true(channel, "START_RECOGNIZING_ON_VAD"))
+        // allocate vad if we are delaying connecting to the recognizer until we detect speech
+        if (switch_channel_var_true(channel, "START_RECOGNIZING_ON_VAD"))
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initializing vad\n");
             cb->vad = switch_vad_init(sampleRate, channels);
