@@ -126,12 +126,6 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 		return SWITCH_STATUS_FALSE;
 	}
 	switch_vad_set_mode(cb->vad, mode);
-	// switch_vad_set_param(cb->vad, "debug", 10);
-	cb->start.tv_sec = 0;
-	cb->start.tv_usec = 0;
-	cb->speech_segments = 0;
-	cb->speech_duration = 0;
-	cb->vad_state = SWITCH_VAD_STATE_NONE;
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Call bot: starting .........\n");
 

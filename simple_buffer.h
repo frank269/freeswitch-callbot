@@ -8,7 +8,7 @@ class SimpleBuffer
 {
 public:
   SimpleBuffer(uint32_t chunkSize, uint32_t numChunks) : numItems(0),
-                                                         m_numChunks(numChunks), m_chunkSize(chunkSize)
+  m_numChunks(numChunks), m_chunkSize(chunkSize)
   {
     m_pData = new char[chunkSize * numChunks];
     m_pNextWrite = m_pData;

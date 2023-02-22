@@ -1,7 +1,7 @@
 #include <switch.h>
 #include <unistd.h>
+#include <speex/speex_resampler.h>
 
-#include <switch.h>
 #include <switch_vad.h>
 #include <switch_json.h>
 
@@ -20,13 +20,21 @@
 #define EVENT_VAD_CHANGE "call_bot::change"
 #define EVENT_VAD_SUMMARY "call_bot::summary"
 
+typedef void (*responseHandler_t)(switch_core_session_t *session,
+                                  const char *json, const char *bugname,
+                                  const char *details);
+
 struct cap_cb
 {
-	switch_vad_t *vad;
-	switch_mutex_t *mutex;
-	struct timeval start;
-	struct timeval last_segment_start;
-	uint32_t speech_segments;
-	long long speech_duration;
-	switch_vad_state_t vad_state;
+    switch_mutex_t *mutex;
+    char bugname[MAX_BUG_LEN + 1];
+    char sessionId[MAX_SESSION_ID + 1];
+    char *base;
+    SpeexResamplerState *resampler;
+    void *streamer;
+    responseHandler_t responseHandler;
+    switch_thread_t *thread;
+    int end_of_utterance;
+    switch_vad_t *vad;
+    uint32_t samples_per_second;
 };
