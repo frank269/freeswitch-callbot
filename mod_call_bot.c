@@ -1,5 +1,5 @@
 #include "mod_call_bot.h"
-#include "call_bot_glue.h"
+// #include "call_bot_glue.h"
 #include <stdlib.h>
 #include <switch.h>
 
@@ -19,7 +19,7 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 	if (bug)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
-		status = call_bot_session_cleanup(session, 0, bug);
+		// status = call_bot_session_cleanup(session, 0, bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped\n");
 	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
@@ -79,14 +79,15 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
-		call_bot_session_cleanup(session, 1, bug);
+		// call_bot_session_cleanup(session, 1, bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
 
 	case SWITCH_ABC_TYPE_READ:
 
-		return call_bot_frame(bug, user_data);
+		// return call_bot_frame(bug, user_data);
+		return SWITCH_TRUE;
 		break;
 
 	case SWITCH_ABC_TYPE_WRITE:
@@ -132,11 +133,11 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
 
-	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
-		return SWITCH_STATUS_FALSE;
-	}
+	// if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
+	// 	return SWITCH_STATUS_FALSE;
+	// }
 
 	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
@@ -224,10 +225,10 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x1\n");
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
-	if (SWITCH_STATUS_FALSE == call_bot_init())
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
-	}
+	// if (SWITCH_STATUS_FALSE == call_bot_init())
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
+	// }
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
@@ -243,7 +244,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	call_bot_cleanup();
+	// call_bot_cleanup();
 	switch_event_free_subclass(EVENT_VAD_CHANGE);
 	switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
