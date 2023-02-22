@@ -92,7 +92,7 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 
 	case SWITCH_ABC_TYPE_READ:
 	{
-		// return call_bot_frame(bug, user_data);
+		return call_bot_frame(bug, user_data);
 		return SWITCH_TRUE;
 	}
 	break;
