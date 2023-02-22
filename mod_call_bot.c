@@ -154,7 +154,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	return SWITCH_STATUS_SUCCESS;
 }
 
-#define TRANSCRIBE_API_SYNTAX "<uuid> start|stop [<cid_num>] "
+#define TRANSCRIBE_API_SYNTAX "<uuid> start|stop [<cid_num>] lang"
 SWITCH_STANDARD_API(call_bot_function)
 {
 	char *mycmd = NULL, *argv[3] = {0};
@@ -186,8 +186,8 @@ SWITCH_STANDARD_API(call_bot_function)
 		}
 		else if (!strcasecmp(argv[1], "start"))
 		{
-
-			status = start_capture(lsession, flags, "", 1, MY_BUG_NAME);
+			char *lang = argv[3];
+			status = start_capture(lsession, flags, lang, 1, MY_BUG_NAME);
 		}
 		switch_core_session_rwunlock(lsession);
 	}
