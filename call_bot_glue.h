@@ -1,6 +1,5 @@
 #ifndef __CALL_BOT_GLUE_H__
 #define __CALL_BOT_GLUE_H__
-#include "mod_call_bot.h"
 
 switch_status_t call_bot_init();
 switch_status_t call_bot_cleanup();
