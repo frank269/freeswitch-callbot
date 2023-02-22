@@ -56,6 +56,10 @@ public:
         switch_channel_t *channel = switch_core_session_get_channel(m_session);
 
         const char *var = switch_channel_get_variable(channel, "CALLBOT_MASTER_URI");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating grpc channel to %s\n", this, var);
+        const char *var_session_id = switch_channel_get_variable(channel, "SESSION_ID");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, var_session_id);
+
         std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(var, grpc::InsecureChannelCredentials());
         if (!grpcChannel)
         {
@@ -67,16 +71,19 @@ public:
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
-        streaming_config->set_conversation_id(m_language);
+        str::string conversation_id(var_session_id);
+        streaming_config->set_conversation_id(conversation_id);
     }
 
     void connect()
     {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p connect func\n", this);
         assert(!m_connected);
         // Begin a stream.
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p connect func1\n", this);
 
         createInitMessage();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p creating streamer\n", this);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
         m_connected = true;
 
