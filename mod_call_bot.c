@@ -164,23 +164,16 @@ SWITCH_STANDARD_API(call_bot_function)
 
 	if ((lsession = switch_core_session_locate(argv[0])))
 	{
-		stream->write_function(stream, "lsession = switch_core_session_locate(argv[0])\n");
 		if (!strcasecmp(argv[1], "stop"))
 		{
 			status = do_stop(lsession, MY_BUG_NAME);
-			stream->write_function(stream, "status = do_stop(lsession, MY_BUG_NAME);\n");
 		}
 		else if (!strcasecmp(argv[1], "start"))
 		{
 			switch_media_bug_flag_t flags = SMBF_READ_STREAM;
 			status = start_capture(lsession, flags, 0);
-			stream->write_function(stream, "!strcasecmp(argv[1], start)\n");
 		}
 		switch_core_session_rwunlock(lsession);
-	}
-	else
-	{
-		stream->write_function(stream, "ERRRRORRRRRRRRRRR\n");
 	}
 
 	if (status == SWITCH_STATUS_SUCCESS)
