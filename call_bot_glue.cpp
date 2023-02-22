@@ -601,6 +601,7 @@ extern "C"
     {
         switch_core_session_t *session = switch_core_media_bug_get_session(bug);
         struct cap_cb *cb = (struct cap_cb *)user_data;
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "6\n");
         if (cb->streamer && !cb->end_of_utterance)
         {
             GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -608,7 +609,7 @@ extern "C"
             switch_frame_t frame = {};
             frame.data = data;
             frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "7\n");
             if (switch_mutex_trylock(cb->mutex) == SWITCH_STATUS_SUCCESS)
             {
                 while (switch_core_media_bug_read(bug, &frame, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS && !switch_test_flag((&frame), SFF_CNG))
