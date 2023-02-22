@@ -105,7 +105,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	switch_codec_implementation_t read_impl = {0};
 	void *pUserData;
 	uint32_t samples_per_second;
-	const char *var;
+	// const char *var;
 
 	if (switch_channel_get_private(channel, bugname))
 	{
@@ -243,7 +243,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	nvidia_speech_cleanup();
+	call_bot_cleanup();
 	switch_event_free_subclass(EVENT_VAD_CHANGE);
 	switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
