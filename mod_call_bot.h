@@ -1,3 +1,6 @@
+#ifndef __MOD_CALL_BOT_H__
+#define __MOD_CALL_BOT_H__
+
 #include <switch.h>
 #include <unistd.h>
 #include <speex/speex_resampler.h>
@@ -38,3 +41,5 @@ struct cap_cb
     switch_vad_t *vad;
     uint32_t samples_per_second;
 };
+
+#endif

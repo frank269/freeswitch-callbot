@@ -1,4 +1,5 @@
 #include "mod_call_bot.h"
+#include "call_bot_glue.h"
 #include <stdlib.h>
 #include <switch.h>
 
