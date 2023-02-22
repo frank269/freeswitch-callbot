@@ -19,94 +19,100 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 	if (bug)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
-		// status = call_bot_session_cleanup(session, 0, bug);
+		status = call_bot_session_cleanup(session, 0, bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped\n");
 	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
 	return status;
 }
 
-// static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
-// 							const char *details)
-// {
-// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
-// switch_event_t *event;
-// switch_channel_t *channel = switch_core_session_get_channel(session);
+static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
+							const char *details)
+{
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
+	// switch_event_t *event;
+	// switch_channel_t *channel = switch_core_session_get_channel(session);
 
-// if (0 == strcmp("vad_detected", json)) {
-// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_VAD_DETECTED);
-// 	switch_channel_event_set_data(channel, event);
-// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-// }
-// else if (0 == strcmp("start_of_speech", json)) {
-// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_START_OF_SPEECH);
-// 	switch_channel_event_set_data(channel, event);
-// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-// }
-// else if (0 == strcmp("end_of_transcription", json)) {
-// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_TRANSCRIPTION_COMPLETE);
-// 	switch_channel_event_set_data(channel, event);
-// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-// }
-// else if (0 == strcmp("error", json)) {
-// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_ERROR);
-// 	switch_channel_event_set_data(channel, event);
-// 	switch_event_add_body(event, "%s", details);
-// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-// }
-// else {
-// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
+	// if (0 == strcmp("vad_detected", json))
+	// {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_VAD_DETECTED);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("start_of_speech", json))
+	// {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_START_OF_SPEECH);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("end_of_transcription", json))
+	// {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_TRANSCRIPTION_COMPLETE);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else if (0 == strcmp("error", json))
+	// {
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_ERROR);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_body(event, "%s", details);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// }
+	// else
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
 
-// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_RESULTS);
-// 	switch_channel_event_set_data(channel, event);
-// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-// 	switch_event_add_body(event, "%s", json);
-// }
-// if (bugname) switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "media-bugname", bugname);
-// switch_event_fire(&event);
-// }
+	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_RESULTS);
+	// 	switch_channel_event_set_data(channel, event);
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
+	// 	switch_event_add_body(event, "%s", json);
+	// }
+	// if (bugname)
+	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "media-bugname", bugname);
+	// switch_event_fire(&event);
+}
 
-// static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
-// {
-// 	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
+static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
+{
+	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
 
-// 	switch (type)
-// 	{
-// 	case SWITCH_ABC_TYPE_INIT:
-// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
-// 		break;
+	switch (type)
+	{
+	case SWITCH_ABC_TYPE_INIT:
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
+		break;
 
-// 	case SWITCH_ABC_TYPE_CLOSE:
-// 	{
-// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
-// 		// call_bot_session_cleanup(session, 1, bug);
-// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
-// 	}
-// 	break;
+	case SWITCH_ABC_TYPE_CLOSE:
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
+		call_bot_session_cleanup(session, 1, bug);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+	}
+	break;
 
-// 	case SWITCH_ABC_TYPE_READ:
+	case SWITCH_ABC_TYPE_READ:
 
-// 		// return call_bot_frame(bug, user_data);
-// 		return SWITCH_TRUE;
-// 		break;
+		return call_bot_frame(bug, user_data);
+		return SWITCH_TRUE;
+		break;
 
-// 	case SWITCH_ABC_TYPE_WRITE:
-// 	default:
-// 		break;
-// 	}
+	case SWITCH_ABC_TYPE_WRITE:
+	default:
+		break;
+	}
 
-// 	return SWITCH_TRUE;
-// }
+	return SWITCH_TRUE;
+}
 
 static switch_status_t start_capture(switch_core_session_t *session, switch_media_bug_flag_t flags, char *lang, int interim, char *bugname)
 {
 	switch_channel_t *channel = switch_core_session_get_channel(session);
-	// switch_media_bug_t *bug;
-	// switch_status_t status;
+	switch_media_bug_t *bug;
+	switch_status_t status;
 	switch_codec_implementation_t read_impl = {0};
-	// void *pUserData;
-	// uint32_t samples_per_second;
-	// const char *var;
+	void *pUserData;
+	uint32_t samples_per_second;
+	const char *var;
 
 	if (switch_channel_get_private(channel, bugname))
 	{
@@ -131,20 +137,20 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	// 	return SWITCH_STATUS_FALSE;
 	// }
 
-	// samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
+	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
 
-	// if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
-	// 	return SWITCH_STATUS_FALSE;
-	// }
+	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
+		return SWITCH_STATUS_FALSE;
+	}
 
-	// if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
-	// {
-	// 	return status;
-	// }
+	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
+	{
+		return status;
+	}
 
-	// switch_channel_set_private(channel, bugname, bug);
+	switch_channel_set_private(channel, bugname, bug);
 
 	return SWITCH_STATUS_SUCCESS;
 }
