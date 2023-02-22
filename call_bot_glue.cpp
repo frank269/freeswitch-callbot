@@ -71,7 +71,7 @@ public:
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
-        str::string conversation_id(var_session_id);
+        std::string conversation_id(var_session_id);
         streaming_config->set_conversation_id(conversation_id);
     }
 
