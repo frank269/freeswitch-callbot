@@ -29,7 +29,7 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
 							const char *details)
 {
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
 	// switch_event_t *event;
 	// switch_channel_t *channel = switch_core_session_get_channel(session);
 
@@ -227,7 +227,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	/* connect my internal structure to the blank pointer passed to me */
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x2\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x3\n");
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
 	if (SWITCH_STATUS_FALSE == call_bot_init())

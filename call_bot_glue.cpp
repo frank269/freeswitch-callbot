@@ -150,7 +150,7 @@ public:
         // nr_asr::StreamingRecognizeRequest request;
         // auto msg = request.mutable_control_message()->mutable_start_timers_message();
         // m_streamer->Write(request);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p sent start timers control message\n", this);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sent start timers control message\n", this);
     }
 
     void writesDone()
@@ -368,7 +368,7 @@ extern "C"
         GStreamer *streamer = NULL;
         try
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  allocating streamer\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  allocating streamer\n");
             streamer = new GStreamer(session, channels, lang, interim);
             cb->streamer = streamer;
         }
@@ -381,7 +381,7 @@ extern "C"
 
         if (!cb->vad)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  no vad so connecting to nvidia immediately\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  no vad so connecting to nvidia immediately\n");
             streamer->connect();
         }
 
@@ -422,10 +422,10 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_status_t st;
                 switch_thread_join(&st, cb->thread);
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 delete streamer;
                 cb->streamer = NULL;
@@ -445,7 +445,7 @@ extern "C"
                 switch_core_media_bug_remove(session, &bug);
             }
 
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup: Closed stream\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
 
             switch_mutex_unlock(cb->mutex);
 
