@@ -66,43 +66,43 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 // switch_event_fire(&event);
 // }
 
-static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
-{
-	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
+// static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
+// {
+// 	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
 
-	switch (type)
-	{
-	case SWITCH_ABC_TYPE_INIT:
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
-		break;
+// 	switch (type)
+// 	{
+// 	case SWITCH_ABC_TYPE_INIT:
+// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
+// 		break;
 
-	case SWITCH_ABC_TYPE_CLOSE:
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
-		// call_bot_session_cleanup(session, 1, bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
-	}
-	break;
+// 	case SWITCH_ABC_TYPE_CLOSE:
+// 	{
+// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
+// 		// call_bot_session_cleanup(session, 1, bug);
+// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+// 	}
+// 	break;
 
-	case SWITCH_ABC_TYPE_READ:
+// 	case SWITCH_ABC_TYPE_READ:
 
-		// return call_bot_frame(bug, user_data);
-		return SWITCH_TRUE;
-		break;
+// 		// return call_bot_frame(bug, user_data);
+// 		return SWITCH_TRUE;
+// 		break;
 
-	case SWITCH_ABC_TYPE_WRITE:
-	default:
-		break;
-	}
+// 	case SWITCH_ABC_TYPE_WRITE:
+// 	default:
+// 		break;
+// 	}
 
-	return SWITCH_TRUE;
-}
+// 	return SWITCH_TRUE;
+// }
 
 static switch_status_t start_capture(switch_core_session_t *session, switch_media_bug_flag_t flags, char *lang, int interim, char *bugname)
 {
 	switch_channel_t *channel = switch_core_session_get_channel(session);
-	switch_media_bug_t *bug;
-	switch_status_t status;
+	// switch_media_bug_t *bug;
+	// switch_status_t status;
 	switch_codec_implementation_t read_impl = {0};
 	// void *pUserData;
 	// uint32_t samples_per_second;
