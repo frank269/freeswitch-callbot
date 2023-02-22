@@ -15,7 +15,6 @@ using smartivrphonegateway::SmartIVRRequest;
 using smartivrphonegateway::SmartIVRResponse;
 using smartivrphonegateway::SmartIVRResponseType;
 using smartivrphonegateway::Status;
-using smartivrphonegateway::SmartIVRPhonegateway::NewStub;
 
 namespace
 {
@@ -64,7 +63,7 @@ public:
             throw std::runtime_error(std::string("Error creating grpc channel to ") + var);
         }
 
-        m_stub = std::move(NewStub(grpcChannel));
+        m_stub = std::move(smartivrphonegateway::SmartIVRPhonegateway::NewStub(grpcChannel));
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
@@ -129,7 +128,7 @@ public:
         return size;
     }
 
-    bool read(nr_asr::StreamingRecognizeResponse *response)
+    bool read(SmartIVRResponse *response)
     {
         return m_streamer->Read(response);
     }
