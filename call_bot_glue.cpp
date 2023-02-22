@@ -3,7 +3,7 @@
 #include <future>
 #include <switch.h>
 #include <switch_json.h>
-#include <grpc++/grpc++.h>
+// #include <grpc++/grpc++.h>
 #include "mod_call_bot.h"
 #include "simple_buffer.h"
 #define CHUNKSIZE (320)
