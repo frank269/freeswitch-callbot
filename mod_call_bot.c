@@ -74,7 +74,7 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
 {
-	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
+	switch_core_session_t *session = switch_core_media_bug_get_session(bug);
 
 	switch (type)
 	{
@@ -112,7 +112,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	switch_codec_implementation_t read_impl = {0};
 	void *pUserData;
 	uint32_t samples_per_second;
-	const char *var;
+	// const char *var;
 
 	if (switch_channel_get_private(channel, bugname))
 	{
