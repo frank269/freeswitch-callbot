@@ -287,7 +287,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             else
             {
                 std::string audio_content = response.audio_content();
-                audio_frame->data = audio_content.c_str();
+                audio_frame->data = const_cast<void *>(audio_content.c_str());
                 audio_frame->datalen = audio_content.length();
                 audio_frame->buflen = audio_content.length();
                 switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
