@@ -248,7 +248,7 @@ private:
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     switch_status_t status;
-    switch_frame_t audio_frame;
+    switch_frame_t *audio_frame;
 
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -268,7 +268,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         return nullptr;
     }
 
-    status = switch_core_session_read_frame(session, &&audio_frame, SWITCH_IO_FLAG_NONE, 0);
+    status = switch_core_session_read_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
     if (!SWITCH_READ_ACCEPTABLE(status))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is not readable!\n", cb->sessionId);
@@ -284,10 +284,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         streamer->print_response(response);
 
         std::string audio_content = response.audio_content();
-        audio_frame.data = static_cast<void *>(&audio_content);
-        audio_frame.datalen = audio_content.length();
-        audio_frame.buflen = audio_content.length();
-        switch_core_session_write_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
+        audio_frame->data = static_cast<void *>(&audio_content);
+        audio_frame->datalen = audio_content.length();
+        audio_frame->buflen = audio_content.length();
+        switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
 
         //     for (int r = 0; r < response.results_size(); ++r)
         //     {
