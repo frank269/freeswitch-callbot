@@ -69,6 +69,30 @@ public:
         cJSON_Delete(jResult);
     }
 
+    void print_response(SmartIVRResponse *response)
+    {
+        cJSON *jResult = cJSON_CreateObject();
+        cJSON *jType = cJSON_CreateNumber(response->type());
+        cJSON *jTextAsr = cJSON_CreateString(response->text_asr().c_str());
+        cJSON *jTextBot = cJSON_CreateString(response->text_bot().c_str());
+        cJSON *jForwardSipJson = cJSON_CreateString(response->forward_sip_json().c_str());
+        cJSON *jStatusCode = cJSON_CreateNumber(response->status().code());
+        cJSON *jStatusMessage = cJSON_CreateString(response->status().message().c_str());
+        cJSON *jAudioContent = cJSON_CreateString(response->audio_content().c_str());
+        cJSON_AddItemToObject(jResult, "type", jType);
+        cJSON_AddItemToObject(jResult, "text_asr", jTextAsr);
+        cJSON_AddItemToObject(jResult, "text_bot", jTextBot);
+        cJSON_AddItemToObject(jResult, "forward_sip_json", jForwardSipJson);
+        cJSON_AddItemToObject(jResult, "status_code", jStatusCode);
+        cJSON_AddItemToObject(jResult, "status_message", jStatusMessage);
+        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+
+        char *json = cJSON_PrintUnformatted(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p received message: %s\n", this, json);
+        free(json);
+        cJSON_Delete(jResult);
+    }
+
     void createInitMessage()
     {
         switch_channel_t *channel = switch_core_session_get_channel(m_session);
@@ -243,12 +267,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     { // Returns false when no more to read.
         count++;
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "response counter:  %d with %s results\n", count, response.mutable_text_asr());
-        switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
-        if (!session)
-        {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-        }
+        streamer->print_response(response);
+        // switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
+        // if (!session)
+        // {
+        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+        // }
 
         //     for (int r = 0; r < response.results_size(); ++r)
         //     {
