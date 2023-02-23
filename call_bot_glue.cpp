@@ -262,21 +262,12 @@ static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio
     switch_frame_t frame;
     memset(&frame, 0, sizeof(frame));
     frame.data = (void *)audio_data;
+    frame.codec = switch_core_session_get_write_codec(session);
     frame.datalen = audio_len;
     frame.buflen = audio_len;
     frame.samples = audio_len / 2;
-    frame.codec.channels = 1;
-    frame.codec.rate = 8000;
-    frame.codec.bps = 16;
-    frame.codec.flags = SWITCH_CODEC_FLAG_SIGNED;
-    frame.codec.ptime = 20;
-    frame.codec.samples_per_packet = frame.codec.ptime * frame.codec.rate / 1000;
-    frame.codec.packet_size = frame.codec.samples_per_packet * frame.codec.bps / 8;
-    frame.codec.bytes_per_second = frame.codec.rate * frame.codec.bps / 8;
-    frame.codec.codec_name = "L16";
-    frame.codec.iananame = "L16";
-    frame.duration = frame.datalen / (frame.codec.bps / 8) * 1000000 / frame.codec.rate;
-
+    frame.channels = 1;
+    frame.rate = 8000;
     status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
 
     return status;
