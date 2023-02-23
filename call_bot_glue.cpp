@@ -72,9 +72,9 @@ public:
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
         std::string conversation_id(var_session_id);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", conversation_id);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", *conversation_id);
         streaming_config->set_conversation_id(conversation_id);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", streaming_config->conversation_id());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", *streaming_config->conversation_id());
     }
 
     void connect()
@@ -90,7 +90,7 @@ public:
         m_promise.set_value();
 
         // Write the first request, containing the config only.
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message with conversationId: %s\n", this, m_request.mutable_config()->conversation_id());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message with conversationId: %s\n", this, *m_request.mutable_config()->conversation_id());
         m_streamer->Write(m_request);
         // m_request.clear_config();
 
