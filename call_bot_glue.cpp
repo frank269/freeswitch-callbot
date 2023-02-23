@@ -342,13 +342,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 uint8_t bytes_to_play[audio_content.length() + 1];
                 std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
                 bytes_to_play[audio_content.length()] = 0;
-                if (play_audio(channel, session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
+                // if (play_audio(channel, session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
+                // }
+                // else
                 {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
-                }
-                else
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed %d!\n", sizeof(bytes_to_play) / sizeof(uint8_t););
                 }
             }
             else
