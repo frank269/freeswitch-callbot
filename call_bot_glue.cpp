@@ -88,25 +88,25 @@ public:
         m_promise.set_value();
 
         // Write the first request, containing the config only.
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message\n", this);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message with conversationId: %s\n", this, m_request.mutable_config()->conversation_id());
         m_streamer->Write(m_request);
         // m_request.clear_config();
 
         // send any buffered audio
         int nFrames = m_audioBuffer.getNumItems();
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
-        if (nFrames)
-        {
-            char *p;
-            do
-            {
-                p = m_audioBuffer.getNextChunk();
-                if (p)
-                {
-                    write(p, CHUNKSIZE);
-                }
-            } while (p);
-        }
+        // if (nFrames)
+        // {
+        //     char *p;
+        //     do
+        //     {
+        //         p = m_audioBuffer.getNextChunk();
+        //         if (p)
+        //         {
+        //             write(p, CHUNKSIZE);
+        //         }
+        //     } while (p);
+        // }
     }
 
     bool write(void *data, uint32_t datalen)
@@ -213,9 +213,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
     // Read responses
     SmartIVRResponse response;
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     while (streamer->read(&response))
     { // Returns false when no more to read.
         count++;
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "response counter:  %d with %s results\n", count, response.mutable_text_asr());
         switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
         if (!session)
