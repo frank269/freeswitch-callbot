@@ -56,8 +56,8 @@ public:
 
         cJSON *jResult = cJSON_CreateObject();
         cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
-        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
-        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press());
+        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id());
         cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
         cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
         cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
@@ -94,7 +94,7 @@ public:
         streaming_config->set_conversation_id(conversation_id);
         m_request.set_is_playing(true);
         m_request.set_key_press("");
-        m_request.set_audio_content("AAAAAAAAAAAA");
+        m_request.set_audio_content("");
     }
 
     void connect()
@@ -142,9 +142,11 @@ public:
             }
             return true;
         }
-        // m_request.clear_audio_content();
-        // m_request.set_audio_content(data, datalen);
+        m_request.clear_audio_content();
+        m_request.set_audio_content(data, datalen);
+        print_request();
         bool ok = m_streamer->Write(m_request);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, send ok: %p\n", this, ok);
         return ok;
     }
 
@@ -507,24 +509,24 @@ extern "C"
                             }
                         }
 
-                        if (cb->resampler)
-                        {
-                            spx_int16_t out[SWITCH_RECOMMENDED_BUFFER_SIZE];
-                            spx_uint32_t out_len = SWITCH_RECOMMENDED_BUFFER_SIZE;
-                            spx_uint32_t in_len = frame.samples;
-                            size_t written;
+                        // if (cb->resampler)
+                        // {
+                        //     spx_int16_t out[SWITCH_RECOMMENDED_BUFFER_SIZE];
+                        //     spx_uint32_t out_len = SWITCH_RECOMMENDED_BUFFER_SIZE;
+                        //     spx_uint32_t in_len = frame.samples;
+                        //     size_t written;
 
-                            speex_resampler_process_interleaved_int(cb->resampler,
-                                                                    (const spx_int16_t *)frame.data,
-                                                                    (spx_uint32_t *)&in_len,
-                                                                    &out[0],
-                                                                    &out_len);
-                            streamer->write(&out[0], sizeof(spx_int16_t) * out_len);
-                        }
-                        else
-                        {
-                            streamer->write(frame.data, sizeof(spx_int16_t) * frame.samples);
-                        }
+                        //     speex_resampler_process_interleaved_int(cb->resampler,
+                        //                                             (const spx_int16_t *)frame.data,
+                        //                                             (spx_uint32_t *)&in_len,
+                        //                                             &out[0],
+                        //                                             &out_len);
+                        //     streamer->write(&out[0], sizeof(spx_int16_t) * out_len);
+                        // }
+                        // else
+                        // {
+                        //     streamer->write(frame.data, sizeof(spx_int16_t) * frame.samples);
+                        // }
                     }
                 }
                 switch_mutex_unlock(cb->mutex);
