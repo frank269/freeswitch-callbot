@@ -167,9 +167,8 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        print_request();
+        // print_request();
         bool ok = m_streamer->Write(m_request);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, send ok: %p\n", this, ok);
         return ok;
     }
 
@@ -248,7 +247,9 @@ private:
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
-    static int count;
+    switch_frame_t audio_frame = {0};
+    switch_codec_t codec = {0};
+
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
 
@@ -259,19 +260,27 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         return nullptr;
     }
 
+    switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
+    switch_channel_t *channel = switch_core_session_get_channel(session);
+    if (!session)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+    }
+
     // Read responses
     SmartIVRResponse response;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
-    while (streamer->read(&response))
+    while (streamer->read(&response) && switch_channel_ready(channel))
     { // Returns false when no more to read.
-        count++;
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
-        // switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
-        // if (!session)
-        // {
-        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-        // }
+
+        audio_frame.codec = &codec;
+        std::string audio_content = response.audio_content();
+        audio_frame.data = audio_content;
+        audio_frame.datalen = audio_content.length();
+        audio_frame.buflen = audio_content.length();
+        switch_core_session_write_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
 
         //     for (int r = 0; r < response.results_size(); ++r)
         //     {
@@ -331,7 +340,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
         //         cJSON_Delete(jResult);
         //     }
-        // switch_core_session_rwunlock(session);
+        switch_core_session_rwunlock(session);
     }
     return nullptr;
 }
