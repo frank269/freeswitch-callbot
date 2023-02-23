@@ -75,8 +75,6 @@ public:
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", conversation_id);
         streaming_config->set_conversation_id(conversation_id);
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", streaming_config->conversation_id());
-        streaming_config->set_conversation_id(&conversation_id);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", streaming_config->conversation_id());
     }
 
     void connect()
