@@ -259,34 +259,35 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
 {
     const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
-    switch_frame_t write_frame = {0};
-    char *codec_name = "L16";
-    switch_codec_t *codec;
-    switch_memory_pool_t *pool = switch_core_session_get_pool(session);
-    switch_codec_implementation_t read_impl;
-    switch_core_session_get_read_impl(session, &read_impl);
-    int interval = read_impl.microseconds_per_packet / 1000;
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_len);
+    // switch_frame_t write_frame = {0};
+    // char *codec_name = "L16";
+    // switch_codec_t *codec;
+    // switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+    // switch_codec_implementation_t read_impl;
+    // switch_core_session_get_read_impl(session, &read_impl);
+    // int interval = read_impl.microseconds_per_packet / 1000;
 
-    if (switch_core_codec_init(codec,
-                               codec_name,
-                               NULL,
-                               NULL, read_impl.actual_samples_per_second, interval, read_impl.number_of_channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
-                               pool) == SWITCH_STATUS_SUCCESS)
-    {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Raw Codec Activated\n");
-        memset(write_frame.data, 0, audio_len);
-        write_frame.data = (void *)audio_data;
-        write_frame.datalen = audio_len;
-        write_frame.samples = audio_len / 2;
-        write_frame.channels = 1;
-        write_frame.codec = codec;
-        if (switch_channel_ready(channel))
-        {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "try to write to session\n");
-            switch_channel_audio_sync(channel);
-            status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
-        }
-    }
+    // if (switch_core_codec_init(codec,
+    //                            codec_name,
+    //                            NULL,
+    //                            NULL, read_impl.actual_samples_per_second, interval, read_impl.number_of_channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+    //                            pool) == SWITCH_STATUS_SUCCESS)
+    // {
+    //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Raw Codec Activated\n");
+    //     memset(write_frame.data, 0, audio_len);
+    //     write_frame.data = (void *)audio_data;
+    //     write_frame.datalen = audio_len;
+    //     write_frame.samples = audio_len / 2;
+    //     write_frame.channels = 1;
+    //     write_frame.codec = codec;
+    //     if (switch_channel_ready(channel))
+    //     {
+    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "try to write to session\n");
+    //         switch_channel_audio_sync(channel);
+    //         status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+    //     }
+    // }
 
     // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     // switch_status_t status;
