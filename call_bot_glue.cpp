@@ -251,7 +251,8 @@ private:
 
 static std::vector<uint8_t> parse_byte_array(std::string str)
 {
-    return std::vector<uint8_t> vec(str.begin(), str.end());
+    std::vector<uint8_t> vec(str.begin(), str.end());
+    return vec;
 }
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
