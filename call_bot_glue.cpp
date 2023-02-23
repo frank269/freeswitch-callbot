@@ -255,7 +255,7 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
     return vec;
 }
 
-static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio_data)
+static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, uint8_t *audio_data)
 {
     const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
@@ -263,7 +263,7 @@ static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio
     char *codec_name = "L16";
     switch_codec_t *codec;
     switch_memory_pool_t *pool = switch_core_session_get_pool(session);
-    switch_codec_implementation_t read_impl = {0};
+    switch_codec_implementation_t read_impl;
     switch_core_session_get_read_impl(session, &read_impl);
     int interval = read_impl.microseconds_per_packet / 1000;
 
@@ -338,7 +338,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 uint8_t bytes_to_play[audio_content.length() + 1];
                 std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
                 bytes_to_play[audio_content.length()] = 0;
-                if (play_audio(session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
+                if (play_audio(channel, session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
                 }
