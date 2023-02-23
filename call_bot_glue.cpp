@@ -53,11 +53,10 @@ public:
 
     void print_request()
     {
-
         cJSON *jResult = cJSON_CreateObject();
         cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
-        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press());
-        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id());
+        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
+        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
         cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
         cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
         cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
@@ -95,6 +94,7 @@ public:
         m_request.set_is_playing(true);
         m_request.set_key_press("");
         m_request.set_audio_content("");
+        print_request();
     }
 
     void connect()
