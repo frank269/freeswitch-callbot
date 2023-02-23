@@ -258,17 +258,41 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio_data)
 {
     const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
-    switch_status_t status;
-    switch_frame_t frame;
-    memset(&frame, 0, sizeof(frame));
-    frame.data = (void *)audio_data;
-    frame.codec = switch_core_session_get_write_codec(session);
-    frame.datalen = audio_len;
-    frame.buflen = audio_len;
-    frame.samples = audio_len / 2;
-    frame.channels = 1;
-    frame.rate = 8000;
-    status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
+    switch_status_t status = SWITCH_STATUS_FALSE;
+    switch_frame_t write_frame = {0};
+    char *codec_name = "L16";
+    switch_codec_t *codec;
+    switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+
+    if (switch_core_codec_init(codec,
+                               codec_name,
+                               NULL,
+                               NULL, (int)rate, interval, channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+                               pool) == SWITCH_STATUS_SUCCESS)
+    {
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Raw Codec Activated\n");
+        memset(write_frame.data, 0, audio_len);
+        write_frame.data = (void *)audio_data;
+        write_frame.datalen = audio_len;
+        write_frame.samples = audio_len / 2;
+        write_frame.channels = 1;
+        write_frame.codec = codec;
+        switch_channel_audio_sync(channel);
+        status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
+    }
+
+    // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
+    // switch_status_t status;
+    // switch_frame_t frame;
+    // memset(&frame, 0, sizeof(frame));
+    // frame.data = (void *)audio_data;
+    // frame.codec = switch_core_session_get_write_codec(session);
+    // frame.datalen = audio_len;
+    // frame.buflen = audio_len;
+    // frame.samples = audio_len / 2;
+    // frame.channels = 1;
+    // frame.rate = 8000;
+    // status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
 
     return status;
 }
@@ -303,6 +327,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         else
         {
+
             if (response.type() == 2)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
@@ -322,6 +347,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             else
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Mode: %d\n", response.type());
+
+                if (response.type() == 5)
+                {
+                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                }
             }
         }
         switch_core_session_rwunlock(session);
