@@ -263,11 +263,14 @@ static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio
     char *codec_name = "L16";
     switch_codec_t *codec;
     switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+    switch_codec_implementation_t read_impl = {0};
+    switch_core_session_get_read_impl(session, &read_impl);
+    int interval = read_impl.microseconds_per_packet / 1000;
 
     if (switch_core_codec_init(codec,
                                codec_name,
                                NULL,
-                               NULL, (int)rate, interval, channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+                               NULL, read_impl.actual_samples_per_second, interval, read_impl.number_of_channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
                                pool) == SWITCH_STATUS_SUCCESS)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Raw Codec Activated\n");
@@ -278,7 +281,7 @@ static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio
         write_frame.channels = 1;
         write_frame.codec = codec;
         switch_channel_audio_sync(channel);
-        status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
+        status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
     }
 
     // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
