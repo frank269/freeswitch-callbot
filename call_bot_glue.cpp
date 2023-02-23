@@ -77,11 +77,8 @@ public:
 
     void connect()
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p connect func\n", this);
         assert(!m_connected);
         // Begin a stream.
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p connect func1\n", this);
-
         createInitMessage();
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
@@ -91,13 +88,13 @@ public:
         m_promise.set_value();
 
         // Write the first request, containing the config only.
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p sending initial message\n", this);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message\n", this);
         m_streamer->Write(m_request);
         // m_request.clear_config();
 
         // send any buffered audio
         int nFrames = m_audioBuffer.getNumItems();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
         if (nFrames)
         {
             char *p;
@@ -214,77 +211,78 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         return nullptr;
     }
 
-    // Read responses.nr_asr::StreamingRecognizeResponse response;
-    // while (streamer->read(&response))
-    // { // Returns false when no more to read.
-    //     count++;
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "response counter:  %d with %d results\n", count, response.results_size());
-    //     switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
-    //     if (!session)
-    //     {
-    //         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-    //     }
+    // Read responses
+    SmartIVRResponse response;
+    while (streamer->read(&response))
+    { // Returns false when no more to read.
+        count++;
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "response counter:  %d with %s results\n", count, response.mutable_text_asr());
+        switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
+        if (!session)
+        {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+        }
 
-    //     for (int r = 0; r < response.results_size(); ++r)
-    //     {
-    //         const auto &result = response.results(r);
-    //         bool is_final = result.is_final();
-    //         int num_alternatives = result.alternatives_size();
-    //         int channel_tag = result.channel_tag();
-    //         float stability = result.stability();
+        //     for (int r = 0; r < response.results_size(); ++r)
+        //     {
+        //         const auto &result = response.results(r);
+        //         bool is_final = result.is_final();
+        //         int num_alternatives = result.alternatives_size();
+        //         int channel_tag = result.channel_tag();
+        //         float stability = result.stability();
 
-    //         cJSON *jResult = cJSON_CreateObject();
-    //         cJSON *jIsFinal = cJSON_CreateBool(is_final);
-    //         cJSON *jAlternatives = cJSON_CreateArray();
-    //         cJSON *jAudioProcessed = cJSON_CreateNumber(result.audio_processed());
-    //         cJSON *jChannelTag = cJSON_CreateNumber(channel_tag);
-    //         cJSON *jStability = cJSON_CreateNumber(stability);
-    //         cJSON_AddItemToObject(jResult, "alternatives", jAlternatives);
-    //         cJSON_AddItemToObject(jResult, "is_final", jIsFinal);
-    //         cJSON_AddItemToObject(jResult, "audio_processed", jAudioProcessed);
-    //         cJSON_AddItemToObject(jResult, "stability", jStability);
+        //         cJSON *jResult = cJSON_CreateObject();
+        //         cJSON *jIsFinal = cJSON_CreateBool(is_final);
+        //         cJSON *jAlternatives = cJSON_CreateArray();
+        //         cJSON *jAudioProcessed = cJSON_CreateNumber(result.audio_processed());
+        //         cJSON *jChannelTag = cJSON_CreateNumber(channel_tag);
+        //         cJSON *jStability = cJSON_CreateNumber(stability);
+        //         cJSON_AddItemToObject(jResult, "alternatives", jAlternatives);
+        //         cJSON_AddItemToObject(jResult, "is_final", jIsFinal);
+        //         cJSON_AddItemToObject(jResult, "audio_processed", jAudioProcessed);
+        //         cJSON_AddItemToObject(jResult, "stability", jStability);
 
-    //         for (int a = 0; a < num_alternatives; ++a)
-    //         {
-    //             cJSON *jAlt = cJSON_CreateObject();
-    //             cJSON *jTranscript = cJSON_CreateString(result.alternatives(a).transcript().c_str());
-    //             cJSON_AddItemToObject(jAlt, "transcript", jTranscript);
+        //         for (int a = 0; a < num_alternatives; ++a)
+        //         {
+        //             cJSON *jAlt = cJSON_CreateObject();
+        //             cJSON *jTranscript = cJSON_CreateString(result.alternatives(a).transcript().c_str());
+        //             cJSON_AddItemToObject(jAlt, "transcript", jTranscript);
 
-    //             if (is_final)
-    //             {
-    //                 auto confidence = result.alternatives(a).confidence();
-    //                 cJSON_AddNumberToObject(jAlt, "confidence", confidence);
-    //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "confidence %.2f\n", confidence);
+        //             if (is_final)
+        //             {
+        //                 auto confidence = result.alternatives(a).confidence();
+        //                 cJSON_AddNumberToObject(jAlt, "confidence", confidence);
+        //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "confidence %.2f\n", confidence);
 
-    //                 int words = result.alternatives(a).words_size();
-    //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "got %d words\n", words);
-    //                 if (words > 0)
-    //                 {
-    //                     cJSON *jWords = cJSON_CreateArray();
-    //                     for (int w = 0; w < words; w++)
-    //                     {
-    //                         cJSON *jWordInfo = cJSON_CreateObject();
-    //                         cJSON_AddItemToArray(jWords, jWordInfo);
-    //                         auto &wordInfo = result.alternatives(a).words(w);
-    //                         cJSON_AddStringToObject(jWordInfo, "word", wordInfo.word().c_str());
-    //                         cJSON_AddNumberToObject(jWordInfo, "start_time", wordInfo.start_time());
-    //                         cJSON_AddNumberToObject(jWordInfo, "end_time", wordInfo.end_time());
-    //                         cJSON_AddNumberToObject(jWordInfo, "confidence", wordInfo.confidence());
-    //                         cJSON_AddNumberToObject(jWordInfo, "speaker_tag", wordInfo.speaker_tag());
-    //                     }
-    //                     cJSON_AddItemToObject(jAlt, "words", jWords);
-    //                 }
-    //             }
-    //             cJSON_AddItemToArray(jAlternatives, jAlt);
-    //         }
-    //         char *json = cJSON_PrintUnformatted(jResult);
-    //         cb->responseHandler(session, (const char *)json, cb->bugname, NULL);
-    //         free(json);
+        //                 int words = result.alternatives(a).words_size();
+        //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "got %d words\n", words);
+        //                 if (words > 0)
+        //                 {
+        //                     cJSON *jWords = cJSON_CreateArray();
+        //                     for (int w = 0; w < words; w++)
+        //                     {
+        //                         cJSON *jWordInfo = cJSON_CreateObject();
+        //                         cJSON_AddItemToArray(jWords, jWordInfo);
+        //                         auto &wordInfo = result.alternatives(a).words(w);
+        //                         cJSON_AddStringToObject(jWordInfo, "word", wordInfo.word().c_str());
+        //                         cJSON_AddNumberToObject(jWordInfo, "start_time", wordInfo.start_time());
+        //                         cJSON_AddNumberToObject(jWordInfo, "end_time", wordInfo.end_time());
+        //                         cJSON_AddNumberToObject(jWordInfo, "confidence", wordInfo.confidence());
+        //                         cJSON_AddNumberToObject(jWordInfo, "speaker_tag", wordInfo.speaker_tag());
+        //                     }
+        //                     cJSON_AddItemToObject(jAlt, "words", jWords);
+        //                 }
+        //             }
+        //             cJSON_AddItemToArray(jAlternatives, jAlt);
+        //         }
+        //         char *json = cJSON_PrintUnformatted(jResult);
+        //         cb->responseHandler(session, (const char *)json, cb->bugname, NULL);
+        //         free(json);
 
-    //         cJSON_Delete(jResult);
-    //     }
-    //     switch_core_session_rwunlock(session);
-    // }
+        //         cJSON_Delete(jResult);
+        //     }
+        switch_core_session_rwunlock(session);
+    }
     return nullptr;
 }
 
@@ -318,7 +316,7 @@ extern "C"
         switch_mutex_init(&cb->mutex, SWITCH_MUTEX_NESTED, switch_core_session_get_pool(session));
         if (sampleRate != 8000)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initializing resampler\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initializing resampler\n");
             cb->resampler = speex_resampler_init(channels, sampleRate, 8000, SWITCH_RESAMPLE_QUALITY, &err);
             if (0 != err)
             {
@@ -329,14 +327,14 @@ extern "C"
         }
         else
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "%s: no resampling needed for this call\n", switch_channel_get_name(channel));
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s: no resampling needed for this call\n", switch_channel_get_name(channel));
         }
         cb->responseHandler = responseHandler;
 
         // allocate vad if we are delaying connecting to the recognizer until we detect speech
         if (switch_channel_var_true(channel, "START_RECOGNIZING_ON_VAD"))
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initializing vad\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initializing vad\n");
             cb->vad = switch_vad_init(sampleRate, channels);
             if (cb->vad)
             {

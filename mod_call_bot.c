@@ -117,7 +117,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (switch_channel_get_private(channel, bugname))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "removing bug from previous call_bot session\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "removing bug from previous call_bot session\n");
 		do_stop(session, bugname);
 	}
 
@@ -227,7 +227,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	/* connect my internal structure to the blank pointer passed to me */
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Hello world x3\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot version 1.0.1\n");
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
 	if (SWITCH_STATUS_FALSE == call_bot_init())
