@@ -51,6 +51,25 @@ public:
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
+    void print_request()
+    {
+
+        cJSON *jResult = cJSON_CreateObject();
+        cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
+        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
+        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
+        cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
+        cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
+        cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
+        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+
+        char *json = cJSON_PrintUnformatted(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
+        free(json);
+        cJSON_Delete(jResult);
+    }
+
     void createInitMessage()
     {
         switch_channel_t *channel = switch_core_session_get_channel(m_session);
@@ -72,9 +91,10 @@ public:
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
         std::string conversation_id(var_session_id);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", conversation_id.c_str());
         streaming_config->set_conversation_id(conversation_id);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "conversation id %s\n", streaming_config->conversation_id().c_str());
+        m_request.set_is_playing(true);
+        m_request.set_key_press("");
+        m_request.set_audio_content("AAAAAAAAAAAA");
     }
 
     void connect()
@@ -90,7 +110,8 @@ public:
         m_promise.set_value();
 
         // Write the first request, containing the config only.
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message with conversationId: %s\n", this, m_request.mutable_config()->conversation_id().c_str());
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending initial message with conversationId: %s\n", this, m_request.mutable_config()->conversation_id().c_str());
+        print_request();
         m_streamer->Write(m_request);
         // m_request.clear_config();
 
