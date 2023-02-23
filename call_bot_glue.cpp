@@ -260,93 +260,36 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         return nullptr;
     }
 
-    switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
-    switch_channel_t *channel = switch_core_session_get_channel(session);
-    if (!session)
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-        return nullptr;
-    }
-
-    status = switch_core_session_read_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
-    if (!SWITCH_READ_ACCEPTABLE(status))
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is not readable!\n", cb->sessionId);
-        return nullptr;
-    }
-
     // Read responses
     SmartIVRResponse response;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
-    while (streamer->read(&response) && switch_channel_ready(channel))
+    while (streamer->read(&response))
     { // Returns false when no more to read.
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
-        std::string audio_content = response.audio_content();
-        audio_frame->data = static_cast<void *>(&audio_content);
-        audio_frame->datalen = audio_content.length();
-        audio_frame->buflen = audio_content.length();
-        switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
-
-        //     for (int r = 0; r < response.results_size(); ++r)
-        //     {
-        //         const auto &result = response.results(r);
-        //         bool is_final = result.is_final();
-        //         int num_alternatives = result.alternatives_size();
-        //         int channel_tag = result.channel_tag();
-        //         float stability = result.stability();
-
-        //         cJSON *jResult = cJSON_CreateObject();
-        //         cJSON *jIsFinal = cJSON_CreateBool(is_final);
-        //         cJSON *jAlternatives = cJSON_CreateArray();
-        //         cJSON *jAudioProcessed = cJSON_CreateNumber(result.audio_processed());
-        //         cJSON *jChannelTag = cJSON_CreateNumber(channel_tag);
-        //         cJSON *jStability = cJSON_CreateNumber(stability);
-        //         cJSON_AddItemToObject(jResult, "alternatives", jAlternatives);
-        //         cJSON_AddItemToObject(jResult, "is_final", jIsFinal);
-        //         cJSON_AddItemToObject(jResult, "audio_processed", jAudioProcessed);
-        //         cJSON_AddItemToObject(jResult, "stability", jStability);
-
-        //         for (int a = 0; a < num_alternatives; ++a)
-        //         {
-        //             cJSON *jAlt = cJSON_CreateObject();
-        //             cJSON *jTranscript = cJSON_CreateString(result.alternatives(a).transcript().c_str());
-        //             cJSON_AddItemToObject(jAlt, "transcript", jTranscript);
-
-        //             if (is_final)
-        //             {
-        //                 auto confidence = result.alternatives(a).confidence();
-        //                 cJSON_AddNumberToObject(jAlt, "confidence", confidence);
-        //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "confidence %.2f\n", confidence);
-
-        //                 int words = result.alternatives(a).words_size();
-        //                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "got %d words\n", words);
-        //                 if (words > 0)
-        //                 {
-        //                     cJSON *jWords = cJSON_CreateArray();
-        //                     for (int w = 0; w < words; w++)
-        //                     {
-        //                         cJSON *jWordInfo = cJSON_CreateObject();
-        //                         cJSON_AddItemToArray(jWords, jWordInfo);
-        //                         auto &wordInfo = result.alternatives(a).words(w);
-        //                         cJSON_AddStringToObject(jWordInfo, "word", wordInfo.word().c_str());
-        //                         cJSON_AddNumberToObject(jWordInfo, "start_time", wordInfo.start_time());
-        //                         cJSON_AddNumberToObject(jWordInfo, "end_time", wordInfo.end_time());
-        //                         cJSON_AddNumberToObject(jWordInfo, "confidence", wordInfo.confidence());
-        //                         cJSON_AddNumberToObject(jWordInfo, "speaker_tag", wordInfo.speaker_tag());
-        //                     }
-        //                     cJSON_AddItemToObject(jAlt, "words", jWords);
-        //                 }
-        //             }
-        //             cJSON_AddItemToArray(jAlternatives, jAlt);
-        //         }
-        //         char *json = cJSON_PrintUnformatted(jResult);
-        //         cb->responseHandler(session, (const char *)json, cb->bugname, NULL);
-        //         free(json);
-
-        //         cJSON_Delete(jResult);
-        //     }
+        switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
+        switch_channel_t *channel = switch_core_session_get_channel(session);
+        if (!session)
+        {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+        }
+        else
+        {
+            status = switch_core_session_read_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
+            if (!SWITCH_READ_ACCEPTABLE(status))
+            {
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is not readable!\n", cb->sessionId);
+            }
+            else
+            {
+                std::string audio_content = response.audio_content();
+                audio_frame->data = &audio_content[0];
+                audio_frame->datalen = audio_content.length();
+                audio_frame->buflen = audio_content.length();
+                switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
+            }
+        }
         switch_core_session_rwunlock(session);
     }
     return nullptr;
