@@ -297,7 +297,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 frame.channels = 1;
                 frame.rate = sample_rate;
                 frame.timestamp = num_samples * 1000 / sample_rate;
-                frame.data = bytes_to_play;
+                frame.data = (void *)&bytes_to_play[0];
                 frame.codec = switch_core_session_get_read_codec(session);
 
                 switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
