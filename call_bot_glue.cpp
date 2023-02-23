@@ -255,6 +255,33 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
     return vec;
 }
 
+static switch_status_t play_audio(switch_core_session_t *session, uint8_t *audio_data)
+{
+    const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
+    switch_status_t status;
+    switch_frame_t frame;
+    memset(&frame, 0, sizeof(frame));
+    frame.data = (void *)audio_data;
+    frame.datalen = audio_len;
+    frame.buflen = audio_len;
+    frame.samples = audio_len / 2;
+    frame.codec.channels = 1;
+    frame.codec.rate = 8000;
+    frame.codec.bps = 16;
+    frame.codec.flags = SWITCH_CODEC_FLAG_SIGNED;
+    frame.codec.ptime = 20;
+    frame.codec.samples_per_packet = frame.codec.ptime * frame.codec.rate / 1000;
+    frame.codec.packet_size = frame.codec.samples_per_packet * frame.codec.bps / 8;
+    frame.codec.bytes_per_second = frame.codec.rate * frame.codec.bps / 8;
+    frame.codec.codec_name = "L16";
+    frame.codec.iananame = "L16";
+    frame.duration = frame.datalen / (frame.codec.bps / 8) * 1000000 / frame.codec.rate;
+
+    status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
+
+    return status;
+}
+
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
@@ -290,16 +317,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
                 std::string audio_content = response.audio_content();
                 const std::vector<uint8_t> bytes_to_play = parse_byte_array(audio_content);
-                uint32_t num_samples = sizeof(bytes_to_play) / sizeof(uint8_t);
-                memset(&frame, 0, sizeof(switch_frame_t));
-                frame.datalen = num_samples;
-                frame.samples = num_samples;
-                frame.rate = sample_rate;
-                frame.channels = 1;
-                frame.data = (void *)&bytes_to_play[0];
-                frame.codec = switch_core_session_get_write_codec(session);
 
-                if (switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0) != SWITCH_STATUS_SUCCESS)
+                if (play_audio(session, &bytes_to_play[0]) == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
+                }
+                else
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
                 }
