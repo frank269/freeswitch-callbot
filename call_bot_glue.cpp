@@ -308,8 +308,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
-    switch_frame_t frame;
-    uint32_t sample_rate = 8000;
+    // switch_frame_t frame;
+    // uint32_t sample_rate = 8000;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -338,10 +338,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (response.type() == 2)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
-                std::string audio_content = response.audio_content();
-                uint8_t bytes_to_play[audio_content.length() + 1];
-                std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
-                bytes_to_play[audio_content.length()] = 0;
+                // std::string audio_content = response.audio_content();
+                // uint8_t bytes_to_play[audio_content.length() + 1];
+                // std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
+                // bytes_to_play[audio_content.length()] = 0;
                 // if (play_audio(channel, session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
                 // {
                 //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
