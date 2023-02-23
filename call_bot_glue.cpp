@@ -53,21 +53,21 @@ public:
 
     void print_request()
     {
-        // cJSON *jResult = cJSON_CreateObject();
-        // cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
-        // cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
-        // cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
-        // cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
-        // cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
-        // cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
-        // cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
-        // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+        cJSON *jResult = cJSON_CreateObject();
+        cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
+        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
+        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
+        cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
+        cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
+        cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
+        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
-        // char *json = cJSON_PrintUnformatted(jResult);
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
-        // free(json);
-        // cJSON_Delete(jResult);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p audio content length: %d\n", this, m_request.audio_content().length());
+        char *json = cJSON_PrintUnformatted(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
+        free(json);
+        cJSON_Delete(jResult);
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p audio content length: %d\n", this, m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -92,7 +92,7 @@ public:
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "type: %d\n", response.type());
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_asr: %s\n", response.text_asr().c_str());
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_bot: %s\n", response.text_bot().c_str());
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "audio_content: %s\n", response.audio_content().c_str());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "audio_content length: %d\n", response.audio_content().length());
         // free(json);
         // cJSON_Delete(jResult);
     }
@@ -171,7 +171,7 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        print_request();
+        // print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
@@ -294,13 +294,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 memset(&frame, 0, sizeof(switch_frame_t));
                 frame.datalen = num_samples;
                 frame.samples = num_samples;
-                frame.channels = 1;
                 frame.rate = sample_rate;
-                frame.timestamp = num_samples * 1000 / sample_rate;
+                frame.channels = 1;
                 frame.data = (void *)&bytes_to_play[0];
-                frame.codec = switch_core_session_get_read_codec(session);
+                frame.codec = switch_core_session_get_write_codec(session);
 
-                switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
+                if (switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0) != SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
+                }
             }
             else
             {
