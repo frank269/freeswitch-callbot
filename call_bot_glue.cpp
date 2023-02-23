@@ -248,7 +248,6 @@ private:
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     switch_frame_t audio_frame = {0};
-    switch_codec_t codec = {0};
 
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -267,6 +266,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
     }
 
+    status = switch_core_session_read_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
+    if (!SWITCH_READ_ACCEPTABLE(status))
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is not readable!\n", cb->sessionId);
+        break;
+    }
+
     // Read responses
     SmartIVRResponse response;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
@@ -275,7 +281,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
-        audio_frame.codec = &codec;
         std::string audio_content = response.audio_content();
         audio_frame.data = static_cast<void *>(&audio_content);
         audio_frame.datalen = audio_content.length();
