@@ -307,9 +307,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
                 std::string audio_content = response.audio_content();
-                const std::vector<uint8_t> bytes_to_play = parse_byte_array(audio_content);
-
-                if (play_audio(session, &bytes_to_play[0]) == SWITCH_STATUS_SUCCESS)
+                uint8_t bytes_to_play[audio_content.length() + 1];
+                std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
+                bytes_to_play[audio_content.length()] = 0;
+                if (play_audio(session, bytes_to_play) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
                 }
