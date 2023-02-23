@@ -115,10 +115,9 @@ public:
         auto streaming_config = m_request.mutable_config();
         std::string conversation_id(var_session_id);
         streaming_config->set_conversation_id(conversation_id);
-        m_request.set_is_playing(true);
+        m_request.set_is_playing(false);
         m_request.set_key_press("");
         m_request.set_audio_content("");
-        print_request();
     }
 
     void connect()
@@ -142,18 +141,18 @@ public:
         // send any buffered audio
         int nFrames = m_audioBuffer.getNumItems();
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
-        // if (nFrames)
-        // {
-        //     char *p;
-        //     do
-        //     {
-        //         p = m_audioBuffer.getNextChunk();
-        //         if (p)
-        //         {
-        //             write(p, CHUNKSIZE);
-        //         }
-        //     } while (p);
-        // }
+        if (nFrames)
+        {
+            char *p;
+            do
+            {
+                p = m_audioBuffer.getNextChunk();
+                if (p)
+                {
+                    write(p, CHUNKSIZE);
+                }
+            } while (p);
+        }
     }
 
     bool write(void *data, uint32_t datalen)
@@ -533,24 +532,24 @@ extern "C"
                             }
                         }
 
-                        // if (cb->resampler)
-                        // {
-                        //     spx_int16_t out[SWITCH_RECOMMENDED_BUFFER_SIZE];
-                        //     spx_uint32_t out_len = SWITCH_RECOMMENDED_BUFFER_SIZE;
-                        //     spx_uint32_t in_len = frame.samples;
-                        //     size_t written;
+                        if (cb->resampler)
+                        {
+                            spx_int16_t out[SWITCH_RECOMMENDED_BUFFER_SIZE];
+                            spx_uint32_t out_len = SWITCH_RECOMMENDED_BUFFER_SIZE;
+                            spx_uint32_t in_len = frame.samples;
+                            size_t written;
 
-                        //     speex_resampler_process_interleaved_int(cb->resampler,
-                        //                                             (const spx_int16_t *)frame.data,
-                        //                                             (spx_uint32_t *)&in_len,
-                        //                                             &out[0],
-                        //                                             &out_len);
-                        //     streamer->write(&out[0], sizeof(spx_int16_t) * out_len);
-                        // }
-                        // else
-                        // {
-                        //     streamer->write(frame.data, sizeof(spx_int16_t) * frame.samples);
-                        // }
+                            speex_resampler_process_interleaved_int(cb->resampler,
+                                                                    (const spx_int16_t *)frame.data,
+                                                                    (spx_uint32_t *)&in_len,
+                                                                    &out[0],
+                                                                    &out_len);
+                            streamer->write(&out[0], sizeof(spx_int16_t) * out_len);
+                        }
+                        else
+                        {
+                            streamer->write(frame.data, sizeof(spx_int16_t) * frame.samples);
+                        }
                     }
                 }
                 switch_mutex_unlock(cb->mutex);
