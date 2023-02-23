@@ -53,20 +53,21 @@ public:
 
     void print_request()
     {
-        cJSON *jResult = cJSON_CreateObject();
-        cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
-        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
-        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
-        cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
-        cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
-        cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
-        cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
-        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+        // cJSON *jResult = cJSON_CreateObject();
+        // cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
+        // cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
+        // cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        // cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
+        // cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
+        // cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
+        // cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
+        // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
-        char *json = cJSON_PrintUnformatted(jResult);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
-        free(json);
-        cJSON_Delete(jResult);
+        // char *json = cJSON_PrintUnformatted(jResult);
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
+        // free(json);
+        // cJSON_Delete(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p audio content length: %d\n", this, m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -170,7 +171,7 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        // print_request();
+        print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
@@ -248,22 +249,17 @@ private:
     char m_sessionId[256];
 };
 
-static std::vector<uint8_t> parse_byte_array(const char *args)
+static std::vector<uint8_t> parse_byte_array(std::string str)
 {
-    std::vector<uint8_t> bytes;
-    std::istringstream iss(args);
-    std::string token;
-    while (std::getline(iss, token, ' '))
-    {
-        bytes.push_back(static_cast<uint8_t>(std::stoi(token, nullptr, 16)));
-    }
-    return bytes;
+    return std::vector<uint8_t> vec(str.begin(), str.end());
 }
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
+    switch_frame_t frame;
+    uint32_t sample_rate = 8000;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -292,16 +288,18 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
                 std::string audio_content = response.audio_content();
-                const std::vector<uint8_t> bytes = parse_byte_array(audio_content.c_str());
-                switch_core_audio_resampler_t *resampler = nullptr;
-                switch_core_audio_resampler_create(&resampler, SWITCH_RESAMPLE_QUALITY_VOIP, 1, 16000, 1, 8000, nullptr, 0);
-                switch_core_audio_buffer_t *buffer = switch_core_audio_resampler_feed(resampler, &bytes[0], bytes.size());
-                switch_channel_t *channel = switch_core_session_get_channel(session);
-                switch_channel_set_flag_value(channel, CF_PLAY_ONLY, true);
-                switch_core_session_write_frame(session, buffer->writepos, nullptr);
-                // Clean up resources
-                switch_core_audio_buffer_destroy(&buffer);
-                switch_core_audio_resampler_destroy(&resampler);
+                const std::vector<uint8_t> bytes_to_play = parse_byte_array(audio_content);
+                uint32_t num_samples = sizeof(bytes_to_play) / sizeof(uint8_t);
+                memset(&frame, 0, sizeof(switch_frame_t));
+                frame.datalen = num_samples;
+                frame.samples = num_samples;
+                frame.channels = 1;
+                frame.rate = sample_rate;
+                frame.timestamp = num_samples * 1000 / sample_rate;
+                frame.data = bytes_to_play;
+                frame.codec = switch_core_session_get_read_codec(session);
+
+                switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
             }
             else
             {
@@ -406,7 +404,7 @@ extern "C"
 
         if (!cb->vad)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  no vad so connecting to nvidia immediately\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  no vad so connecting to callbot immediately\n");
             streamer->connect();
         }
 
