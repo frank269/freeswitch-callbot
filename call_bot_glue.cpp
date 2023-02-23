@@ -71,26 +71,29 @@ public:
 
     void print_response(SmartIVRResponse response)
     {
-        cJSON *jResult = cJSON_CreateObject();
-        cJSON *jType = cJSON_CreateNumber(response.type());
-        cJSON *jTextAsr = cJSON_CreateString(response.text_asr().c_str());
-        cJSON *jTextBot = cJSON_CreateString(response.text_bot().c_str());
-        cJSON *jForwardSipJson = cJSON_CreateString(response.forward_sip_json().c_str());
-        cJSON *jStatusCode = cJSON_CreateNumber(response.status().code());
-        cJSON *jStatusMessage = cJSON_CreateString(response.status().message().c_str());
-        cJSON *jAudioContent = cJSON_CreateString(response.audio_content().c_str());
-        cJSON_AddItemToObject(jResult, "type", jType);
-        cJSON_AddItemToObject(jResult, "text_asr", jTextAsr);
-        cJSON_AddItemToObject(jResult, "text_bot", jTextBot);
-        cJSON_AddItemToObject(jResult, "forward_sip_json", jForwardSipJson);
-        cJSON_AddItemToObject(jResult, "status_code", jStatusCode);
-        cJSON_AddItemToObject(jResult, "status_message", jStatusMessage);
-        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+        // cJSON *jResult = cJSON_CreateObject();
+        // cJSON *jType = cJSON_CreateNumber(response.type());
+        // cJSON *jTextAsr = cJSON_CreateString(response.text_asr().c_str());
+        // cJSON *jTextBot = cJSON_CreateString(response.text_bot().c_str());
+        // cJSON *jForwardSipJson = cJSON_CreateString(response.forward_sip_json().c_str());
+        // cJSON *jStatusCode = cJSON_CreateNumber(response.status().code());
+        // cJSON *jStatusMessage = cJSON_CreateString(response.status().message().c_str());
+        // cJSON *jAudioContent = cJSON_CreateString(response.audio_content().c_str());
+        // cJSON_AddItemToObject(jResult, "type", jType);
+        // cJSON_AddItemToObject(jResult, "text_asr", jTextAsr);
+        // cJSON_AddItemToObject(jResult, "text_bot", jTextBot);
+        // cJSON_AddItemToObject(jResult, "forward_sip_json", jForwardSipJson);
+        // cJSON_AddItemToObject(jResult, "status_code", jStatusCode);
+        // cJSON_AddItemToObject(jResult, "status_message", jStatusMessage);
+        // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
-        char *json = cJSON_PrintUnformatted(jResult);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p received message: %s\n", this, json);
-        free(json);
-        cJSON_Delete(jResult);
+        // char *json = cJSON_PrintUnformatted(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "type: %d\n", response.type());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_asr: %s\n", response.text_asr().c_str());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_bot: %s\n", response.text_bot().c_str());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "audio_content: %s\n", response.audio_content().c_str());
+        // free(json);
+        // cJSON_Delete(jResult);
     }
 
     void createInitMessage()
@@ -284,7 +287,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             else
             {
                 std::string audio_content = response.audio_content();
-                audio_frame->data = &audio_content[0];
+                audio_frame->data = audio_content.c_str();
                 audio_frame->datalen = audio_content.length();
                 audio_frame->buflen = audio_content.length();
                 switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
