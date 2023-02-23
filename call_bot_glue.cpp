@@ -248,11 +248,20 @@ private:
     char m_sessionId[256];
 };
 
+static std::vector<uint8_t> parse_byte_array(const char *args)
+{
+    std::vector<uint8_t> bytes;
+    std::istringstream iss(args);
+    std::string token;
+    while (std::getline(iss, token, ' '))
+    {
+        bytes.push_back(static_cast<uint8_t>(std::stoi(token, nullptr, 16)));
+    }
+    return bytes;
+}
+
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
-    switch_status_t status;
-    switch_frame_t *audio_frame;
-
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
 
@@ -279,18 +288,24 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         else
         {
-            status = switch_core_session_read_frame(session, &audio_frame, SWITCH_IO_FLAG_NONE, 0);
-            if (!SWITCH_READ_ACCEPTABLE(status))
+            if (response.type() == 2)
             {
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is not readable!\n", cb->sessionId);
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
+                std::string audio_content = response.audio_content();
+                const std::vector<uint8_t> bytes = parse_byte_array(audio_content.c_str());
+                switch_core_audio_resampler_t *resampler = nullptr;
+                switch_core_audio_resampler_create(&resampler, SWITCH_RESAMPLE_QUALITY_VOIP, 1, 16000, 1, 8000, nullptr, 0);
+                switch_core_audio_buffer_t *buffer = switch_core_audio_resampler_feed(resampler, &bytes[0], bytes.size());
+                switch_channel_t *channel = switch_core_session_get_channel(session);
+                switch_channel_set_flag_value(channel, CF_PLAY_ONLY, true);
+                switch_core_session_write_frame(session, buffer->writepos, nullptr);
+                // Clean up resources
+                switch_core_audio_buffer_destroy(&buffer);
+                switch_core_audio_resampler_destroy(&resampler);
             }
             else
             {
-                std::string audio_content = response.audio_content();
-                audio_frame->data = &audio_content[0];
-                audio_frame->datalen = audio_content.length();
-                audio_frame->buflen = audio_content.length();
-                switch_core_session_write_frame(session, audio_frame, SWITCH_IO_FLAG_NONE, 0);
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Mode: %d\n", response.type());
             }
         }
         switch_core_session_rwunlock(session);
