@@ -280,8 +280,12 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         write_frame.samples = audio_len / 2;
         write_frame.channels = 1;
         write_frame.codec = codec;
-        switch_channel_audio_sync(channel);
-        status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+        if (switch_channel_ready(channel))
+        {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "try to write to session\n");
+            switch_channel_audio_sync(channel);
+            status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+        }
     }
 
     // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
@@ -351,10 +355,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Mode: %d\n", response.type());
 
-                if (response.type() == 5)
-                {
-                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-                }
+                // if (response.type() == 5)
+                // {
+                //     switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                // }
             }
         }
         switch_core_session_rwunlock(session);
