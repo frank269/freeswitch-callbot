@@ -69,16 +69,16 @@ public:
         cJSON_Delete(jResult);
     }
 
-    void print_response(SmartIVRResponse *response)
+    void print_response(SmartIVRResponse response)
     {
         cJSON *jResult = cJSON_CreateObject();
-        cJSON *jType = cJSON_CreateNumber(response->type());
-        cJSON *jTextAsr = cJSON_CreateString(response->text_asr().c_str());
-        cJSON *jTextBot = cJSON_CreateString(response->text_bot().c_str());
-        cJSON *jForwardSipJson = cJSON_CreateString(response->forward_sip_json().c_str());
-        cJSON *jStatusCode = cJSON_CreateNumber(response->status().code());
-        cJSON *jStatusMessage = cJSON_CreateString(response->status().message().c_str());
-        cJSON *jAudioContent = cJSON_CreateString(response->audio_content().c_str());
+        cJSON *jType = cJSON_CreateNumber(response.type());
+        cJSON *jTextAsr = cJSON_CreateString(response.text_asr().c_str());
+        cJSON *jTextBot = cJSON_CreateString(response.text_bot().c_str());
+        cJSON *jForwardSipJson = cJSON_CreateString(response.forward_sip_json().c_str());
+        cJSON *jStatusCode = cJSON_CreateNumber(response.status().code());
+        cJSON *jStatusMessage = cJSON_CreateString(response.status().message().c_str());
+        cJSON *jAudioContent = cJSON_CreateString(response.audio_content().c_str());
         cJSON_AddItemToObject(jResult, "type", jType);
         cJSON_AddItemToObject(jResult, "text_asr", jTextAsr);
         cJSON_AddItemToObject(jResult, "text_bot", jTextBot);
@@ -332,7 +332,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
         //         cJSON_Delete(jResult);
         //     }
-        switch_core_session_rwunlock(session);
+        // switch_core_session_rwunlock(session);
     }
     return nullptr;
 }
