@@ -124,8 +124,9 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 	{
 		if (!isStarted)
 		{
-			if (switch_channel_pre_answer(channel) == SWITCH_STATUS_SUCCESS && switch_channel_media_ready(channel))
+			if (switch_channel_pre_answer(channel) == SWITCH_STATUS_SUCCESS && switch_channel_media_ready(channel) == SWITCH_STATUS_SUCCESS)
 			{
+				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
 				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 				isStarted = 1;
 			}
