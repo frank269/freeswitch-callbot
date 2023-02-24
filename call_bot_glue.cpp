@@ -348,6 +348,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     switch_channel_t *channel = switch_core_session_get_channel(session);
     const char *other_uuid = switch_channel_get_partner_uuid(channel);
 
+    const char *hold_music = switch_channel_get_variable(channel, "hold_music");
+    if (!hold_music)
+    {
+        hold_music = "local_stream://moh";
+    }
+
     SmartIVRResponseType beforeType = SmartIVRResponseType::CALL_END;
     // Read responses
     SmartIVRResponse response;
@@ -404,13 +410,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                const char *hold_music = switch_channel_get_variable(channel, "hold_music");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: start play hold music: %s\n", hold_music);
-                if (!hold_music)
-                {
-                    hold_music = "local_stream://moh";
-                }
-
                 if (switch_ivr_broadcast(sessionUUID, hold_music, SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call success!\n");
