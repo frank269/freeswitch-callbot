@@ -362,8 +362,17 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             SmartIVRResponseType responseType = response.type();
             if (beforeType == SmartIVRResponseType::CALL_WAIT)
             {
-                switch_ivr_unhold_uuid(sessionUUID);
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
+                if (switch_ivr_unhold_uuid(sessionUUID) == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
+                }
+                else
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call failed!\n");
+                }
             }
+
             switch (responseType)
             {
             case SmartIVRResponseType::RECOGNIZE:
@@ -380,18 +389,25 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 streamer->setIsPlaying(true);
                 if (play_audio(channel, session, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio success!\n");
                 }
                 else
                 {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio failed!\n");
                 }
                 streamer->setIsPlaying(false);
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                switch_ivr_hold_uuid(sessionUUID, "wait to bot response!", SWITCH_TRUE);
+                if (switch_ivr_hold_uuid(sessionUUID, "wait to bot response!", SWITCH_TRUE) == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call success!\n");
+                }
+                else
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call failed!\n");
+                }
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
