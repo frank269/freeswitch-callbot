@@ -308,7 +308,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     out.close();
-    status = switch_ivr_play_file(session, NULL, "test.wav", NULL);
+    status = switch_ivr_play_file(session, NULL, "/test.wav", NULL);
     // switch_frame_t write_frame = {0};
     // char *codec_name = "L16";
     // switch_codec_t *codec;
