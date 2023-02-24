@@ -195,7 +195,7 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        print_request();
+        // print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
@@ -317,6 +317,14 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     return status;
 }
 
+static switch_status_t transfer_call(switch_channel_t *channel, switch_core_session_t *session, std::string forward_sip_json)
+{
+    switch_status_t status = SWITCH_STATUS_FALSE;
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with sip_json: %s!\n", forward_sip_json.c_str());
+    switch_ivr_session_transfer(session, "10004", NULL, NULL);
+    return status;
+}
+
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
@@ -346,8 +354,18 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         else
         {
 
-            if (response.type() == 2)
+            switch (response.type())
             {
+            case RECOGNIZE:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
+                break;
+
+            case RESULT_ASR:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_ASR.\n");
+                break;
+
+            case RESULT_TTS:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
                 streamer->setIsPlaying(true);
                 if (play_audio(channel, session, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
@@ -359,15 +377,21 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
                 }
                 streamer->setIsPlaying(false);
-            }
-            else
-            {
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Mode: %d\n", response.type());
+                break;
 
-                if (response.type() == 5)
-                {
-                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-                }
+            case CALL_WAIT:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
+                break;
+            case CALL_FORWARD:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
+                transfer_call(channel, session, response.forward_sip_json()) break;
+            case CALL_END:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
+                switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                break;
+            default:
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got unknown type.\n");
+                break;
             }
         }
         switch_core_session_rwunlock(session);
