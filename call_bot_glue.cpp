@@ -625,8 +625,10 @@ extern "C"
             frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
             if (switch_mutex_trylock(cb->mutex) == SWITCH_STATUS_SUCCESS)
             {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "in frame before .... %d\n", switch_test_flag((&frame), SFF_CNG));
                 while (switch_core_media_bug_read(bug, &frame, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS && !switch_test_flag((&frame), SFF_CNG))
                 {
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "in frame .... %d\n", switch_test_flag((&frame), SFF_CNG));
                     if (frame.datalen)
                     {
                         if (cb->vad && !streamer->isConnected())
