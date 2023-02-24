@@ -9,14 +9,29 @@
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
-#include <cstring>
+#include <fstream>
 #include <iostream>
-#include "wavfile.h"
-
 #define CHUNKSIZE (320)
+typedef struct WAV_HEADER
+{
+    /* RIFF Chunk Descriptor */
+    uint8_t RIFF[4] = {'R', 'I', 'F', 'F'}; // RIFF Header Magic header
+    uint32_t ChunkSize;                     // RIFF Chunk Size
+    uint8_t WAVE[4] = {'W', 'A', 'V', 'E'}; // WAVE Header
+    /* "fmt" sub-chunk */
+    uint8_t fmt[4] = {'f', 'm', 't', ' '}; // FMT header
+    uint32_t Subchunk1Size = 16;           // Size of the fmt chunk
+    uint16_t AudioFormat = 1;              // Audio format 1=PCM,6=mulaw,7=alaw,     257=IBM
+                                           // Mu-Law, 258=IBM A-Law, 259=ADPCM
+    uint16_t NumOfChan = 1;                // Number of channels 1=Mono 2=Sterio
+    uint32_t SamplesPerSec = 8000;         // Sampling Frequency in Hz
+    uint32_t bytesPerSec = 8000 * 2;       // bytes per second
+    uint16_t blockAlign = 2;               // 2=16-bit mono, 4=16-bit stereo
+    uint16_t bitsPerSample = 16;           // Number of bits per sample
+    /* "data" sub-chunk */
+    uint8_t Subchunk2ID[4] = {'d', 'a', 't', 'a'}; // "data"  string
+    uint32_t Subchunk2Size;                        // Sampled data length
+} wav_hdr;
 
 using smartivrphonegateway::Config;
 using smartivrphonegateway::SmartIVRRequest;
@@ -257,42 +272,30 @@ private:
     char m_sessionId[256];
 };
 
-static std::vector<uint8_t> parse_byte_array(std::string str)
+static std::vector<uint16_t> parse_byte_array(std::string str)
 {
-    std::vector<uint8_t> vec(str.begin(), str.end());
+    // std::vector<uint8_t> vec(str.begin(), str.end());
+    std::vector<std::uint16_t> vec((str.size() + sizeof(std::uint16_t) - 1) / sizeof std::uint16_t);
+    std::copy_n(str.data(), str.size(), reinterpret_cast<char *>(&vec[0]));
     return vec;
 }
 
-static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, uint8_t *audio_data)
+static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, std::vector<uint16_t> audio_data)
 {
-    const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
+    // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_len);
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_data.size());
     // write byte to pcm file
-    const int sample_rate = 8000;
-    const int channels = 1;
-    const int sample_width = 2;
-
-    WAVFILE *wavfile = wavfile_open("/home/mtssh/test.wav", sample_rate, sample_width, channels);
-    if (wavfile == nullptr)
-    {
-        std::cerr << "Failed to open output file." << std::endl;
-        delete[] audio_data;
-        return EXIT_FAILURE;
-    }
-
-    // write the audio samples to the WAV file
-    for (int i = 0; i < audio_len / sample_width; i++)
-    {
-        wavfile_write_sample(wavfile, audio_data[i]);
-    }
-
-    // close the WAV file
-    wavfile_close(wavfile);
-
-    // free the PCM data buffer
+    auto fsize = audio_data.size() / 2.0;
+    wav_hdr wav;
+    wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
+    wav.Subchunk2Size = fsize + sizeof(wav_hdr) - 44;
+    std::ofstream out("/home/mtssh/test.wav", std::ios::binary);
+    out.write(reinterpret_cast<const char *>(&wav), sizeof(wav));
+    // int16_t d;
+    out.write(reinterpret_cast<char *>(&audio_data[0]), 8000 * sizeof(int16_t));
     delete[] audio_data;
-
+    out.close();
     status = switch_ivr_play_file(session, NULL, "/home/mtssh/test.wav", NULL);
     // switch_frame_t write_frame = {0};
     // char *codec_name = "L16";
@@ -377,7 +380,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 // uint8_t bytes_to_play[audio_content.length() + 1];
                 // std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
                 // bytes_to_play[audio_content.length()] = 0;
-                if (play_audio(channel, session, &parse_byte_array(response.audio_content())[0]) == SWITCH_STATUS_SUCCESS)
+                if (play_audio(channel, session, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
                 }
