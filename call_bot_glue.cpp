@@ -24,8 +24,8 @@ typedef struct WAV_HEADER
     uint16_t AudioFormat = 1;              // Audio format 1=PCM,6=mulaw,7=alaw,     257=IBM
                                            // Mu-Law, 258=IBM A-Law, 259=ADPCM
     uint16_t NumOfChan = 1;                // Number of channels 1=Mono 2=Sterio
-    uint32_t SamplesPerSec = 16000;        // Sampling Frequency in Hz
-    uint32_t bytesPerSec = 16000 * 2;      // bytes per second
+    uint32_t SamplesPerSec = 8000;         // Sampling Frequency in Hz
+    uint32_t bytesPerSec = 8000 * 2;       // bytes per second
     uint16_t blockAlign = 2;               // 2=16-bit mono, 4=16-bit stereo
     uint16_t bitsPerSample = 16;           // Number of bits per sample
     /* "data" sub-chunk */
@@ -300,7 +300,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     // int16_t d;
-    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t)))
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t) * 2))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
         return status;
