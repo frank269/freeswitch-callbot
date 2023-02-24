@@ -118,7 +118,7 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 {
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	switch_status_t status = SWITCH_STATUS_SUCCESS;
-	bool isStarted = false;
+	unsigned char isStarted = 0;
 
 	while (switch_channel_ready(channel))
 	{
@@ -127,7 +127,7 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 			if (switch_channel_pre_answer(channel) == SWITCH_STATUS_SUCCESS && switch_channel_media_ready(channel))
 			{
 				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
-				isStarted = true;
+				isStarted = 1;
 			}
 		}
 
