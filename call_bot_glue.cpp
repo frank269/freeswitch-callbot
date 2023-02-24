@@ -195,7 +195,7 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        // print_request();
+        print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
