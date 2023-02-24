@@ -122,14 +122,11 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 
 	while (switch_channel_ready(channel))
 	{
-		if (!isStarted)
+		if (!isStarted && switch_channel_test_flag(channel, CF_BRIDGED))
 		{
-			if (switch_channel_test_flag(channel, CF_BRIDGED))
-			{
-				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
-				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
-				isStarted = 1;
-			}
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
+			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+			isStarted = 1;
 		}
 
 		if (status != SWITCH_STATUS_SUCCESS && status != SWITCH_STATUS_BREAK)
