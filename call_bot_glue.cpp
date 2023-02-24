@@ -321,7 +321,12 @@ static switch_status_t transfer_call(switch_channel_t *channel, switch_core_sess
 {
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with sip_json: %s!\n", forward_sip_json.c_str());
-    switch_ivr_session_transfer(session, "10004", NULL, NULL);
+    const char *extension = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with %s\n", extension);
+    if (extension)
+    {
+        status = switch_ivr_session_transfer(session, extension, NULL, NULL);
+    }
     return status;
 }
 
@@ -329,6 +334,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
+    char *sessionUUID = cb->sessionId;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -336,7 +342,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
-
+    SmartIVRResponseType beforeType = SmartIVRResponseType::CALL_END;
     // Read responses
     SmartIVRResponse response;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
@@ -345,7 +351,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
-        switch_core_session_t *session = switch_core_session_locate(cb->sessionId);
+        switch_core_session_t *session = switch_core_session_locate(sessionUUID);
         switch_channel_t *channel = switch_core_session_get_channel(session);
         if (!session)
         {
@@ -353,8 +359,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         else
         {
-
-            switch (response.type())
+            SmartIVRResponseType responseType = response.type();
+            if (beforeType == SmartIVRResponseType::CALL_WAIT)
+            {
+                switch_ivr_unhold_uuid(sessionUUID);
+            }
+            switch (responseType)
             {
             case SmartIVRResponseType::RECOGNIZE:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
@@ -381,10 +391,18 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
+                switch_ivr_hold_uuid(sessionUUID, "wait to bot response!", SWITCH_TRUE);
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
-                transfer_call(channel, session, response.forward_sip_json());
+                if (transfer_call(channel, session, response.forward_sip_json()) == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: transfer success!\n");
+                }
+                else
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: transfer failed!\n");
+                }
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
@@ -394,6 +412,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got unknown type.\n");
                 break;
             }
+
+            beforeType = responseType;
         }
         switch_core_session_rwunlock(session);
     }

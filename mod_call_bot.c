@@ -30,46 +30,6 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 							const char *details)
 {
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
-	// switch_event_t *event;
-	// switch_channel_t *channel = switch_core_session_get_channel(session);
-
-	// if (0 == strcmp("vad_detected", json))
-	// {
-	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_VAD_DETECTED);
-	// 	switch_channel_event_set_data(channel, event);
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-	// }
-	// else if (0 == strcmp("start_of_speech", json))
-	// {
-	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_START_OF_SPEECH);
-	// 	switch_channel_event_set_data(channel, event);
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-	// }
-	// else if (0 == strcmp("end_of_transcription", json))
-	// {
-	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_TRANSCRIPTION_COMPLETE);
-	// 	switch_channel_event_set_data(channel, event);
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-	// }
-	// else if (0 == strcmp("error", json))
-	// {
-	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_ERROR);
-	// 	switch_channel_event_set_data(channel, event);
-	// 	switch_event_add_body(event, "%s", details);
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-	// }
-	// else
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "nvidia_transcribe", json);
-
-	// 	switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, TRANSCRIBE_EVENT_RESULTS);
-	// 	switch_channel_event_set_data(channel, event);
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "transcription-vendor", "nvidia");
-	// 	switch_event_add_body(event, "%s", json);
-	// }
-	// if (bugname)
-	// 	switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "media-bugname", bugname);
-	// switch_event_fire(&event);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
@@ -171,7 +131,7 @@ SWITCH_STANDARD_API(call_bot_function)
 	if (zstr(cmd) ||
 		(!strcasecmp(argv[1], "stop") && argc < 2) ||
 		(!strcasecmp(argv[1], "start") && argc < 3) ||
-		zstr(argv[0]))
+		zstr(argv[2]))
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error with command %s %s %s.\n", cmd, argv[0], argv[1]);
 		stream->write_function(stream, "-USAGE: %s\n", TRANSCRIBE_API_SYNTAX);
