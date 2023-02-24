@@ -321,7 +321,7 @@ static switch_status_t transfer_call(switch_channel_t *channel, switch_core_sess
 {
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with sip_json: %s!\n", forward_sip_json.c_str());
-    char *extension = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
+    const char *extension = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with %s\n", extension);
     if (!extension)
     {
@@ -366,15 +366,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (beforeType == SmartIVRResponseType::CALL_WAIT)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
-                if (switch_channel_stop_broadcast(channel) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_channel_wait_for_flag(b_channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
-                }
-                else
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call failed!\n");
-                }
+                switch_channel_stop_broadcast(channel);
+                // {
+                //     switch_channel_wait_for_flag(b_channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
+                // }
+                // else
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call failed!\n");
+                // }
             }
 
             switch (responseType)
@@ -404,7 +404,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                char *hold_music = switch_channel_get_variable(channel, "hold_music");
+                const char *hold_music = switch_channel_get_variable(channel, "hold_music");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: start play hold music: %s\n", hold_music);
                 if (!hold_music)
                 {
