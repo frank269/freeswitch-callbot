@@ -284,7 +284,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_data.size());
     // write byte to pcm file
-    auto fsize = audio_data.size() / 2.0;
+    auto fsize = audio_data.size(); // / 2.0;
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
@@ -300,7 +300,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     // int16_t d;
-    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t) * 2))
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
         return status;
