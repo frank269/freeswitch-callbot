@@ -356,15 +356,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             switch (response.type())
             {
-            case RECOGNIZE:
+            case SmartIVRResponseType::RECOGNIZE:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
                 break;
 
-            case RESULT_ASR:
+            case SmartIVRResponseType::RESULT_ASR:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_ASR.\n");
                 break;
 
-            case RESULT_TTS:
+            case SmartIVRResponseType::RESULT_TTS:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
                 streamer->setIsPlaying(true);
@@ -379,13 +379,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 streamer->setIsPlaying(false);
                 break;
 
-            case CALL_WAIT:
+            case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
                 break;
-            case CALL_FORWARD:
+            case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
                 transfer_call(channel, session, response.forward_sip_json()) break;
-            case CALL_END:
+            case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
                 switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
                 break;
