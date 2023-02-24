@@ -76,21 +76,21 @@ public:
 
     void print_request()
     {
-        cJSON *jResult = cJSON_CreateObject();
-        cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
-        cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
-        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
-        cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
-        cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
-        cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
-        cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
-        cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
+        // cJSON *jResult = cJSON_CreateObject();
+        // cJSON *jIsPlaying = cJSON_CreateBool(m_request.is_playing());
+        // cJSON *jKeyPress = cJSON_CreateString(m_request.key_press().c_str());
+        // cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        // cJSON *jAudioContent = cJSON_CreateString(m_request.audio_content().c_str());
+        // cJSON_AddItemToObject(jResult, "is_playing", jIsPlaying);
+        // cJSON_AddItemToObject(jResult, "key_press", jKeyPress);
+        // cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
+        // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
-        char *json = cJSON_PrintUnformatted(jResult);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
-        free(json);
-        cJSON_Delete(jResult);
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p audio content length: %d\n", this, m_request.audio_content().length());
+        // char *json = cJSON_PrintUnformatted(jResult);
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
+        // free(json);
+        // cJSON_Delete(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p audio isplaying: %d\n", this, m_request.is_playing());
     }
 
     void print_response(SmartIVRResponse response)
@@ -115,6 +115,7 @@ public:
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "type: %d\n", response.type());
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_asr: %s\n", response.text_asr().c_str());
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "text_bot: %s\n", response.text_bot().c_str());
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "forward_sip_json: %s\n", response.forward_sip_json().c_str());
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "audio_content length: %d\n", response.audio_content().length());
         // free(json);
         // cJSON_Delete(jResult);
@@ -256,6 +257,11 @@ public:
         return m_connected;
     }
 
+    void setIsPlaying(bool isplaying)
+    {
+        m_request.set_is_playing(isplaying);
+    }
+
 private:
     switch_core_session_t *m_session;
     grpc::ClientContext m_context;
@@ -280,11 +286,11 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 
 static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, std::vector<uint8_t> audio_data)
 {
-    // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
+    auto fsize = audio_data.size();
     switch_status_t status = SWITCH_STATUS_FALSE;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_data.size());
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", fsize);
+
     // write byte to pcm file
-    auto fsize = audio_data.size(); // / 2.0;
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
@@ -300,54 +306,13 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     // int16_t d;
-    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t)))
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
         return status;
     }
     out.close();
     status = switch_ivr_play_file(session, NULL, "/test.wav", NULL);
-    // switch_frame_t write_frame = {0};
-    // char *codec_name = "L16";
-    // switch_codec_t *codec;
-    // switch_memory_pool_t *pool = switch_core_session_get_pool(session);
-    // switch_codec_implementation_t read_impl;
-    // switch_core_session_get_read_impl(session, &read_impl);
-    // int interval = read_impl.microseconds_per_packet / 1000;
-
-    // if (switch_core_codec_init(codec,
-    //                            codec_name,
-    //                            NULL,
-    //                            NULL, read_impl.actual_samples_per_second, interval, read_impl.number_of_channels, SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
-    //                            pool) == SWITCH_STATUS_SUCCESS)
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Raw Codec Activated\n");
-    //     memset(write_frame.data, 0, audio_len);
-    //     write_frame.data = (void *)audio_data;
-    //     write_frame.datalen = audio_len;
-    //     write_frame.samples = audio_len / 2;
-    //     write_frame.channels = 1;
-    //     write_frame.codec = codec;
-    //     if (switch_channel_ready(channel))
-    //     {
-    //         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "try to write to session\n");
-    //         switch_channel_audio_sync(channel);
-    //         status = switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
-    //     }
-    // }
-
-    // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
-    // switch_status_t status;
-    // switch_frame_t frame;
-    // memset(&frame, 0, sizeof(frame));
-    // frame.data = (void *)audio_data;
-    // frame.codec = switch_core_session_get_write_codec(session);
-    // frame.datalen = audio_len;
-    // frame.buflen = audio_len;
-    // frame.samples = audio_len / 2;
-    // frame.channels = 1;
-    // frame.rate = 8000;
-    // status = switch_core_session_write_frame(session, &frame, SWITCH_IO_FLAG_NONE, 0);
 
     return status;
 }
@@ -356,8 +321,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
-    // switch_frame_t frame;
-    // uint32_t sample_rate = 8000;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -386,10 +349,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (response.type() == 2)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
-                // std::string audio_content = response.audio_content();
-                // uint8_t bytes_to_play[audio_content.length() + 1];
-                // std::copy(audio_content.begin(), audio_content.end(), bytes_to_play);
-                // bytes_to_play[audio_content.length()] = 0;
+                streamer->setIsPlaying(true);
                 if (play_audio(channel, session, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session success!\n");
@@ -398,6 +358,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session failed!\n");
                 }
+                streamer->setIsPlaying(false);
             }
             else
             {
