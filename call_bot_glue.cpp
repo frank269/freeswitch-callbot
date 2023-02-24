@@ -290,12 +290,25 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize + sizeof(wav_hdr) - 44;
-    std::ofstream out("/home/mtssh/test.wav", std::ios::binary);
-    out.write(reinterpret_cast<const char *>(&wav), sizeof(wav));
+    std::ofstream out("test.wav", std::ios::binary);
+    if (!out)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
+        return status;
+    }
+    if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav_hdr)))
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
+        return status;
+    }
     // int16_t d;
-    out.write(reinterpret_cast<char *>(&audio_data[0]), 8000 * sizeof(int16_t));
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), 8000 * sizeof(int16_t)))
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
+        return status;
+    }
     out.close();
-    status = switch_ivr_play_file(session, NULL, "/home/mtssh/test.wav", NULL);
+    status = switch_ivr_play_file(session, NULL, "test.wav", NULL);
     // switch_frame_t write_frame = {0};
     // char *codec_name = "L16";
     // switch_codec_t *codec;
