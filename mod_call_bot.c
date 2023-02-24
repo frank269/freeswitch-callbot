@@ -121,7 +121,7 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 
 	while (switch_channel_ready(channel))
 	{
-		status = start_capture(session, "", "", 1, MY_BUG_NAME);
+		status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 
 		if (status != SWITCH_STATUS_SUCCESS && status != SWITCH_STATUS_BREAK)
 		{
