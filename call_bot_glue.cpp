@@ -292,9 +292,9 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     const char *var_session_id = switch_channel_get_variable(channel, "SESSION_ID");
     if (!var_session_id)
     {
-        var_session_id = switch_core_session_get_uuid(session)
+        var_session_id = switch_core_session_get_uuid(session);
     }
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread %p write file: %s.wav\n", this, var_session_id);
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s.wav\n", var_session_id);
     std::string fileName(var_session_id);
     fileName += ".wav";
     // write byte to pcm file
@@ -405,14 +405,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: start play hold music: %s\n", hold_music);
-                const char *hold_music = switch_channel_get_variable(channel, "hold_music");
-                if (!hold_music)
-                {
-                    hold_music = "local_stream://moh";
-                }
                 switch_channel_set_flag(channel, CF_HOLD);
-                if (switch_ivr_broadcast(sessionUUID, hold_music, SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_broadcast(sessionUUID, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call success!\n");
                 }
