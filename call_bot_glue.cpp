@@ -384,7 +384,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
-                transfer_call(channel, session, response.forward_sip_json()) break;
+                transfer_call(channel, session, response.forward_sip_json());
+                break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
                 switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
