@@ -197,7 +197,8 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
-	switch_console_set_complete("add start_call_with_bot uuid start number");
+	switch_console_set_complete("add start_call_with_bot ::console::list_uuid start 1 2");
+	switch_console_set_complete("add start_call_with_bot ::console::list_uuid stop");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
 
 	/* indicate that the module should continue to be loaded */
