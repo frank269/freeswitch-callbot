@@ -115,26 +115,115 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	return SWITCH_STATUS_SUCCESS;
 }
 
-SWITCH_STANDARD_APP(call_bot_app_function)
+static switch_status_t switch_to_silence_session(switch_core_session_t *session, switch_input_args_t *args)
 {
+	switch_status_t status;
+	switch_frame_t *read_frame;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
-	switch_status_t status = SWITCH_STATUS_SUCCESS;
 	unsigned char isStarted = 0;
+
+	if (switch_channel_pre_answer(channel) != SWITCH_STATUS_SUCCESS)
+	{
+		return SWITCH_STATUS_FALSE;
+	}
+
+	arg_recursion_check_start(args);
+
+	if (switch_channel_var_true(channel, "echo_decode_video"))
+	{
+		switch_channel_set_flag_recursive(channel, CF_VIDEO_DECODED_READ);
+	}
+
+	if (switch_channel_var_true(channel, "echo_decode_audio"))
+	{
+		switch_core_session_raw_read(session);
+	}
+
+	switch_channel_set_flag(channel, CF_VIDEO_ECHO);
+	switch_channel_set_flag(channel, CF_TEXT_ECHO);
 
 	while (switch_channel_ready(channel))
 	{
-		if (!isStarted && switch_channel_test_flag(channel, CF_ANSWERED))
-		{
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
-			status = start_capture(session, SMBF_BOTH, "", 1, MY_BUG_NAME);
-			isStarted = 1;
-		}
-
-		if (status != SWITCH_STATUS_SUCCESS && status != SWITCH_STATUS_BREAK)
+		status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
+		if (!SWITCH_READ_ACCEPTABLE(status))
 		{
 			break;
 		}
+
+		switch_ivr_parse_all_events(session);
+
+		if (args && (args->input_callback || args->buf || args->buflen))
+		{
+			switch_dtmf_t dtmf = {0};
+
+			/*
+			   dtmf handler function you can hook up to be executed when a digit is dialed during playback
+			   if you return anything but SWITCH_STATUS_SUCCESS the playback will stop.
+			 */
+			if (switch_channel_has_dtmf(channel))
+			{
+				if (!args->input_callback && !args->buf)
+				{
+					break;
+				}
+				switch_channel_dequeue_dtmf(channel, &dtmf);
+				if (args->input_callback)
+				{
+					status = args->input_callback(session, (void *)&dtmf, SWITCH_INPUT_TYPE_DTMF, args->buf, args->buflen);
+				}
+				else
+				{
+					*((char *)args->buf) = dtmf.digit;
+					status = SWITCH_STATUS_BREAK;
+				}
+			}
+
+			if (args->input_callback)
+			{
+				switch_event_t *event = NULL;
+
+				if (switch_core_session_dequeue_event(session, &event, SWITCH_FALSE) == SWITCH_STATUS_SUCCESS)
+				{
+					status = args->input_callback(session, event, SWITCH_INPUT_TYPE_EVENT, args->buf, args->buflen);
+					switch_event_destroy(&event);
+				}
+			}
+
+			if (status != SWITCH_STATUS_SUCCESS)
+			{
+				break;
+			}
+		}
+		if (!isStarted)
+		{
+			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
+			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+			isStarted = 1;
+		}
+
+		if (switch_channel_test_flag(channel, CF_BREAK))
+		{
+			switch_channel_clear_flag(channel, CF_BREAK);
+			break;
+		}
 	}
+
+	if (switch_channel_var_true(channel, "echo_decode_video"))
+	{
+		switch_channel_clear_flag_recursive(channel, CF_VIDEO_DECODED_READ);
+	}
+
+	switch_core_session_video_reset(session);
+	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
+	switch_channel_clear_flag(channel, CF_TEXT_ECHO);
+
+	return SWITCH_STATUS_SUCCESS;
+}
+
+SWITCH_STANDARD_APP(call_bot_app_function)
+{
+	switch_to_silence_session(session, NULL);
 }
 
 #define TRANSCRIBE_API_SYNTAX "<uuid> start|stop [<cid_num>] lang"
