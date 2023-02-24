@@ -114,6 +114,22 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	return SWITCH_STATUS_SUCCESS;
 }
 
+SWITCH_STANDARD_APP(call_bot_app_function)
+{
+	switch_channel_t *channel = switch_core_session_get_channel(session);
+	switch_status_t status = SWITCH_STATUS_SUCCESS;
+
+	while (switch_channel_ready(channel))
+	{
+		status = start_capture(session, "", "", 1, MY_BUG_NAME);
+
+		if (status != SWITCH_STATUS_SUCCESS && status != SWITCH_STATUS_BREAK)
+		{
+			break;
+		}
+	}
+}
+
 #define TRANSCRIBE_API_SYNTAX "<uuid> start|stop [<cid_num>] lang"
 SWITCH_STANDARD_API(call_bot_function)
 {
@@ -169,6 +185,7 @@ done:
 SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 {
 	switch_api_interface_t *api_interface;
+	switch_application_interface_t *app_interface;
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API loading..\n");
 
@@ -198,6 +215,9 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
 	switch_console_set_complete("add start_call_with_bot ::console::list_uuid start 1 2");
+
+	SWITCH_ADD_APP(app_interface, "start_call_with_bot", "Start call with bot API", "Start call with bot API", call_bot_app_function, TRANSCRIBE_API_SYNTAX, SAF_NONE);
+
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
 
 	/* indicate that the module should continue to be loaded */
