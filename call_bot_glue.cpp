@@ -8,6 +8,14 @@
 #include "simple_buffer.h"
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include "wavfile.h"
+
 #define CHUNKSIZE (320)
 
 using smartivrphonegateway::Config;
@@ -260,7 +268,32 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_len);
-    status = switch_ivr_play_file(session, NULL, "/ivr.wav", NULL);
+    // write byte to pcm file
+    const int sample_rate = 8000;
+    const int channels = 1;
+    const int sample_width = 2;
+
+    WAVFILE *wavfile = wavfile_open("/home/mtssh/test.wav", sample_rate, sample_width, channels);
+    if (wavfile == nullptr)
+    {
+        std::cerr << "Failed to open output file." << std::endl;
+        delete[] audio_data;
+        return EXIT_FAILURE;
+    }
+
+    // write the audio samples to the WAV file
+    for (int i = 0; i < audio_len / sample_width; i++)
+    {
+        wavfile_write_sample(wavfile, audio_data[i]);
+    }
+
+    // close the WAV file
+    wavfile_close(wavfile);
+
+    // free the PCM data buffer
+    delete[] audio_data;
+
+    status = switch_ivr_play_file(session, NULL, "/home/mtssh/test.wav", NULL);
     // switch_frame_t write_frame = {0};
     // char *codec_name = "L16";
     // switch_codec_t *codec;
