@@ -342,6 +342,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
+
+    switch_core_session_t *session = switch_core_session_locate(sessionUUID);
+    switch_channel_t *channel = switch_core_session_get_channel(session);
+    const char *other_uuid = switch_channel_get_partner_uuid(channel);
+
     SmartIVRResponseType beforeType = SmartIVRResponseType::CALL_END;
     // Read responses
     SmartIVRResponse response;
@@ -350,9 +355,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     { // Returns false when no more to read.
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
-
-        switch_core_session_t *session = switch_core_session_locate(sessionUUID);
-        switch_channel_t *channel = switch_core_session_get_channel(session);
         if (!session)
         {
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
@@ -363,7 +365,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (beforeType == SmartIVRResponseType::CALL_WAIT)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
-                if (switch_ivr_unhold(session) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_hold_uuid(other_uuid) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
                 }
@@ -400,7 +402,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                if (switch_ivr_hold(session, NULL, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS)
+
+                if (switch_ivr_hold_uuid(other_uuid, NULL, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call success!\n");
                 }
