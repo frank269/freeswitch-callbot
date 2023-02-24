@@ -260,6 +260,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", audio_len);
+    status = switch_ivr_play_file(session, NULL, "/ivr.wav", NULL);
     // switch_frame_t write_frame = {0};
     // char *codec_name = "L16";
     // switch_codec_t *codec;
