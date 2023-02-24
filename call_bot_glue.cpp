@@ -302,7 +302,7 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     // int16_t d;
-    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), 8000 * sizeof(int16_t)))
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
         return status;
