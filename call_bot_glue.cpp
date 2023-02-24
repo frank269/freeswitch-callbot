@@ -275,7 +275,7 @@ private:
 static std::vector<uint16_t> parse_byte_array(std::string str)
 {
     // std::vector<uint8_t> vec(str.begin(), str.end());
-    std::vector<std::uint16_t> vec((str.size() + sizeof(std::uint16_t) - 1) / sizeof std::uint16_t);
+    std::vector<std::uint16_t> vec((str.size() + sizeof(std::uint16_t) - 1) / sizeof(std::uint16_t));
     std::copy_n(str.data(), str.size(), reinterpret_cast<char *>(&vec[0]));
     return vec;
 }
@@ -294,7 +294,6 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     out.write(reinterpret_cast<const char *>(&wav), sizeof(wav));
     // int16_t d;
     out.write(reinterpret_cast<char *>(&audio_data[0]), 8000 * sizeof(int16_t));
-    delete[] audio_data;
     out.close();
     status = switch_ivr_play_file(session, NULL, "/home/mtssh/test.wav", NULL);
     // switch_frame_t write_frame = {0};
