@@ -363,7 +363,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (beforeType == SmartIVRResponseType::CALL_WAIT)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
-                if (switch_ivr_unhold_uuid(sessionUUID) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_unhold(session) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
                 }
@@ -400,7 +400,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-                if (switch_ivr_hold_uuid(sessionUUID, "wait to bot response!", SWITCH_TRUE) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_hold(session, NULL, SWITCH_TRUE) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: hold call success!\n");
                 }
