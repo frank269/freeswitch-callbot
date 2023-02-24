@@ -275,7 +275,7 @@ private:
 static std::vector<uint16_t> parse_byte_array(std::string str)
 {
     // std::vector<uint8_t> vec(str.begin(), str.end());
-    std::vector<std::uint16_t> vec((str.size() + sizeof(std::uint16_t) - 1) / sizeof(std::uint16_t));
+    std::vector<std::uint16_t> vec(str.size());
     std::copy_n(str.data(), str.size(), reinterpret_cast<char *>(&vec[0]));
     return vec;
 }
