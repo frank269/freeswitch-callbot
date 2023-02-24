@@ -18,6 +18,23 @@
         "xmemory": "cpp",
         "xstring": "cpp",
         "xtr1common": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "forward_list": "cpp",
+        "fstream": "cpp",
+        "iterator": "cpp",
+        "list": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp",
+        "streambuf": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp",
+        "xtree": "cpp",
+        "xlocinfo": "cpp"
     }
 }

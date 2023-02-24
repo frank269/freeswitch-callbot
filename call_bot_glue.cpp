@@ -63,9 +63,9 @@ public:
                                                                                       m_audioBuffer(CHUNKSIZE, 15)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
-        const char *var;
-        char sessionId[256];
-        switch_channel_t *channel = switch_core_session_get_channel(session);
+        // const char *var;
+        // char sessionId[256];
+        // switch_channel_t *channel = switch_core_session_get_channel(session);
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
     }
 
@@ -289,12 +289,19 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     auto fsize = audio_data.size();
     switch_status_t status = SWITCH_STATUS_FALSE;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", fsize);
-
+    const char *var_session_id = switch_channel_get_variable(channel, "SESSION_ID");
+    if (!var_session_id)
+    {
+        var_session_id = switch_core_session_get_uuid(session)
+    }
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread %p write file: %s.wav\n", this, var_session_id);
+    std::string fileName(var_session_id);
+    fileName += ".wav";
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
-    std::ofstream out("test.wav", std::ios::binary);
+    std::ofstream out(fileName.c_str(), std::ios::binary);
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
@@ -312,7 +319,8 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
         return status;
     }
     out.close();
-    status = switch_ivr_play_file(session, NULL, "/test.wav", NULL);
+    fileName = "/" + fileName;
+    status = switch_ivr_play_file(session, NULL, fileName.c_str(), NULL);
 
     return status;
 }
