@@ -272,15 +272,13 @@ private:
     char m_sessionId[256];
 };
 
-static std::vector<uint16_t> parse_byte_array(std::string str)
+static std::vector<uint8_t> parse_byte_array(std::string str)
 {
-    // std::vector<uint8_t> vec(str.begin(), str.end());
-    std::vector<std::uint16_t> vec(str.size());
-    std::copy_n(str.data(), str.size(), reinterpret_cast<char *>(&vec[0]));
+    std::vector<uint8_t> vec(str.begin(), str.end());
     return vec;
 }
 
-static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, std::vector<uint16_t> audio_data)
+static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, std::vector<uint8_t> audio_data)
 {
     // const uint32_t audio_len = sizeof(audio_data) / sizeof(uint8_t);
     switch_status_t status = SWITCH_STATUS_FALSE;
@@ -289,20 +287,20 @@ static switch_status_t play_audio(switch_channel_t *channel, switch_core_session
     auto fsize = audio_data.size() / 2.0;
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
-    wav.Subchunk2Size = fsize + sizeof(wav_hdr) - 44;
+    wav.Subchunk2Size = fsize;
     std::ofstream out("test.wav", std::ios::binary);
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
         return status;
     }
-    if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav_hdr)))
+    if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
         return status;
     }
     // int16_t d;
-    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(int16_t)))
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), audio_data.size() * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
         return status;
