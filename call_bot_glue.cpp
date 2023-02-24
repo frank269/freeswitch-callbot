@@ -365,7 +365,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (beforeType == SmartIVRResponseType::CALL_WAIT)
             {
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
-                if (switch_ivr_hold_uuid(other_uuid) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_unhold_uuid(other_uuid) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
                 }
