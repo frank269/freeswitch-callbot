@@ -52,8 +52,8 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 
 	case SWITCH_ABC_TYPE_READ:
 	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_READ.\n");
 		return call_bot_frame(bug, user_data);
-		return SWITCH_TRUE;
 	}
 	break;
 
@@ -106,6 +106,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error add bug.\n");
 		return status;
 	}
 
@@ -125,7 +126,7 @@ SWITCH_STANDARD_APP(call_bot_app_function)
 		if (!isStarted && switch_channel_test_flag(channel, CF_ANSWERED))
 		{
 			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
-			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+			status = start_capture(session, SMBF_BOTH, "", 1, MY_BUG_NAME);
 			isStarted = 1;
 		}
 
