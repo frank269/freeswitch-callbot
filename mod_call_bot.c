@@ -147,7 +147,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
 		if (!SWITCH_READ_ACCEPTABLE(status))
 		{
-			break;
+			continue;
 		}
 
 		switch_ivr_parse_all_events(session);
@@ -164,7 +164,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			{
 				if (!args->input_callback && !args->buf)
 				{
-					break;
+					continue;
 				}
 				switch_channel_dequeue_dtmf(channel, &dtmf);
 				if (args->input_callback)
@@ -191,7 +191,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 			if (status != SWITCH_STATUS_SUCCESS)
 			{
-				break;
+				continue;
 			}
 		}
 		if (!isStarted)
@@ -205,7 +205,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		if (switch_channel_test_flag(channel, CF_BREAK))
 		{
 			switch_channel_clear_flag(channel, CF_BREAK);
-			break;
+			continue;
 		}
 	}
 
