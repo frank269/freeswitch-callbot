@@ -397,9 +397,12 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
 
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     SmartIVRResponse response;
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
     while (streamer->isConnected())
     {
-        if (streamer->getResponseQueueSize() > 1)
+        unsigned int queueSize = streamer->getResponseQueueSize();
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread queue size:%d \n", queueSize);
+        if (queueSize > 1)
         {
             response = streamer->getResponseFromQueue();
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread got response .... \n");
@@ -517,7 +520,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         streamer->print_response(response);
 
         // push response to ProcessResponseQueue
-        streamer->addResponseToQueue(&response);
+        if (streamer->addResponseToQueue(&response) == SWITCH_STATUS_SUCCESS)
+        {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer success!\n");
+        }
+        else
+        {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
+        }
     }
     return nullptr;
 }
