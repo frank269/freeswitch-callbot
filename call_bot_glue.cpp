@@ -636,14 +636,14 @@ extern "C"
         // create the read thread
         switch_threadattr_t *thd_attr = NULL;
         switch_threadattr_create(&thd_attr, pool);
-        switch_threadattr_stacksize_set(thd_attr, SWITCH_THREAD_STACKSIZE);
+        switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
         switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, pool);
 
         // create response process thread
         switch_memory_pool_t *pool1 = switch_core_session_get_pool(session);
         switch_threadattr_t *thd_process_attr = NULL;
         switch_threadattr_create(&thd_process_attr, pool1);
-        switch_threadattr_stacksize_set(thd_process_attr, SWITCH_THREAD_STACKSIZE);
+        switch_threadattr_stacksize_set(thd_process_attr, SWITCH_MAX_STACKS);
         switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool1);
 
         *ppUserData = cb;
