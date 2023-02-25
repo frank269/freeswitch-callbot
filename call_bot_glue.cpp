@@ -641,10 +641,10 @@ extern "C"
         switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, pool);
 
         // create response process thread
-        switch_threadattr_t *thd_process_attr = NULL;
-        switch_threadattr_create(&thd_process_attr, pool);
-        switch_threadattr_stacksize_set(thd_process_attr, SWITCH_THREAD_STACKSIZE);
-        switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool);
+        // switch_threadattr_t *thd_process_attr = NULL;
+        // switch_threadattr_create(&thd_process_attr, pool);
+        // switch_threadattr_stacksize_set(thd_process_attr, SWITCH_THREAD_STACKSIZE);
+        // switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool);
 
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
