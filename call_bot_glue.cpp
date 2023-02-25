@@ -637,15 +637,15 @@ extern "C"
             streamer->connect();
         }
 
-        switch_threadattr_t *thd_attr = NULL;
-        switch_threadattr_create(&thd_attr, cb->pool);
-        switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
+        // switch_threadattr_t *thd_attr = NULL;
+        // switch_threadattr_create(&thd_attr, cb->pool);
+        // switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
 
         // create the read thread
-        switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, cb->pool);
+        switch_thread_create(&cb->thread, NULL, grpc_read_thread, cb, cb->pool);
 
         // create response process thread
-        switch_thread_create(&cb->process_thread, thd_attr, process_response_thread, cb, cb->pool);
+        switch_thread_create(&cb->process_thread, NULL, process_response_thread, cb, cb->pool);
 
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
