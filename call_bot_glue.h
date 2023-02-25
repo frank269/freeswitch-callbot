@@ -1,6 +1,5 @@
 #ifndef __CALL_BOT_GLUE_H__
 #define __CALL_BOT_GLUE_H__
-#define MAX_RESPONSE_QUEUE (10)
 
 switch_status_t call_bot_init();
 switch_status_t call_bot_cleanup();

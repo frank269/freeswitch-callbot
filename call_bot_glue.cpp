@@ -266,14 +266,14 @@ public:
         return m_connected;
     }
 
-    bool playAudio(std::string audio_content, switch_core_session_t *session)
+    void playAudio(std::string audio_content, switch_core_session_t *session)
     {
         // create audio thread
-        switch_threadattr_t *thd_attr = NULL;
-        switch_memory_pool_t *pool = switch_core_session_get_pool(session);
-        switch_threadattr_create(&thd_attr, pool);
-        switch_threadattr_stacksize_set(thd_attr, SWITCH_THREAD_STACKSIZE);
-        switch_thread_create(&m_audio_thread, thd_attr, audio_play_thread, cb, pool);
+        // switch_threadattr_t *thd_attr = NULL;
+        // switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+        // switch_threadattr_create(&thd_attr, pool);
+        // switch_threadattr_stacksize_set(thd_attr, SWITCH_THREAD_STACKSIZE);
+        // switch_thread_create(&m_audio_thread, thd_attr, audio_play_thread, cb, pool);
     }
 
     bool cancelAudio()
@@ -300,10 +300,10 @@ public:
 
     SmartIVRResponse getResponseFromQueue()
     {
-        void *response;
+        SmartIVRResponse *response;
         if (switch_queue_pop(m_response_queue, &response) == SWITCH_STATUS_SUCCESS)
         {
-            return (SmartIVRResponse *)response;
+            return response;
         }
         return NULL;
     }
@@ -519,7 +519,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         streamer->print_response(response);
 
         // push response to ProcessResponseQueue
-        streamer->addResponseToQueue(response);
+        streamer->addResponseToQueue(&response);
     }
     return nullptr;
 }
@@ -609,7 +609,7 @@ extern "C"
             streamer = new GStreamer(session, channels, lang, interim);
             // create response queue
             switch_queue_t *response_queue;
-            switch_queue_create(&response_queue, MAX_RESPONSE_QUEUE, pool);
+            switch_queue_create(&response_queue, 5, pool);
             streamer->setResponseQueue(response_queue);
             cb->streamer = streamer;
         }
