@@ -401,9 +401,9 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
     while (streamer->isConnected())
     {
         unsigned int queueSize = streamer->getResponseQueueSize();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread queue size:%d \n", queueSize);
         if (queueSize > 1)
         {
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread queue size:%d \n", queueSize);
             response = streamer->getResponseFromQueue();
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread got response .... \n");
             streamer->print_response(response);
