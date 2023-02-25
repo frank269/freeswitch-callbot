@@ -395,7 +395,7 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
         return nullptr;
     }
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
-
+    return nullptr;
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     SmartIVRResponse response;
     while (streamer->isConnected())
@@ -645,7 +645,7 @@ extern "C"
         switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, cb->pool);
 
         // create response process thread
-        // switch_thread_create(&cb->process_thread, thd_attr, process_response_thread, cb, cb->pool);
+        switch_thread_create(&cb->process_thread, thd_attr, process_response_thread, cb, cb->pool);
 
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
