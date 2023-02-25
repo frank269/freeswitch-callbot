@@ -384,6 +384,7 @@ static switch_status_t transfer_call(switch_channel_t *channel, switch_core_sess
 
 static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread, void *obj)
 {
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
     // process response
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -397,7 +398,6 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
 
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     SmartIVRResponse response;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
     while (streamer->isConnected())
     {
         unsigned int queueSize = streamer->getResponseQueueSize();
@@ -500,6 +500,7 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
@@ -513,21 +514,20 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
     // Read responses
     SmartIVRResponse response;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     while (streamer->read(&response))
     { // Returns false when no more to read.
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
         // push response to ProcessResponseQueue
-        if (streamer->addResponseToQueue(&response) == SWITCH_STATUS_SUCCESS)
-        {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer success!\n");
-        }
-        else
-        {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
-        }
+        // if (streamer->addResponseToQueue(&response) == SWITCH_STATUS_SUCCESS)
+        // {
+        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer success!\n");
+        // }
+        // else
+        // {
+        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
+        // }
     }
     return nullptr;
 }
@@ -647,6 +647,7 @@ extern "C"
         switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool);
 
         *ppUserData = cb;
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
         return SWITCH_STATUS_SUCCESS;
     }
 
