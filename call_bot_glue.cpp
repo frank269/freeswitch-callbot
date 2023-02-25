@@ -298,11 +298,9 @@ public:
         return switch_queue_push(m_response_queue, response);
     }
 
-    SmartIVRResponse *getResponseFromQueue()
+    void getResponseFromQueue(SmartIVRResponse *response)
     {
-        SmartIVRResponse *response;
         switch_queue_pop(m_response_queue, &response);
-        return response;
     }
 
 private:
@@ -396,11 +394,12 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
     }
 
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
+    SmartIVRResponse response;
     while (streamer->isConnected())
     {
         if (streamer->getResponseQueueSize() > 1)
         {
-            SmartIVRResponse response = streamer->getResponseFromQueue();
+            streamer->getResponseFromQueue(&response);
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread got response .... \n");
             streamer->print_response(response);
 
