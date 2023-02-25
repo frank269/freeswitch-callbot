@@ -298,9 +298,11 @@ public:
         return switch_queue_push(m_response_queue, response);
     }
 
-    void getResponseFromQueue(SmartIVRResponse *response)
+    SmartIVRResponse getResponseFromQueue()
     {
-        switch_queue_pop(m_response_queue, &response);
+        void *pop;
+        switch_queue_pop(m_response_queue, &pop);
+        return *(SmartIVRResponse *)pop;
     }
 
 private:
@@ -399,7 +401,7 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
     {
         if (streamer->getResponseQueueSize() > 1)
         {
-            streamer->getResponseFromQueue(&response);
+            response = streamer->getResponseFromQueue();
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread got response .... \n");
             streamer->print_response(response);
 
@@ -488,10 +490,10 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
     return nullptr;
 }
 
-static void *SWITCH_THREAD_FUNC audio_player_thread(switch_thread_t *thread, void *obj)
-{
-    // play audio
-}
+// static void *SWITCH_THREAD_FUNC audio_player_thread(switch_thread_t *thread, void *obj)
+// {
+//     // play audio
+// }
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
