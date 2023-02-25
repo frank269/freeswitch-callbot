@@ -384,7 +384,6 @@ static switch_status_t transfer_call(switch_channel_t *channel, switch_core_sess
 
 static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread, void *obj)
 {
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
     // process response
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
@@ -395,6 +394,7 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "process_response_thread running .... \n");
 
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     SmartIVRResponse response;
@@ -500,7 +500,6 @@ static void *SWITCH_THREAD_FUNC process_response_thread(switch_thread_t *thread,
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
@@ -511,7 +510,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
-
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     // Read responses
     SmartIVRResponse response;
     while (streamer->read(&response))
@@ -641,10 +640,11 @@ extern "C"
         switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, pool);
 
         // create response process thread
-        // switch_threadattr_t *thd_process_attr = NULL;
-        // switch_threadattr_create(&thd_process_attr, pool);
-        // switch_threadattr_stacksize_set(thd_process_attr, SWITCH_THREAD_STACKSIZE);
-        // switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool);
+        switch_memory_pool_t *pool1 = switch_core_session_get_pool(session);
+        switch_threadattr_t *thd_process_attr = NULL;
+        switch_threadattr_create(&thd_process_attr, pool1);
+        switch_threadattr_stacksize_set(thd_process_attr, SWITCH_THREAD_STACKSIZE);
+        switch_thread_create(&cb->process_thread, thd_process_attr, process_response_thread, cb, pool1);
 
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
