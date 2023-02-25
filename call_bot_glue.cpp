@@ -298,14 +298,11 @@ public:
         return switch_queue_push(m_response_queue, response);
     }
 
-    SmartIVRResponse getResponseFromQueue()
+    SmartIVRResponse *getResponseFromQueue()
     {
         SmartIVRResponse *response;
-        if (switch_queue_pop(m_response_queue, &response) == SWITCH_STATUS_SUCCESS)
-        {
-            return response;
-        }
-        return NULL;
+        switch_queue_pop(m_response_queue, &response);
+        return response;
     }
 
 private:
