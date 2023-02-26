@@ -38,10 +38,10 @@ static void event_handler(switch_event_t *event)
 	const char *sessionId = switch_event_get_header(event, "sessionId");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with type: %s\n", type);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with session_id %s\n", sessionId);
-	switch_core_session_t *session = switch_core_session_locate(sessionUUID);
+	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_handler: session %s is gone!\n", sessionUUID);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_handler: session %s is gone!\n", sessionId);
 		return;
 	}
 	switch_channel_t *channel = switch_core_session_get_channel(session);
