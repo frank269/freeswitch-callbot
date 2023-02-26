@@ -428,12 +428,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 std::string fileName(sessionUUID);
                 fileName += ".wav";
                 save_audio_content_to_wav(fileName, parse_byte_array(response.audio_content()));
-                std::string filePath = "/" + fileName;
+                fileName = "/" + fileName;
                 if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_RESULT_TTS);
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, filePath.c_str());
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, fileName.c_str());
                     switch_event_fire(&event);
                 }
                 // streamer->setIsPlaying(true);
