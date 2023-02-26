@@ -315,7 +315,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
-        return;
+        return status;
     }
     out.close();
 
