@@ -326,8 +326,10 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 //     return status;
 // }
 
-static const char *save_audio_content_to_wav(char *session_id, std::vector<uint8_t> audio_data)
+static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data)
 {
+    switch_event_t *event;
+    switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
@@ -340,24 +342,32 @@ static const char *save_audio_content_to_wav(char *session_id, std::vector<uint8
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
-        return fileName.c_str();
+        return status;
     }
     if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
-        return fileName.c_str();
+        return status;
     }
     // int16_t d;
     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
-        return fileName.c_str();
+        return status;
     }
     out.close();
 
     fileName = "/" + fileName;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s\n", fileName.c_str());
-    return fileName.c_str();
+    status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE);
+    if (status == SWITCH_STATUS_SUCCESS)
+    {
+        switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_RESULT_TTS);
+        switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, session_id);
+        switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, fileName);
+        switch_event_fire(&event);
+    }
+    return status;
 }
 
 static switch_status_t transfer_call(switch_channel_t *channel, switch_core_session_t *session, std::string forward_sip_json)
@@ -431,14 +441,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
 
-                if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
+                if (play_audio(sessionUUID, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_RESULT_TTS);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    filePath = save_audio_content_to_wav(sessionUUID, parse_byte_array(response.audio_content()));
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file: %s\n", filePath);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, filePath);
-                    switch_event_fire(&event);
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
+                }
+                else
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: cannot play file in event handler!\n");
                 }
                 break;
 
