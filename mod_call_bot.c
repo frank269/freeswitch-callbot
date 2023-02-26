@@ -45,23 +45,23 @@ static void event_process_response_handler(switch_event_t *event)
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with session_id %s\n", sessionId);
-
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
-	// return;
-	if (strcmp(actionType, ACTION_RECOGNIZE))
+	if (strcmp(actionType, ACTION_RECOGNIZE) == 0)
 	{
 	}
-	else if (strcmp(actionType, ACTION_RESULT_ASR))
+	else if (strcmp(actionType, ACTION_RESULT_ASR) == 0)
 	{
 	}
-	else if (strcmp(actionType, ACTION_RESULT_TTS))
+	else if (strcmp(actionType, ACTION_RESULT_TTS) == 0)
 	{
+
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play file %s\n", switch_event_get_header(event, HEADER_AUDIO_PATH));
 		switch_channel_set_variable(channel, "IS_PLAYING", "true");
 		switch_ivr_play_file(session, NULL, switch_event_get_header(event, HEADER_AUDIO_PATH), NULL);
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play done file %s\n", switch_event_get_header(event, HEADER_AUDIO_PATH));
 	}
-	else if (strcmp(actionType, ACTION_CALL_WAIT))
+	else if (strcmp(actionType, ACTION_CALL_WAIT) == 0)
 	{
 		if (switch_ivr_broadcast(sessionId, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
 		{
@@ -73,7 +73,7 @@ static void event_process_response_handler(switch_event_t *event)
 			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: hold call failed!\n");
 		}
 	}
-	else if (strcmp(actionType, ACTION_CALL_FORWARD))
+	else if (strcmp(actionType, ACTION_CALL_FORWARD) == 0)
 	{
 		if (switch_ivr_session_transfer(session, switch_event_get_header(event, HEADER_TRANSFER_SIP), NULL, NULL) == SWITCH_STATUS_SUCCESS)
 		{
@@ -85,7 +85,7 @@ static void event_process_response_handler(switch_event_t *event)
 			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: transfer call failed!\n");
 		}
 	}
-	else if (strcmp(actionType, ACTION_CALL_END))
+	else if (strcmp(actionType, ACTION_CALL_END) == 0)
 	{
 		switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
 	}
