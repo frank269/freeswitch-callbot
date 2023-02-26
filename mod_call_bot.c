@@ -99,7 +99,7 @@ static void event_process_response_handler(switch_event_t *event)
 static void event_stop_audio_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
-	char *is_playing;
+	const char *is_playing;
 	const char *sessionId = switch_event_get_header(event, "sessionId");
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
