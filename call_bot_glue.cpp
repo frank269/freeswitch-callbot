@@ -296,7 +296,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", fsize);
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write frame to session %d!\n", fsize);
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
@@ -380,12 +380,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             SmartIVRResponseType responseType = response.type();
             if (previousType == SmartIVRResponseType::CALL_WAIT)
             {
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
                 switch_channel_stop_broadcast(channel);
                 switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
                 if (switch_ivr_play_file(session, NULL, "silence_stream://100", NULL) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: unhold call success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: unhold call success!\n");
                 }
             }
 
@@ -401,14 +401,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::RESULT_TTS:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
                 if (play_audio(sessionUUID, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
                 }
                 else
                 {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: cannot play file in event handler!\n");
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in event handler!\n");
                 }
                 break;
 
