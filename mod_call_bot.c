@@ -34,17 +34,18 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 
 static void event_handler(switch_event_t *event)
 {
+	switch_channel_t *channel;
 	const char *type = switch_event_get_header(event, "type");
 	const char *sessionId = switch_event_get_header(event, "sessionId");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with type: %s\n", type);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with session_id %s\n", sessionId);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_handler: session %s is gone!\n", sessionId);
 		return;
 	}
-	switch_channel_t *channel = switch_core_session_get_channel(session);
+	channel = switch_core_session_get_channel(session);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with type: %s\n", type);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with session_id %s\n", sessionId);
 	switch_ivr_play_file(session, NULL, switch_channel_get_hold_music(channel), NULL);
 	switch_core_session_rwunlock(session);
 }
