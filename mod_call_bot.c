@@ -47,7 +47,7 @@ static void event_process_response_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
+	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
 	if (strcmp(actionType, ACTION_RECOGNIZE) == 0)
 	{
 	}
@@ -57,11 +57,11 @@ static void event_process_response_handler(switch_event_t *event)
 	else if (strcmp(actionType, ACTION_RESULT_TTS) == 0)
 	{
 
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play file %s\n", filePath);
+		// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play file %s\n", filePath);
 		switch_channel_set_variable(channel, "IS_PLAYING", "true");
 		switch_ivr_play_file(session, NULL, filePath, NULL);
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play done file %s\n", filePath);
+		// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play done file %s\n", filePath);
 	}
 	else if (strcmp(actionType, ACTION_CALL_WAIT) == 0)
 	{
@@ -352,16 +352,6 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API loading..\n");
 
 	/* create/register custom event message types */
-	// if (switch_event_reserve_subclass(EVENT_VAD_CHANGE) != SWITCH_STATUS_SUCCESS)
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_CHANGE for mod_call_bot API.\n");
-	// 	return SWITCH_STATUS_TERM;
-	// }
-	// if (switch_event_reserve_subclass(EVENT_VAD_SUMMARY) != SWITCH_STATUS_SUCCESS)
-	// {
-	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_SUMMARY for mod_call_bot API.\n");
-	// 	return SWITCH_STATUS_TERM;
-	// }
 
 	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE, event_process_response_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
@@ -412,9 +402,6 @@ SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 	switch_event_unbind_callback(event_process_response_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
 	switch_event_unbind_callback(event_playback_stoped_handler);
-
 	call_bot_cleanup();
-	// switch_event_free_subclass(EVENT_VAD_CHANGE);
-	// switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
 }
