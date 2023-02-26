@@ -60,8 +60,6 @@ static void event_process_response_handler(switch_event_t *event)
 		switch_channel_set_variable(channel, "IS_PLAYING", "true");
 		switch_ivr_play_file(session, NULL, filePath, NULL);
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
-		// remove file after play
-		remove(filePath);
 	}
 	else if (strcmp(actionType, ACTION_CALL_WAIT) == 0)
 	{
@@ -112,7 +110,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	channel = switch_core_session_get_channel(session);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
 	is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
-	if (is_playing && strcmp(is_playing, "true"))
+	if (is_playing && strcmp(is_playing, "true") == 0)
 	{
 		switch_channel_set_flag(channel, CF_BREAK);
 	}

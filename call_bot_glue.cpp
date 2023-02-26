@@ -190,15 +190,7 @@ public:
         }
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
-        const char *var = switch_channel_get_variable(m_switch_channel, "IS_PLAYING");
-        if (var && (strcmp(var, "true") == 0))
-        {
-            m_request.set_is_playing(true);
-        }
-        else
-        {
-            m_request.set_is_playing(false);
-        }
+        m_request.set_is_playing(isPlaying());
         // print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
@@ -263,7 +255,15 @@ public:
 
     bool isPlaying()
     {
-        return m_request.is_playing();
+        const char *var = switch_channel_get_variable(m_switch_channel, "IS_PLAYING");
+        if (var && (strcmp(var, "true") == 0))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
 private:
@@ -401,6 +401,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
             case SmartIVRResponseType::RESULT_TTS:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
+                if (streamer->isPlaying())
+                {
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: current playing audio, stop it first\n");
+                    if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO) == SWITCH_STATUS_SUCCESS)
+                    {
+                        switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
+                        switch_event_fire(&event);
+                    }
+                }
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
                 if (play_audio(sessionUUID, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
@@ -621,6 +630,12 @@ extern "C"
             }
 
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
+
+            // remove audio file
+            char *filename;
+            asprintf(&filename, "/%s.wav", cb->sessionId);
+            remove(filename);
+            free(filename);
 
             switch_mutex_unlock(cb->mutex);
 
