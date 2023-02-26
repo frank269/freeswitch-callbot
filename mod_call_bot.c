@@ -37,6 +37,7 @@ static void event_process_response_handler(switch_event_t *event)
 	switch_channel_t *channel;
 	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
 	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
+	const char *filePath = switch_event_get_header(event, HEADER_AUDIO_PATH);
 
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -55,11 +56,11 @@ static void event_process_response_handler(switch_event_t *event)
 	else if (strcmp(actionType, ACTION_RESULT_TTS) == 0)
 	{
 
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play file %s\n", switch_event_get_header(event, HEADER_AUDIO_PATH));
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play file %s\n", filePath);
 		switch_channel_set_variable(channel, "IS_PLAYING", "true");
-		switch_ivr_play_file(session, NULL, switch_event_get_header(event, HEADER_AUDIO_PATH), NULL);
+		switch_ivr_play_file(session, NULL, filePath, NULL);
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play done file %s\n", switch_event_get_header(event, HEADER_AUDIO_PATH));
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler play done file %s\n", filePath);
 	}
 	else if (strcmp(actionType, ACTION_CALL_WAIT) == 0)
 	{

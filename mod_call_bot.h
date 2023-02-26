@@ -14,10 +14,10 @@
 #define EVENT_PROCESS_RESPONSE "mod_call_bot::process_response"
 #define EVENT_STOP_AUDIO "mod_call_bot::stop_audio"
 
-#define HEADER_SESSION_ID "session_id"
-#define HEADER_RESPONSE_TYPE "response_type"
-#define HEADER_AUDIO_PATH "audio_path"
-#define HEADER_TRANSFER_SIP "transfer_sip"
+#define HEADER_SESSION_ID "mod_call_bot::session_id"
+#define HEADER_RESPONSE_TYPE "mod_call_bot::response_type"
+#define HEADER_AUDIO_PATH "mod_call_bot::audio_path"
+#define HEADER_TRANSFER_SIP "mod_call_bot::transfer_sip"
 
 #define ACTION_RECOGNIZE "RECOGNIZE"
 #define ACTION_RESULT_ASR "RESULT_ASR"

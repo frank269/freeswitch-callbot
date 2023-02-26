@@ -379,6 +379,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
+    const char *filePath;
     switch_event_t *event;
 
     bool connected = streamer->waitForConnect();
@@ -434,7 +435,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_RESULT_TTS);
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, save_audio_content_to_wav(sessionUUID, parse_byte_array(response.audio_content())));
+                    filePath = save_audio_content_to_wav(sessionUUID, parse_byte_array(response.audio_content()));
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file: %s\n", filePath);
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, filePath);
                     switch_event_fire(&event);
                 }
                 break;
