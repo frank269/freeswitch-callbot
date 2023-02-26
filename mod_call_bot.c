@@ -35,13 +35,14 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 static void event_handler(switch_event_t *event)
 {
 	const char *type = switch_event_get_header(event, "type");
-	GStreamer *streamer = (GStreamer *)switch_event_get_header(event, "streamer");
+	struct cap_cb *cb = (struct cap_cb *)switch_event_get_header(event, "cap_cb");
 	// if (event->event_id == SWITCH_EVENT_CUSTOM)
 	// {
 	// 	if (event->subclass_name == EVENT_CALLMASTER_RESPONSE)
 	// 	{
 	// const char *custom_header_value = switch_event_get_header(event, "text_asr");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with custom header value %s\n", type);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with type: %s\n", type);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with session_id %s\n", cb->sessionId);
 	// 	}
 	// }
 }
