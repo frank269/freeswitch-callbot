@@ -48,7 +48,7 @@ static void event_process_response_handler(switch_event_t *event)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with session_id %s\n", sessionId);
 
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
-	return;
+	// return;
 	if (strcmp(actionType, ACTION_RECOGNIZE))
 	{
 	}

@@ -329,9 +329,9 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 static char *save_audio_content_to_wav(char *fileName, std::vector<uint8_t> audio_data)
 {
     auto fsize = audio_data.size();
+    char *filePath = "";
     strcat(fileName, ".wav");
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", fsize);
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s\n", fileName);
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
@@ -354,7 +354,11 @@ static char *save_audio_content_to_wav(char *fileName, std::vector<uint8_t> audi
         return fileName;
     }
     out.close();
-    return fileName;
+    strcat(filePath, "/");
+    strcat(filePath, fileName);
+
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s\n", filePath);
+    return filePath;
 }
 
 static switch_status_t transfer_call(switch_channel_t *channel, switch_core_session_t *session, std::string forward_sip_json)
@@ -376,7 +380,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
-    char *filepath;
     switch_event_t *event;
 
     bool connected = streamer->waitForConnect();
@@ -432,9 +435,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_RESULT_TTS);
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    filepath = "/";
-                    strcat(filepath, save_audio_content_to_wav(sessionUUID, parse_byte_array(response.audio_content())));
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, filepath);
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, save_audio_content_to_wav(sessionUUID, parse_byte_array(response.audio_content())));
                     switch_event_fire(&event);
                 }
                 break;
