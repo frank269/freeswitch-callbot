@@ -32,6 +32,12 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
 }
 
+static void event_handler(switch_event_t *event)
+{
+	const char *custom_header_value = switch_event_get_header(event, "text_asr");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received my_custom_event with custom header value %s\n", custom_header_value);
+}
+
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
 {
 	switch_core_session_t *session = switch_core_media_bug_get_session(bug);
@@ -286,15 +292,21 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API loading..\n");
 
 	/* create/register custom event message types */
-	if (switch_event_reserve_subclass(EVENT_VAD_CHANGE) != SWITCH_STATUS_SUCCESS)
+	// if (switch_event_reserve_subclass(EVENT_VAD_CHANGE) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_CHANGE for mod_call_bot API.\n");
+	// 	return SWITCH_STATUS_TERM;
+	// }
+	// if (switch_event_reserve_subclass(EVENT_VAD_SUMMARY) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_SUMMARY for mod_call_bot API.\n");
+	// 	return SWITCH_STATUS_TERM;
+	// }
+
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, SWITCH_EVENT_SUBCLASS_ANY, event_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_CHANGE for mod_call_bot API.\n");
-		return SWITCH_STATUS_TERM;
-	}
-	if (switch_event_reserve_subclass(EVENT_VAD_SUMMARY) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't register an event subclass EVENT_VAD_SUMMARY for mod_call_bot API.\n");
-		return SWITCH_STATUS_TERM;
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind custom event!\n");
+		return SWITCH_STATUS_GENERR;
 	}
 
 	/* connect my internal structure to the blank pointer passed to me */
@@ -325,8 +337,9 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
+	switch_event_unbind_callback(event_handler);
 	call_bot_cleanup();
-	switch_event_free_subclass(EVENT_VAD_CHANGE);
-	switch_event_free_subclass(EVENT_VAD_SUMMARY);
+	// switch_event_free_subclass(EVENT_VAD_CHANGE);
+	// switch_event_free_subclass(EVENT_VAD_SUMMARY);
 	return SWITCH_STATUS_SUCCESS;
 }

@@ -519,17 +519,24 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         streamer->print_response(response);
 
         // push response to ProcessResponseQueue
-        if (streamer->addResponseToQueue(&response) == SWITCH_STATUS_SUCCESS)
+        // if (streamer->addResponseToQueue(&response) == SWITCH_STATUS_SUCCESS)
+        // {
+        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer success!\n");
+        // }
+        // else
+        // {
+        //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
+        // }
+        switch_event_t *event;
+        if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, "test") == SWITCH_STATUS_SUCCESS)
         {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer success!\n");
-        }
-        else
-        {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
+            // switch_channel_event_set_basic_data(channel, event);
+            switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "text_asr", response->text_asr().c_str());
+            switch_event_fire(&event);
         }
 
-        unsigned int queueSize = streamer->getResponseQueueSize();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Queue size: %d!\n", queueSize);
+        // unsigned int queueSize = streamer->getResponseQueueSize();
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Queue size: %d!\n", queueSize);
     }
     return nullptr;
 }
@@ -612,15 +619,15 @@ extern "C"
         }
 
         GStreamer *streamer = NULL;
-        // switch_memory_pool_t *pool = switch_core_session_get_pool(session);
-        switch_core_new_memory_pool(&cb->pool);
+        switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+        // switch_core_new_memory_pool(&cb->pool);
         try
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  allocating streamer\n");
             streamer = new GStreamer(session, channels, lang, interim);
             // create response queue
             switch_queue_t *response_queue;
-            switch_queue_create(&response_queue, 5, cb->pool);
+            switch_queue_create(&response_queue, 5, pool);
             streamer->setResponseQueue(response_queue);
             cb->streamer = streamer;
         }
@@ -637,15 +644,15 @@ extern "C"
             streamer->connect();
         }
 
-        // switch_threadattr_t *thd_attr = NULL;
-        // switch_threadattr_create(&thd_attr, cb->pool);
-        // switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
+        switch_threadattr_t *thd_attr = NULL;
+        switch_threadattr_create(&thd_attr, pool);
+        switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
 
         // create the read thread
-        switch_thread_create(&cb->thread, NULL, grpc_read_thread, cb, cb->pool);
+        switch_thread_create(&cb->thread, thd_attr, grpc_read_thread, cb, pool);
 
         // create response process thread
-        switch_thread_create(&cb->process_thread, NULL, process_response_thread, cb, cb->pool);
+        // switch_thread_create(&cb->process_thread, thd_attr, process_response_thread, cb, cb->pool);
 
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
@@ -681,15 +688,15 @@ extern "C"
                 switch_status_t st;
                 switch_thread_join(&st, cb->thread);
                 switch_status_t st_process;
-                switch_thread_join(&st_process, cb->process_thread);
+                // switch_thread_join(&st_process, cb->process_thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
-                cb->process_thread = NULL;
-                switch_core_destroy_memory_pool(&cb->pool);
-                cb->pool = NULL;
+                // cb->process_thread = NULL;
+                // switch_core_destroy_memory_pool(&cb->pool);
+                // cb->pool = NULL;
             }
 
             if (cb->resampler)
