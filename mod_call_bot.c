@@ -373,7 +373,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 		return SWITCH_STATUS_GENERR;
 	}
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, SWITCH_EVENT_PLAYBACK_STOP, event_playback_stoped_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind(modname, SWITCH_EVENT_PLAYBACK_STOP, SWITCH_EVENT_SUBCLASS_ANY, event_playback_stoped_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind playback stop event!\n");
 		return SWITCH_STATUS_GENERR;
