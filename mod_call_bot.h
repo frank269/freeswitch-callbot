@@ -11,6 +11,7 @@
 #define MAX_SESSION_ID (256)
 #define MAX_BUG_LEN (64)
 #define MY_BUG_NAME "call_bot"
+#define EVENT_CALLMASTER_RESPONSE "mod_call_bot::response"
 
 // enum SmartIVRResponseType : int {
 //   RECOGNIZE = 0,

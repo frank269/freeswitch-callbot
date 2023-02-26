@@ -34,8 +34,14 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 
 static void event_handler(switch_event_t *event)
 {
+	// if (event->event_id == SWITCH_EVENT_CUSTOM)
+	// {
+	// 	if (event->subclass_name == EVENT_CALLMASTER_RESPONSE)
+	// 	{
 	const char *custom_header_value = switch_event_get_header(event, "text_asr");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received my_custom_event with custom header value %s\n", custom_header_value);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with custom header value %s\n", custom_header_value);
+	// 	}
+	// }
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
@@ -303,7 +309,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	// 	return SWITCH_STATUS_TERM;
 	// }
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, SWITCH_EVENT_SUBCLASS_ANY, event_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_CALLMASTER_RESPONSE, event_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind custom event!\n");
 		return SWITCH_STATUS_GENERR;

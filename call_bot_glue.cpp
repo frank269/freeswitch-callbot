@@ -528,7 +528,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "addResponseToQueue: transfer failed!\n");
         // }
         switch_event_t *event;
-        if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, "test") == SWITCH_STATUS_SUCCESS)
+        if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_CALLMASTER_RESPONSE) == SWITCH_STATUS_SUCCESS)
         {
             // switch_channel_event_set_basic_data(channel, event);
             switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "text_asr", response.text_asr().c_str());
