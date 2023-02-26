@@ -1,5 +1,6 @@
 #include "mod_call_bot.h"
 #include "call_bot_glue.h"
+#include "smartivrphonegateway.pb.h"
 #include <stdlib.h>
 #include <switch.h>
 
@@ -34,12 +35,14 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 
 static void event_handler(switch_event_t *event)
 {
+	SmartIVRResponse *response = (SmartIVRResponse *)switch_event_get_header(event, "response");
+	GStreamer *streamer = (GStreamer *)switch_event_get_header(event, "streamer");
 	// if (event->event_id == SWITCH_EVENT_CUSTOM)
 	// {
 	// 	if (event->subclass_name == EVENT_CALLMASTER_RESPONSE)
 	// 	{
-	const char *custom_header_value = switch_event_get_header(event, "text_asr");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with custom header value %s\n", custom_header_value);
+	// const char *custom_header_value = switch_event_get_header(event, "text_asr");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with custom header value %s\n", response->text_asr().c_str());
 	// 	}
 	// }
 }
