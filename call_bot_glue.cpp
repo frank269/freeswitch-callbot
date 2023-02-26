@@ -191,7 +191,7 @@ public:
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
         const char *var = switch_channel_get_variable(m_switch_channel, "IS_PLAYING");
-        if (var && strcmp(var, "true"))
+        if (var && (strcmp(var, "true") == 0))
         {
             m_request.set_is_playing(true);
         }
@@ -199,7 +199,7 @@ public:
         {
             m_request.set_is_playing(false);
         }
-        print_request();
+        // print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
