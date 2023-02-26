@@ -11,18 +11,20 @@
 #define MAX_SESSION_ID (256)
 #define MAX_BUG_LEN (64)
 #define MY_BUG_NAME "call_bot"
-#define EVENT_CALLMASTER_RESPONSE "mod_call_bot::response"
+#define EVENT_PROCESS_RESPONSE "mod_call_bot::process_response"
+#define EVENT_STOP_AUDIO "mod_call_bot::stop_audio"
 
-// enum SmartIVRResponseType : int {
-//   RECOGNIZE = 0,
-//   RESULT_ASR = 1,
-//   RESULT_TTS = 2,
-//   CALL_WAIT = 3,
-//   CALL_FORWARD = 4,
-//   CALL_END = 5,
-//   SmartIVRResponseType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-//   SmartIVRResponseType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
-// };
+#define HEADER_SESSION_ID "session_id"
+#define HEADER_RESPONSE_TYPE "response_type"
+#define HEADER_AUDIO_PATH "audio_path"
+#define HEADER_TRANSFER_SIP "transfer_sip"
+
+#define ACTION_RECOGNIZE "RECOGNIZE"
+#define ACTION_RESULT_ASR "RESULT_ASR"
+#define ACTION_RESULT_TTS "RESULT_TTS"
+#define ACTION_CALL_WAIT "CALL_WAIT"
+#define ACTION_CALL_FORWARD "CALL_FORWARD"
+#define ACTION_CALL_END "CALL_END"
 
 typedef void (*responseHandler_t)(switch_core_session_t *session,
                                   const char *json, const char *bugname,

@@ -32,22 +32,101 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
 }
 
-static void event_handler(switch_event_t *event)
+static void event_process_response_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
-	const char *type = switch_event_get_header(event, "type");
+	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
+	switch_core_session_t *session = switch_core_session_locate(sessionId);
+	if (!session)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: session %s is gone!\n", sessionId);
+		return;
+	}
+	channel = switch_core_session_get_channel(session);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with session_id %s\n", sessionId);
+
+	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
+
+	if (strcmp(actionType, ACTION_RECOGNIZE))
+	{
+	}
+	else if (strcmp(actionType, ACTION_RESULT_ASR))
+	{
+	}
+	else if (strcmp(actionType, ACTION_RESULT_TTS))
+	{
+		switch_channel_set_variable(channel, "IS_PLAYING", "true");
+		switch_ivr_play_file(session, NULL, switch_event_get_header(event, HEADER_AUDIO_PATH), NULL);
+		switch_channel_set_variable(channel, "IS_PLAYING", "false");
+	}
+	else if (strcmp(actionType, ACTION_CALL_WAIT))
+	{
+		if (switch_ivr_broadcast(sessionId, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
+		{
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: hold call success!\n");
+		}
+		else
+		{
+			switch_channel_clear_flag(channel, CF_HOLD);
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: hold call failed!\n");
+		}
+	}
+	else if (strcmp(actionType, ACTION_CALL_FORWARD))
+	{
+		if (switch_ivr_session_transfer(session, switch_event_get_header(event, HEADER_TRANSFER_SIP), NULL, NULL) == SWITCH_STATUS_SUCCESS)
+		{
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: transfer call success!\n");
+		}
+		else
+		{
+			switch_channel_clear_flag(channel, CF_HOLD);
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: transfer call failed!\n");
+		}
+	}
+	else if (strcmp(actionType, ACTION_CALL_END))
+	{
+		if (switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING) == SWITCH_STATUS_SUCCESS)
+		{
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: end call success!\n");
+		}
+		else
+		{
+			switch_channel_clear_flag(channel, CF_HOLD);
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: end call failed!\n");
+		}
+	}
+	else
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler unknown action type!\n");
+	}
+	switch_core_session_rwunlock(session);
+}
+
+static void event_stop_audio_handler(switch_event_t *event)
+{
+	switch_channel_t *channel;
 	const char *sessionId = switch_event_get_header(event, "sessionId");
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_handler: session %s is gone!\n", sessionId);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with type: %s\n", type);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received my_custom_event with session_id %s\n", sessionId);
-	switch_ivr_play_file(session, NULL, switch_channel_get_hold_music(channel), NULL);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
+	const char *var = switch_channel_get_variable(channel, "IS_PLAYING");
+	if (var && strcmp(var, "true"))
+	{
+		switch_channel_set_flag(channel, CF_BREAK);
+	}
 	switch_core_session_rwunlock(session);
+}
+
+static void event_playback_stoped_handler(switch_event_t *event)
+{
+	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_playback_stop_handler with filepath: %s\n", filePath);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
@@ -147,19 +226,6 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	arg_recursion_check_start(args);
 
-	if (switch_channel_var_true(channel, "echo_decode_video"))
-	{
-		switch_channel_set_flag_recursive(channel, CF_VIDEO_DECODED_READ);
-	}
-
-	if (switch_channel_var_true(channel, "echo_decode_audio"))
-	{
-		switch_core_session_raw_read(session);
-	}
-
-	switch_channel_set_flag(channel, CF_VIDEO_ECHO);
-	switch_channel_set_flag(channel, CF_TEXT_ECHO);
-
 	while (switch_channel_ready(channel))
 	{
 		status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
@@ -219,22 +285,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 			isStarted = 1;
 		}
-
-		if (switch_channel_test_flag(channel, CF_BREAK))
-		{
-			switch_channel_clear_flag(channel, CF_BREAK);
-			continue;
-		}
 	}
-
-	if (switch_channel_var_true(channel, "echo_decode_video"))
-	{
-		switch_channel_clear_flag_recursive(channel, CF_VIDEO_DECODED_READ);
-	}
-
-	switch_core_session_video_reset(session);
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
-	switch_channel_clear_flag(channel, CF_TEXT_ECHO);
 
 	return SWITCH_STATUS_SUCCESS;
 }
@@ -315,9 +367,21 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	// 	return SWITCH_STATUS_TERM;
 	// }
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_CALLMASTER_RESPONSE, event_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE, event_process_response_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind custom event!\n");
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind play audio event!\n");
+		return SWITCH_STATUS_GENERR;
+	}
+
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
+		return SWITCH_STATUS_GENERR;
+	}
+
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, SWITCH_EVENT_PLAYBACK_STOP, event_playback_stoped_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind playback stop event!\n");
 		return SWITCH_STATUS_GENERR;
 	}
 
@@ -349,7 +413,10 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	switch_event_unbind_callback(event_handler);
+	switch_event_unbind_callback(event_play_audio_handler);
+	switch_event_unbind_callback(event_stop_audio_handler);
+	switch_event_unbind_callback(event_playback_stoped_handler);
+
 	call_bot_cleanup();
 	// switch_event_free_subclass(EVENT_VAD_CHANGE);
 	// switch_event_free_subclass(EVENT_VAD_SUMMARY);
