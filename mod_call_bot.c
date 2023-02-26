@@ -100,7 +100,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
 	const char *is_playing;
-	const char *sessionId = switch_event_get_header(event, "sessionId");
+	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
