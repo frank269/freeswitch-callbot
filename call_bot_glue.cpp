@@ -531,7 +531,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, "test") == SWITCH_STATUS_SUCCESS)
         {
             // switch_channel_event_set_basic_data(channel, event);
-            switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "text_asr", response->text_asr().c_str());
+            switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, "text_asr", response.text_asr().c_str());
             switch_event_fire(&event);
         }
 
