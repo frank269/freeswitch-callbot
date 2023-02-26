@@ -199,7 +199,7 @@ public:
         {
             m_request.set_is_playing(false);
         }
-        // print_request();
+        print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
@@ -289,47 +289,10 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
     return vec;
 }
 
-// static switch_status_t play_audio(switch_channel_t *channel, switch_core_session_t *session, std::vector<uint8_t> audio_data)
-// {
-//     auto fsize = audio_data.size();
-//     switch_status_t status = SWITCH_STATUS_FALSE;
-//     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: write frame to session %d!\n", fsize);
-//     const char *var_session_id = switch_core_session_get_uuid(session);
-//     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s.wav\n", var_session_id);
-//     std::string fileName(var_session_id);
-//     fileName += ".wav";
-//     // write byte to pcm file
-//     wav_hdr wav;
-//     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
-//     wav.Subchunk2Size = fsize;
-//     std::ofstream out(fileName.c_str(), std::ios::binary);
-//     if (!out)
-//     {
-//         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
-//         return status;
-//     }
-//     if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
-//     {
-//         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
-//         return status;
-//     }
-//     // int16_t d;
-//     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
-//     {
-//         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
-//         return status;
-//     }
-//     out.close();
-//     fileName = "/" + fileName;
-//     // status = switch_ivr_play_file(session, NULL, fileName.c_str(), NULL);
-
-//     return status;
-// }
-
-static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data)
+static void play_audio(char *session_id, std::vector<uint8_t> audio_data)
 {
     switch_event_t *event;
-    switch_status_t status = SWITCH_STATUS_FALSE;
+    // switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
@@ -342,18 +305,18 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
-        return status;
+        return;
     }
     if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
-        return status;
+        return;
     }
     // int16_t d;
     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
-        return status;
+        return;
     }
     out.close();
 
@@ -367,7 +330,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, fileName.c_str());
     switch_event_fire(&event);
     // }
-    return status;
+    // return status;
 }
 
 static switch_status_t transfer_call(switch_channel_t *channel, switch_core_session_t *session, std::string forward_sip_json)
@@ -440,15 +403,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             case SmartIVRResponseType::RESULT_TTS:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: playing audio ........\n");
-
-                if (play_audio(sessionUUID, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
-                }
-                else
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: cannot play file in event handler!\n");
-                }
+                play_audio(sessionUUID, parse_byte_array(response.audio_content()));
+                // if (== SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
+                // }
+                // else
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: cannot play file in event handler!\n");
+                // }
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
