@@ -47,6 +47,7 @@ static void event_process_response_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
 	if (strcmp(actionType, ACTION_RECOGNIZE) == 0)
 	{
 	}
