@@ -36,6 +36,8 @@ static void event_process_response_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
 	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
+	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
+
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
@@ -45,7 +47,6 @@ static void event_process_response_handler(switch_event_t *event)
 	channel = switch_core_session_get_channel(session);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with session_id %s\n", sessionId);
 
-	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler with type: %s\n", actionType);
 
 	if (strcmp(actionType, ACTION_RECOGNIZE))
@@ -86,15 +87,7 @@ static void event_process_response_handler(switch_event_t *event)
 	}
 	else if (strcmp(actionType, ACTION_CALL_END))
 	{
-		if (switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING) == SWITCH_STATUS_SUCCESS)
-		{
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: end call success!\n");
-		}
-		else
-		{
-			switch_channel_clear_flag(channel, CF_HOLD);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: end call failed!\n");
-		}
+		switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
 	}
 	else
 	{
@@ -106,6 +99,7 @@ static void event_process_response_handler(switch_event_t *event)
 static void event_stop_audio_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
+	char *is_playing;
 	const char *sessionId = switch_event_get_header(event, "sessionId");
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -115,8 +109,8 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
-	const char *var = switch_channel_get_variable(channel, "IS_PLAYING");
-	if (var && strcmp(var, "true"))
+	is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
+	if (is_playing && strcmp(is_playing, "true"))
 	{
 		switch_channel_set_flag(channel, CF_BREAK);
 	}
@@ -413,7 +407,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	switch_event_unbind_callback(event_play_audio_handler);
+	switch_event_unbind_callback(event_process_response_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
 	switch_event_unbind_callback(event_playback_stoped_handler);
 
