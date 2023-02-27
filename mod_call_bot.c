@@ -34,12 +34,6 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 
 static void event_process_response_handler(switch_event_t *event)
 {
-	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
-	switch_core_session_t *session = switch_core_session_locate(sessionId);
-	// switch_channel_set_variable(channel, "IS_PLAYING", "true");
-	switch_ivr_play_file(session, NULL, "/5f1fb7c3-c48d-4463-8972-726728de3bf8.wav", NULL);
-	// switch_channel_set_variable(channel, "IS_PLAYING", "false");
-	return;
 	switch_channel_t *channel;
 	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
 	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);

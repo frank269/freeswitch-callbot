@@ -648,7 +648,7 @@ extern "C"
             // remove audio file
             char *filename;
             asprintf(&filename, "/%s.wav", cb->sessionId);
-            // remove(filename);
+            remove(filename);
             free(filename);
 
             switch_mutex_unlock(cb->mutex);
