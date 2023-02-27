@@ -436,7 +436,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
                 //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
 
-                sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION") if (!sip_uri)
+                sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
+                if (!sip_uri)
                 {
                     transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
                     sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url");
