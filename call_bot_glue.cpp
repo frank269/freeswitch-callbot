@@ -191,6 +191,7 @@ public:
         m_request.clear_audio_content();
         m_request.set_audio_content(data, datalen);
         m_request.set_is_playing(isPlaying());
+        add_dtmf_to_request();
         // print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
@@ -263,6 +264,20 @@ public:
         else
         {
             return false;
+        }
+    }
+
+    void add_dtmf_to_request()
+    {
+        if (switch_channel_has_dtmf(m_switch_channel))
+        {
+            switch_dtmf_t dtmf = {0};
+            switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
+            const char *ptr = malloc(2 * sizeof(char));
+            ptr[0] = dtmf.digit;
+            ptr[1] = '\0';
+            m_request.set_key_press(ptr);
         }
     }
 

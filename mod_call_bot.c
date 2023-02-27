@@ -234,49 +234,49 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 		switch_ivr_parse_all_events(session);
 
-		if (args && (args->input_callback || args->buf || args->buflen))
-		{
-			switch_dtmf_t dtmf = {0};
+		// if (args && (args->input_callback || args->buf || args->buflen))
+		// {
+		// 	switch_dtmf_t dtmf = {0};
 
-			/*
-			   dtmf handler function you can hook up to be executed when a digit is dialed during playback
-			   if you return anything but SWITCH_STATUS_SUCCESS the playback will stop.
-			 */
-			if (switch_channel_has_dtmf(channel))
-			{
-				if (!args->input_callback && !args->buf)
-				{
-					continue;
-				}
-				switch_channel_dequeue_dtmf(channel, &dtmf);
-				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
-				if (args->input_callback)
-				{
-					status = args->input_callback(session, (void *)&dtmf, SWITCH_INPUT_TYPE_DTMF, args->buf, args->buflen);
-				}
-				else
-				{
-					*((char *)args->buf) = dtmf.digit;
-					status = SWITCH_STATUS_BREAK;
-				}
-			}
+		// 	/*
+		// 	   dtmf handler function you can hook up to be executed when a digit is dialed during playback
+		// 	   if you return anything but SWITCH_STATUS_SUCCESS the playback will stop.
+		// 	 */
+		// 	if (switch_channel_has_dtmf(channel))
+		// 	{
+		// 		if (!args->input_callback && !args->buf)
+		// 		{
+		// 			continue;
+		// 		}
+		// 		switch_channel_dequeue_dtmf(channel, &dtmf);
+		// 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
+		// 		if (args->input_callback)
+		// 		{
+		// 			status = args->input_callback(session, (void *)&dtmf, SWITCH_INPUT_TYPE_DTMF, args->buf, args->buflen);
+		// 		}
+		// 		else
+		// 		{
+		// 			*((char *)args->buf) = dtmf.digit;
+		// 			status = SWITCH_STATUS_BREAK;
+		// 		}
+		// 	}
 
-			if (args->input_callback)
-			{
-				switch_event_t *event = NULL;
+		// 	if (args->input_callback)
+		// 	{
+		// 		switch_event_t *event = NULL;
 
-				if (switch_core_session_dequeue_event(session, &event, SWITCH_FALSE) == SWITCH_STATUS_SUCCESS)
-				{
-					status = args->input_callback(session, event, SWITCH_INPUT_TYPE_EVENT, args->buf, args->buflen);
-					switch_event_destroy(&event);
-				}
-			}
+		// 		if (switch_core_session_dequeue_event(session, &event, SWITCH_FALSE) == SWITCH_STATUS_SUCCESS)
+		// 		{
+		// 			status = args->input_callback(session, event, SWITCH_INPUT_TYPE_EVENT, args->buf, args->buflen);
+		// 			switch_event_destroy(&event);
+		// 		}
+		// 	}
 
-			if (status != SWITCH_STATUS_SUCCESS)
-			{
-				continue;
-			}
-		}
+		// 	if (status != SWITCH_STATUS_SUCCESS)
+		// 	{
+		// 		continue;
+		// 	}
+		// }
 		if (!isStarted)
 		{
 			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
