@@ -440,7 +440,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 if (!sip_uri)
                 {
                     transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
-                    sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url");
+                    sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url")->valuestring;
                 }
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread transfer call to %s.\n", sip_uri);
                 if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
