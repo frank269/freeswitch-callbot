@@ -273,9 +273,9 @@ public:
         {
             switch_dtmf_t dtmf = {0};
             switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
             std::string dtmf_string(1, dtmf.digit);
             m_request.set_key_press(dtmf_string);
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
     }
 
