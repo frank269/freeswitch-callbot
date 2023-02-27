@@ -277,6 +277,10 @@ public:
             m_request.set_key_press(dtmf_string);
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
+        else
+        {
+            m_request.set_key_press("");
+        }
     }
 
 private:
