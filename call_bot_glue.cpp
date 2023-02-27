@@ -306,35 +306,34 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
     return vec;
 }
 
-static switch_status_t play_audio(char *session_id, std::string audio_data)
+static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data)
 {
     switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
-    // auto fsize = audio_data.size();
+    auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
-    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write frame to session %d!\n", fsize);
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write frame to session %d!\n", fsize);
     // write byte to pcm file
-    // wav_hdr wav;
-    // wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
-    // wav.Subchunk2Size = fsize;
+    wav_hdr wav;
+    wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
+    wav.Subchunk2Size = fsize;
     std::ofstream out(fileName.c_str(), std::ios::binary);
-    // if (!out)
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
-    //     return status;
-    // }
-    // if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
-    //     return status;
-    // }
-    // if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
-    //     return status;
-    // }
-    out << audio_data;
+    if (!out)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
+        return status;
+    }
+    if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
+        return status;
+    }
+    if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
+        return status;
+    }
     out.close();
 
     fileName = "/" + fileName;
@@ -347,20 +346,6 @@ static switch_status_t play_audio(char *session_id, std::string audio_data)
         switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_AUDIO_PATH, fileName.c_str());
         switch_event_fire(&event);
     }
-    return status;
-}
-
-static switch_status_t transfer_call(switch_channel_t *channel, switch_core_session_t *session, std::string forward_sip_json)
-{
-    switch_status_t status = SWITCH_STATUS_FALSE;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with sip_json: %s!\n", forward_sip_json.c_str());
-    const char *extension = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: transfer call with %s\n", extension);
-    if (!extension)
-    {
-        extension = "10004";
-    }
-    status = switch_ivr_session_transfer(session, extension, NULL, NULL);
     return status;
 }
 
@@ -431,7 +416,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     }
                 }
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
-                if (play_audio(sessionUUID, response.audio_content()) == SWITCH_STATUS_SUCCESS)
+                if (play_audio(sessionUUID, parse_byte_array(response.audio_content())) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
                 }
@@ -663,7 +648,7 @@ extern "C"
             // remove audio file
             char *filename;
             asprintf(&filename, "/%s.wav", cb->sessionId);
-            remove(filename);
+            // remove(filename);
             free(filename);
 
             switch_mutex_unlock(cb->mutex);
