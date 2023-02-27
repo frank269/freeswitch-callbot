@@ -38,7 +38,7 @@ static void event_process_response_handler(switch_event_t *event)
 	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
 	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
 	const char *filePath = switch_event_get_header(event, HEADER_AUDIO_PATH);
-	const char *sip_uri = switch_event_get_header(event, HEADER_TRANSFER_SIP);
+	char *sip_uri = switch_event_get_header(event, HEADER_TRANSFER_SIP);
 	char *splited[2];
 	const char *sip_extension;
 	const char *sip_domain;
@@ -249,7 +249,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 					continue;
 				}
 				switch_channel_dequeue_dtmf(channel, &dtmf);
-				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %s.\n", dtmf.digit);
+				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
 				if (args->input_callback)
 				{
 					status = args->input_callback(session, (void *)&dtmf, SWITCH_INPUT_TYPE_DTMF, args->buf, args->buflen);
