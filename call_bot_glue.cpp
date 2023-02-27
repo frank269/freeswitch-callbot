@@ -352,6 +352,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
     const char *filePath;
+    const char *sip_uri;
+    cJSON *transfer_json;
     switch_event_t *event;
 
     bool connected = streamer->waitForConnect();
@@ -432,11 +434,19 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
+                //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
+
+                sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION") if (!sip_uri)
+                {
+                    transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
+                    sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url");
+                }
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread transfer call to %s.\n", sip_uri);
                 if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_FORWARD);
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_SIP, switch_channel_get_variable(channel, "TRANSFER_EXTENSION"));
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_SIP, sip_uri);
                     switch_event_fire(&event);
                 }
                 break;

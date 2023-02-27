@@ -38,6 +38,10 @@ static void event_process_response_handler(switch_event_t *event)
 	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
 	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
 	const char *filePath = switch_event_get_header(event, HEADER_AUDIO_PATH);
+	const char *sip_uri = switch_event_get_header(event, HEADER_TRANSFER_SIP);
+	char *splited[2];
+	const char *sip_extension;
+	const char *sip_domain;
 
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -75,7 +79,13 @@ static void event_process_response_handler(switch_event_t *event)
 	}
 	else if (strcmp(actionType, ACTION_CALL_FORWARD) == 0)
 	{
-		if (switch_ivr_session_transfer(session, switch_event_get_header(event, HEADER_TRANSFER_SIP), NULL, NULL) == SWITCH_STATUS_SUCCESS)
+		switch_separate_string(sip_uri, ':', splited, 2);
+		sip_uri = splited[1];
+		switch_separate_string(sip_uri, '@', splited, 2);
+		sip_extension = splited[0];
+		sip_domain = splited[1];
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
+		if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
 		{
 			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
 		}
@@ -239,6 +249,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 					continue;
 				}
 				switch_channel_dequeue_dtmf(channel, &dtmf);
+				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %s.\n", dtmf.digit);
 				if (args->input_callback)
 				{
 					status = args->input_callback(session, (void *)&dtmf, SWITCH_INPUT_TYPE_DTMF, args->buf, args->buflen);
