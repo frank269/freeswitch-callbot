@@ -274,7 +274,7 @@ public:
             switch_dtmf_t dtmf = {0};
             switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL BOT received dtmf: %d.\n", dtmf.digit);
-            const char *ptr = malloc(2 * sizeof(char));
+            char *ptr = malloc(2 * sizeof(char));
             ptr[0] = dtmf.digit;
             ptr[1] = '\0';
             m_request.set_key_press(ptr);
