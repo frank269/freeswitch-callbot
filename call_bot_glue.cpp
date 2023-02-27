@@ -312,7 +312,7 @@ static switch_status_t play_audio(char *session_id, std::string audio_data)
     switch_status_t status = SWITCH_STATUS_FALSE;
     // auto fsize = audio_data.size();
     std::string fileName(session_id);
-    fileName += ".pcm";
+    fileName += ".wav";
     // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write frame to session %d!\n", fsize);
     // write byte to pcm file
     // wav_hdr wav;
