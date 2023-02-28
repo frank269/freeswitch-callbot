@@ -37,28 +37,33 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 static void fireEndCallEvent()
 {
 	xmlrpc_env env;
-	xmlrpc_client *client;
 	xmlrpc_value *result;
+	xmlrpc_client client;
 
-	char *url = "http://localhost:9000/RPC2";
-	const char *method = "phoneGatewayEndCall";
+	const char *server_url = "http://localhost:9000/RPC2";
+	const char *message = "Hello, server!";
+
 	xmlrpc_env_init(&env);
-	client = xmlrpc_client_new(&env, url);
+	xmlrpc_client_init2(&env, XMLRPC_CLIENT_NO_FLAGS, "mod_call_bot", "1.0", NULL, 0, &client);
+
+	// Send a string to the server
+	result = xmlrpc_client_call(&env, &client, server_url, "phoneGatewayEndCall", "(s)", message);
+
+	// Check for errors and print the result
 	if (env.fault_occurred)
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to create XML-RPC client: %s (%d)\n", env.fault_string, env.fault_code);
-		return;
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "XML-RPC error: %s (%d)\n", env.fault_string, env.fault_code);
+	}
+	else
+	{
+		char *response;
+		xmlrpc_parse_value(&env, result, "(s)", &response);
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Server response: %s\n", response);
+		xmlrpc_DECREF(result);
 	}
 
-	result = xmlrpc_client_call(&env, client, method, "test");
-	if (env.fault_occurred)
-	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to call XML-RPC method: %s (%d)\n", env.fault_string, env.fault_code);
-		return;
-	}
-	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "call XML-RPC Result: %s\n", xmlrpc_value_string(result));
-	xmlrpc_DECREF(result);
-	xmlrpc_client_free(client);
+	// Clean up
+	xmlrpc_client_cleanup(&client);
 	xmlrpc_env_clean(&env);
 }
 

@@ -27,3 +27,5 @@ sip_code
 int
 Mã sip_code trả về từ tổng đài
 
+
+apt-get install libxmlrpc-core-c3-dev
