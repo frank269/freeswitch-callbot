@@ -14,9 +14,7 @@ else
 MAKEFLAGS=-j1
 XMLRPC_DIR=$(switch_srcdir)/libs/xmlrpc-c
 XMLRPC_BUILDDIR=$(switch_builddir)/libs/xmlrpc-c
-mod_call_bot_la_CFLAGS  = -I$(XMLRPC_DIR)/lib/expat/xmlparse -I$(XMLRPC_DIR)/lib/expat/xmltok -I$(XMLRPC_DIR) -I$(XMLRPC_DIR)/include
-mod_call_bot_la_CFLAGS  += -I$(XMLRPC_DIR)/lib/abyss/src -I$(XMLRPC_DIR)/lib/util/include -D_THREAD -D__EXTENSIONS__ -D_GNU_SOURCE
-mod_call_bot_la_CFLAGS  += -I$(XMLRPC_BUILDDIR)/include 
+mod_call_bot_la_CFLAGS  = -I$(XMLRPC_BUILDDIR)/include 
 mod_call_bot_la_SOURCES += ../../../../libs/xmlrpc-c/src/version.c\
 ../../../../libs/xmlrpc-c/lib/libutil/asprintf.c\
 ../../../../libs/xmlrpc-c/lib/util/casprintf.c\
@@ -75,8 +73,7 @@ mod_call_bot_la_SOURCES += ../../../../libs/xmlrpc-c/src/version.c\
 ../../../../libs/xmlrpc-c/src/xmlrpc_server_abyss.c\
 ../../../../libs/xmlrpc-c/src/xmlrpc_server_cgi.c\
 ../../../../libs/xmlrpc-c/src/xmlrpc_string.c\
-../../../../libs/xmlrpc-c/src/xmlrpc_struct.c\
-../../../../libs/xmlrpc-c/lib/expat/xmltok/xmltok.c
+../../../../libs/xmlrpc-c/src/xmlrpc_struct.c
 endif
 
 mod_call_bot_la_CFLAGS += $(AM_CFLAGS) -I. -w
