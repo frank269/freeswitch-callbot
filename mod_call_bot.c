@@ -44,12 +44,12 @@ static void fireEndCallEvent()
 
 	xmlrpc_env_init(&env);
 	xmlrpc_client_init2(&env, XMLRPC_CLIENT_NO_FLAGS, "mod_call_bot", "1.0", NULL, 0);
-	dieIfFaultOccurred(&env);
-
+	if (env.fault_occurred)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "XML-RPC init error: %s (%d)\n", env.fault_string, env.fault_code);
+	}
 	// Send a string to the server
 	result = xmlrpc_client_call(&env, server_url, "phoneGatewayEndCall", "(s)", message);
-	dieIfFaultOccurred(&env);
-
 	// Check for errors and print the result
 	if (env.fault_occurred)
 	{
