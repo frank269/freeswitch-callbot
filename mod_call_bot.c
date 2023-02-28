@@ -38,33 +38,34 @@ static void fireEndCallEvent()
 {
 	xmlrpc_env env;
 	xmlrpc_value *result;
-	xmlrpc_client client;
 
 	const char *server_url = "http://localhost:9000/RPC2";
 	const char *message = "Hello, server!";
 
 	xmlrpc_env_init(&env);
-	xmlrpc_client_init2(&env, XMLRPC_CLIENT_NO_FLAGS, "mod_call_bot", "1.0", NULL, 0, &client);
+	xmlrpc_client_init2(&env, XMLRPC_CLIENT_NO_FLAGS, "mod_call_bot", "1.0", NULL, 0);
+	dieIfFaultOccurred(&env);
 
 	// Send a string to the server
-	result = xmlrpc_client_call(&env, &client, server_url, "phoneGatewayEndCall", "(s)", message);
+	result = xmlrpc_client_call(&env, server_url, "phoneGatewayEndCall", "(s)", message);
+	dieIfFaultOccurred(&env);
 
 	// Check for errors and print the result
 	if (env.fault_occurred)
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "XML-RPC error: %s (%d)\n", env.fault_string, env.fault_code);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "XML-RPC error: %s (%d)\n", env.fault_string, env.fault_code);
 	}
 	else
 	{
 		char *response;
 		xmlrpc_parse_value(&env, result, "(s)", &response);
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Server response: %s\n", response);
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Server response: %s\n", response);
 		xmlrpc_DECREF(result);
 	}
 
 	// Clean up
-	xmlrpc_client_cleanup(&client);
 	xmlrpc_env_clean(&env);
+	xmlrpc_client_cleanup();
 }
 
 static void event_process_response_handler(switch_event_t *event)
