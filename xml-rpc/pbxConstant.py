@@ -1,6 +1,6 @@
 from enum import Enum
 
-pbx_host = '172.16.88.38'
+pbx_host = 'localhost'
 pbx_username = 'freeswitch'
 pbx_password = 'works'
 pbx_port = '8080'

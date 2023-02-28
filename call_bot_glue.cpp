@@ -9,9 +9,8 @@
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
 
-#include <xmlrpc-c/girerr.hpp>
-#include <xmlrpc-c/base.hpp>
-#include <xmlrpc-c/client_simple.hpp>
+#include <xmlrpc-c/base.h>
+#include <xmlrpc-c/client.h>
 
 #include <fstream>
 #include <iostream>
@@ -479,32 +478,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     return nullptr;
 }
 
-void fireEndCallEvent()
-{
-    try
-    {
-        std::string const serverUrl("http://localhost:9000/RPC2");
-        std::string const methodName("phoneGatewayEndCall");
-
-        xmlrpc_c::clientSimple myClient;
-        xmlrpc_c::value result;
-
-        myClient.call(serverUrl, methodName, &result, "hangup");
-
-        std::string const response = xmlrpc_c::value_string(result);
-        // Assume the method returned an integer; throws error if not
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "fireEndCallEvent got response: %s.\n", response.c_str());
-    }
-    catch (exception const &e)
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "fireEndCallEvent got error: %s.\n", e.what().c_str());
-    }
-    catch (...)
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "fireEndCallEvent Client threw unexpected error.\n");
-    }
-}
-
 extern "C"
 {
 
@@ -617,6 +590,34 @@ extern "C"
         *ppUserData = cb;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
         return SWITCH_STATUS_SUCCESS;
+    }
+
+    void fireEndCallEvent()
+    {
+        xmlrpc_env env;
+        xmlrpc_client *client;
+        xmlrpc_value *result;
+
+        char *url = "http://localhost:9000/RPC2";
+        const char *method = "phoneGatewayEndCall";
+        xmlrpc_env_init(&env);
+        client = xmlrpc_client_new(&env, url);
+        if (env.fault_occurred)
+        {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to create XML-RPC client: %s (%d)\n", env.fault_string, env.fault_code);
+            return;
+        }
+
+        result = xmlrpc_client_call(&env, client, method, NULL);
+        if (env.fault_occurred)
+        {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to call XML-RPC method: %s (%d)\n", env.fault_string, env.fault_code);
+            return;
+        }
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "call XML-RPC Result: %s\n", xmlrpc_value_string(result));
+        xmlrpc_DECREF(result);
+        xmlrpc_client_free(client);
+        xmlrpc_env_clean(&env);
     }
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)

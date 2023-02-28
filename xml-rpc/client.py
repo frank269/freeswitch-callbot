@@ -1,7 +1,7 @@
 import xmlrpc.client
 import json
 
-s = xmlrpc.client.ServerProxy('http://localhost:9000')
+s = xmlrpc.client.ServerProxy('http://172.16.88.13:9000')
 request = {
     "grpc_server" : "103.141.140.231:30067",
     "controller_url" : "http://103.141.140.231:9000",
@@ -10,4 +10,4 @@ request = {
     "customer_number" : "user/1003@uat1.metechvn.com",
     "display_number" : ""
 }
-print(s.callControllerServiceRequest(json.dumps(request)))
+print(s.phoneGatewayEndCall(json.dumps(request)))
