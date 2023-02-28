@@ -2,6 +2,8 @@
 #include "call_bot_glue.h"
 #include <stdlib.h>
 #include <switch.h>
+#include <xmlrpc-c/base.h>
+#include <xmlrpc-c/client.h>
 
 /* Prototypes */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown);
@@ -30,6 +32,34 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 							const char *details)
 {
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
+}
+
+static void fireEndCallEvent()
+{
+	xmlrpc_env env;
+	xmlrpc_client *client;
+	xmlrpc_value *result;
+
+	char *url = "http://localhost:9000/RPC2";
+	const char *method = "phoneGatewayEndCall";
+	xmlrpc_env_init(&env);
+	client = xmlrpc_client_new(&env, url);
+	if (env.fault_occurred)
+	{
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to create XML-RPC client: %s (%d)\n", env.fault_string, env.fault_code);
+		return;
+	}
+
+	result = xmlrpc_client_call(&env, client, method, "test");
+	if (env.fault_occurred)
+	{
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to call XML-RPC method: %s (%d)\n", env.fault_string, env.fault_code);
+		return;
+	}
+	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "call XML-RPC Result: %s\n", xmlrpc_value_string(result));
+	xmlrpc_DECREF(result);
+	xmlrpc_client_free(client);
+	xmlrpc_env_clean(&env);
 }
 
 static void event_process_response_handler(switch_event_t *event)
@@ -142,6 +172,7 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
 		call_bot_session_cleanup(session, 1, bug);
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+		fireEndCallEvent();
 	}
 	break;
 

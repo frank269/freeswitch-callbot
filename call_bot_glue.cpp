@@ -9,9 +9,6 @@
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
 
-#include <xmlrpc-c/base.h>
-#include <xmlrpc-c/client.h>
-
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
@@ -490,6 +487,7 @@ extern "C"
     {
         return SWITCH_STATUS_SUCCESS;
     }
+
     switch_status_t call_bot_session_init(switch_core_session_t *session, responseHandler_t responseHandler,
                                           uint32_t samples_per_second, uint32_t channels, char *lang, int interim, char *bugname, void **ppUserData)
     {
@@ -592,33 +590,6 @@ extern "C"
         return SWITCH_STATUS_SUCCESS;
     }
 
-    void fireEndCallEvent()
-    {
-        xmlrpc_env env;
-        xmlrpc_client *client;
-        xmlrpc_value *result;
-
-        char *url = "http://localhost:9000/RPC2";
-        const char *method = "phoneGatewayEndCall";
-        xmlrpc_env_init(&env);
-        client = xmlrpc_client_new(&env, url);
-        if (env.fault_occurred)
-        {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to create XML-RPC client: %s (%d)\n", env.fault_string, env.fault_code);
-            return;
-        }
-
-        result = xmlrpc_client_call(&env, client, method, NULL);
-        if (env.fault_occurred)
-        {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Failed to call XML-RPC method: %s (%d)\n", env.fault_string, env.fault_code);
-            return;
-        }
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "call XML-RPC Result: %s\n", xmlrpc_value_string(result));
-        xmlrpc_DECREF(result);
-        xmlrpc_client_free(client);
-        xmlrpc_env_clean(&env);
-    }
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
@@ -651,7 +622,7 @@ extern "C"
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 // send end call info to xmlrpc server
-                fireEndCallEvent();
+                // fireEndCallEvent();
 
                 delete streamer;
                 cb->streamer = NULL;
