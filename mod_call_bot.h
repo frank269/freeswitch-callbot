@@ -39,9 +39,7 @@ struct cap_cb
     SpeexResamplerState *resampler;
     void *streamer;
     responseHandler_t responseHandler;
-    // switch_memory_pool_t *pool;
     switch_thread_t *thread;
-    // switch_thread_t *process_thread;
     int end_of_utterance;
     int play_file;
     switch_vad_t *vad;

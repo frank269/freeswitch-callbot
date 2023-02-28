@@ -9,6 +9,10 @@
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
 
+#include <xmlrpc-c/girerr.hpp>
+#include <xmlrpc-c/base.hpp>
+#include <xmlrpc-c/client_simple.hpp>
+
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
@@ -475,6 +479,32 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     return nullptr;
 }
 
+void fireEndCallEvent()
+{
+    try
+    {
+        std::string const serverUrl("http://localhost:9000/RPC2");
+        std::string const methodName("phoneGatewayEndCall");
+
+        xmlrpc_c::clientSimple myClient;
+        xmlrpc_c::value result;
+
+        myClient.call(serverUrl, methodName, &result, "hangup");
+
+        std::string const response = xmlrpc_c::value_string(result);
+        // Assume the method returned an integer; throws error if not
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "fireEndCallEvent got response: %s.\n", response.c_str());
+    }
+    catch (exception const &e)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "fireEndCallEvent got error: %s.\n", e.what().c_str());
+    }
+    catch (...)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "fireEndCallEvent Client threw unexpected error.\n");
+    }
+}
+
 extern "C"
 {
 
@@ -617,16 +647,14 @@ extern "C"
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_status_t st;
                 switch_thread_join(&st, cb->thread);
-                switch_status_t st_process;
-                // switch_thread_join(&st_process, cb->process_thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+
+                // send end call info to xmlrpc server
+                fireEndCallEvent();
 
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
-                // cb->process_thread = NULL;
-                // switch_core_destroy_memory_pool(&cb->pool);
-                // cb->pool = NULL;
             }
 
             if (cb->resampler)
