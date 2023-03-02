@@ -106,6 +106,11 @@ static void event_process_response_handler(switch_event_t *event)
 	switch_core_session_rwunlock(session);
 }
 
+static void event_hangup_handler(switch_event_t *event)
+{
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_hangup_handler: call with bot is hangup!\n");
+}
+
 static void event_stop_audio_handler(switch_event_t *event)
 {
 	switch_channel_t *channel;
@@ -318,6 +323,12 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 		return SWITCH_STATUS_GENERR;
 	}
 
+	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP, event_hangup_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind bot hangup event!\n");
+		return SWITCH_STATUS_GENERR;
+	}
+
 	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
@@ -354,6 +365,7 @@ SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
 	switch_event_unbind_callback(event_process_response_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
+	switch_event_unbind_callback(event_hangup_handler);
 	call_bot_cleanup();
 	return SWITCH_STATUS_SUCCESS;
 }
