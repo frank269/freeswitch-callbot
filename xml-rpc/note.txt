@@ -31,7 +31,7 @@ Mã sip_code trả về từ tổng đài
 
 
 
-apt-get install -y libprotobuf-dev protobuf-compiler && \
+apt-get install -y libprotobuf-dev protobuf-compiler python3-pip && pip3 install SQLAlchemy && \
 cd /usr/src && git clone https://github.com/grpc/grpc.git && cd grpc && git checkout c66d2cc \
 && git submodule update --init --recursive \
 && mkdir -p cmake/build && cd cmake/build \
@@ -56,7 +56,7 @@ cd /usr/src \
 
 cd /usr/src/freeswitch && \
 ./bootstrap.sh -j \
-&& cp /usr/src/freeswitch/src/mod/applications/mod_call_bot/modules.conf /usr/src/freeswitch/
+&& cp /usr/src/freeswitch/src/mod/applications/mod_call_bot/modules.conf /usr/src/freeswitch/ \
 && ./configure -C \
   --prefix=/usr \
   --localstatedir=/var \
@@ -64,7 +64,7 @@ cd /usr/src/freeswitch && \
   --with-openssl \
   --enable-portable-binary \
   --enable-core-pgsql-support \
-  --disable-dependency-tracking
-make && make install
+  --disable-dependency-tracking \
+&& make && make install
 
 

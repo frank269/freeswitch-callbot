@@ -590,7 +590,6 @@ extern "C"
         return SWITCH_STATUS_SUCCESS;
     }
 
-
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
         switch_channel_t *channel = switch_core_session_get_channel(session);
@@ -617,12 +616,17 @@ extern "C"
                 streamer->writesDone();
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
-                switch_status_t st;
-                switch_thread_join(&st, cb->thread);
+                switch_status_t status;
+                switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 // send end call info to xmlrpc server
-                // fireEndCallEvent();
+                status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
+                if (status == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, switch_core_session_get_uuid(session));
+                    switch_event_fire(&event);
+                }
 
                 delete streamer;
                 cb->streamer = NULL;

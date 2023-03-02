@@ -21,7 +21,7 @@ class ESLThread(threading.Thread):
             return
 
         # listen events
-        self.con.events("PLAIN", "custom")
+        self.con.events("PLAIN", "CUSTOM mod_call_bot::bot_hangup")
         # self.con.events("PLAIN", "DTMF")
         # self.con.events("PLAIN", "CHANNEL_CREATE")
         # self.con.events("PLAIN", "CHANNEL_PROGRESS_MEDIA")

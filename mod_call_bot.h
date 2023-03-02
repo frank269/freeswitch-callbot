@@ -13,11 +13,15 @@
 #define MY_BUG_NAME "call_bot"
 #define EVENT_PROCESS_RESPONSE "mod_call_bot::process_response"
 #define EVENT_STOP_AUDIO "mod_call_bot::stop_audio"
+#define EVENT_BOT_HANGUP "mod_call_bot::bot_hangup"
 
 #define HEADER_SESSION_ID "mod_call_bot::session_id"
 #define HEADER_RESPONSE_TYPE "mod_call_bot::response_type"
 #define HEADER_AUDIO_PATH "mod_call_bot::audio_path"
 #define HEADER_TRANSFER_SIP "mod_call_bot::transfer_sip"
+
+
+#define HEADER_HANGUP_JSON "mod_call_bot::hangup_json"
 
 #define ACTION_RECOGNIZE "RECOGNIZE"
 #define ACTION_RESULT_ASR "RESULT_ASR"
