@@ -26,3 +26,45 @@ Trạng thái cuộc gọi, là 1 trong các giá trị sau:
 sip_code
 int
 Mã sip_code trả về từ tổng đài
+
+
+
+
+
+apt-get install -y libprotobuf-dev protobuf-compiler && \
+cd /usr/src && git clone https://github.com/grpc/grpc.git && cd grpc && git checkout c66d2cc \
+&& git submodule update --init --recursive \
+&& mkdir -p cmake/build && cd cmake/build \
+&& cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DgRPC_SSL_PROVIDER=package -DgRPC_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo ../.. \
+&& make -j 4 && make install 
+
+// append two line above to ~/.bashrc
+PATH="$PATH:/usr/local/freeswitch/bin"
+CPLUS_INCLUDE_PATH="/usr/include/grpc:$CPLUS_INCLUDE_PATH"
+source ~/.bashrc
+
+
+
+// build from source
+cd /usr/src \
+&& wget https://github.com/signalwire/freeswitch/archive/refs/tags/v1.10.8.zip \
+&& unzip v1.10.8.zip && mv freeswitch-1.10.8 freeswitch && cd freeswitch \
+&& cd /usr/src/freeswitch/src/mod/applications/ \
+&& git clone https://github.com/frank269/freeswitch-callbot.git \
+&& mv freeswitch-callbot mod_call_bot && cd mod_call_bot && git checkout release
+
+
+cd /usr/src/freeswitch && \
+./bootstrap.sh -j \
+&& cp /usr/src/freeswitch/src/mod/applications/mod_call_bot/modules.conf /usr/src/freeswitch/
+&& ./configure -C \
+  --prefix=/usr \
+  --localstatedir=/var \
+  --sysconfdir=/etc \
+  --with-openssl \
+  --enable-portable-binary \
+  --enable-core-pgsql-support \
+  --disable-dependency-tracking
+make && make install
+
+
