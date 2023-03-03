@@ -143,11 +143,11 @@ public:
 
     void createInitMessage()
     {
-        m_botmaster_uri(switch_channel_get_variable(m_switch_channel, "CALLBOT_MASTER_URI"));
+        m_botmaster_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_MASTER_URI"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
-        m_conversation_id(switch_channel_get_variable(m_switch_channel, "CONVERSATION_ID"));
+        m_conversation_id = std::string(switch_channel_get_variable(m_switch_channel, "CONVERSATION_ID"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
-        m_phonecontroller_uri(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
+        m_phonecontroller_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
         // m_call_at(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
         // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start call at: %s\n", this, m_call_at.c_str());
@@ -670,7 +670,7 @@ extern "C"
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
                 if (status == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel->hangup_cause, switch_channel_cause2str(channel->hangup_cause)));
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel.hangup_cause, switch_channel_cause2str(channel.hangup_cause)));
                     switch_event_fire(&event);
                 }
 
