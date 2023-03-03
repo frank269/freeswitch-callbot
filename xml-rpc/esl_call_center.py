@@ -4,9 +4,9 @@ import os
 
 class EslCallCenter():
 
-    def __init__(self):
-        super().__init__()
-        self.host = os.getenv('ESL_HOST', "172.16.88.13")
+    def __init__(self, logger):
+        self.log = logger
+        self.host = os.getenv('ESL_HOST', "172.16.88.38")
         self.port = os.getenv('ESL_PORT', "8021")
         self.password = os.getenv('ESL_PASSWORD', "ClueCon")
 

@@ -9,7 +9,7 @@ class ESLThread(threading.Thread):
     def __init__(self, logger):
         super().__init__()
         self.logger = logger
-        self.freeswitch = EslCallCenter()
+        self.freeswitch = EslCallCenter(logger)
         self.__run_flag = True
         self.connect()
 
@@ -80,3 +80,8 @@ class ESLThread(threading.Thread):
             "sip_code" : event["sip_code"],
         }
         self.logger.debug("call phoneGatewayEndCall response: {0}".format(server.phoneGatewayEndCall(json.dumps(request))))
+
+
+
+# esl_thread = ESLThread(logging.getLogger(__name__))
+# esl_thread.start()
