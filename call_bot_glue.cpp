@@ -119,7 +119,7 @@ public:
         // cJSON_Delete(jResult);
     }
 
-    char *build_response_json(long long hangup_at, int sip_code, char *hangup_cause)
+    char *build_response_json(long long hangup_at, int sip_code, const char *hangup_cause)
     {
         cJSON *jResult = cJSON_CreateObject();
         cJSON *jPickupAt = cJSON_CreateNumber(m_pickup_at);
@@ -670,7 +670,7 @@ extern "C"
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
                 if (status == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel.hangup_cause, switch_channel_cause2str(channel.hangup_cause)));
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel->hangup_cause, switch_channel_cause2str(channel->hangup_cause)));
                     switch_event_fire(&event);
                 }
 
