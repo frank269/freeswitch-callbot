@@ -41,7 +41,7 @@ class CallResponse():
         self.call_at = call_at
         self.pickup_at = pickup_at
         self.hangup_at = hangup_at
-        self.status = 103 if hangup_cause == "NORMAL_CLEARING" else 104
+        self.status = 103 if hangup_cause == "NO_USER_RESPONSE" else 104
         self.sip_code = PbxHangupCause[hangup_cause].value
         
     def __str__(self):

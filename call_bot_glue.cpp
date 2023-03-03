@@ -147,6 +147,7 @@ public:
         cJSON_AddItemToObject(jResult, "hangup_cause", jHangupCause);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer hangup response json: %s.\n", json);
         return json;
     }
 
@@ -318,11 +319,13 @@ public:
 
     void set_bot_hangup()
     {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer run set_bot_hangup.\n");
         m_bot_hangup = true;
     }
 
     void set_bot_transfer()
     {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer run set_bot_transfers.\n");
         m_bot_transfer = true;
     }
 
