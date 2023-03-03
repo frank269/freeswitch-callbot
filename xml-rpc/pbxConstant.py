@@ -1,9 +1,10 @@
 from enum import Enum
+import os
 
-pbx_host = 'localhost'
-pbx_username = 'freeswitch'
-pbx_password = 'works'
-pbx_port = '8080'
+pbx_host = os.getenv('PBX_HOST', "localhost")
+pbx_username = os.getenv('PBX_USERNAME','freeswitch')
+pbx_password = os.getenv('PBX_PASSWORD','works')
+pbx_port = os.getenv('PBX_PORT','8080')
 
 
 class PbxHangupCause(Enum):

@@ -4,6 +4,7 @@ import xmlrpc.client
 import json
 import time
 from pbxConstant import *
+from esl_thread import *
 
 class CallRequest():
     def __init__(self, json_str: str) -> None:
@@ -49,6 +50,9 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as server:
     server.register_introspection_functions()
     
+    eslThread = ESLThread()
+    eslThread.start()
+
     def sendToFreeswitchServer(server_uri: str, functionName: str, content: str):
         serv = xmlrpc.client.ServerProxy(server_uri)
         return serv.freeswitch.api(functionName, content)

@@ -592,6 +592,7 @@ extern "C"
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
+        switch_event_t *event;
         switch_channel_t *channel = switch_core_session_get_channel(session);
 
         if (bug)
