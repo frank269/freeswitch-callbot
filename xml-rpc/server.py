@@ -18,20 +18,21 @@ class CallRequest():
         self.call_at = time.time() * 1000
         
     def __str__(self):
-        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2}}}{3}".format(
+        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3}}}{4}".format(
             self.grpc_server, 
             self.conversation_id,
             self.controller_url,
+            self.call_at,
             self.customer_number)
 
 
 class CallResponse():
-    def __init__(self, conversation_id: str, call_at: int, pickup_at: int, hangup_at: int, hangup_cause: str, status: int) -> None:
+    def __init__(self, conversation_id: str, call_at: int, pickup_at: int, hangup_at: int, hangup_cause: str) -> None:
         self.conversation_id = conversation_id
         self.call_at = call_at
         self.pickup_at = pickup_at
         self.hangup_at = hangup_at
-        self.status = status
+        self.status = 103 if hangup_cause == "NORMAL_CLEARING" else 104
         self.sip_code = PbxHangupCause[hangup_cause].value
         
     def __str__(self):
@@ -75,7 +76,8 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
             }
         if "-ERR" in server_response:
             hangup_cause = server_response.strip().split("-ERR ")[1]
-            call_response = CallResponse(call_request.conversation_id,call_request.call_at, 0, 0, hangup_cause, 103)
+            call_response = CallResponse(call_request.conversation_id,call_request.call_at, 0, time.time() * 1000, hangup_cause)
+            print(call_response.__str__())
             print(sendEndCallToCallControllerServer(call_request.controller_url, call_response.__str__()))
             response = {
                 "status" : -1,
