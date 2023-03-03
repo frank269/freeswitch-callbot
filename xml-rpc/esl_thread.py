@@ -5,13 +5,10 @@ import time
 import logging
 import xmlrpc.client
 import json
-
-
 class ESLThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, logger):
         super().__init__()
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger = logger
         self.freeswitch = EslCallCenter()
         self.__run_flag = True
         self.connect()
@@ -71,7 +68,7 @@ class ESLThread(threading.Thread):
         self.logger.info("esl thread is stopped!")
 
     def process_event(self, json_string):
-        print(json_string)
+        self.logger.debug("received event: {0}".format(json_string))
         event = json.loads(json_string)
         server = xmlrpc.client.ServerProxy(event["phone_controller_uri"])
         request = {
@@ -82,4 +79,4 @@ class ESLThread(threading.Thread):
             "status" : 102 if event["is_bot_transfer"] else (100 if event["is_bot_hangup"] else 101),
             "sip_code" : event["sip_code"],
         }
-        print(server.phoneGatewayEndCall(json.dumps(request)))
+        self.logger.debug("call phoneGatewayEndCall response: {0}".format(server.phoneGatewayEndCall(json.dumps(request))))

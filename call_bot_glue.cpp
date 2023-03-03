@@ -58,6 +58,8 @@ public:
         switch_core_session_t *session, uint32_t channels, char *lang, int interim) : m_session(session),
                                                                                       m_writesDone(false),
                                                                                       m_connected(false),
+                                                                                      m_bot_hangup(false),
+                                                                                      m_bot_transfer(false),
                                                                                       m_language(lang),
                                                                                       m_interim(interim),
                                                                                       m_audioBuffer(CHUNKSIZE, 15)

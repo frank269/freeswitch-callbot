@@ -5,6 +5,15 @@ import json
 import time
 from pbxConstant import *
 from esl_thread import *
+import logging
+
+logging.basicConfig(filename="logs/out.log",
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 class CallRequest():
     def __init__(self, json_str: str) -> None:
@@ -51,7 +60,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as server:
     server.register_introspection_functions()
 
-    eslThread = ESLThread()
+    eslThread = ESLThread(logger)
     eslThread.start()
 
     def sendToFreeswitchServer(server_uri: str, functionName: str, content: str):
@@ -65,11 +74,11 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
     @server.register_function
     def callControllerServiceRequest(json_request: str):
         call_request = CallRequest(json_request)
-        print("callControllerServiceRequest request: {}".format(json_request))
+        logger.debug("callControllerServiceRequest request: {}".format(json_request))
         server_response = sendToFreeswitchServer("http://%s:%s@%s:%s" % (pbx_username, pbx_password, pbx_host, pbx_port),
                                    "originate",
                                    "{0} &start_call_with_bot".format(call_request))
-        print("callControllerServiceRequest server_response: {}".format(server_response))
+        logger.debug("callControllerServiceRequest server_response: {}".format(server_response))
         response = {
                 "status" : 0,
                 "msg" : "success"
@@ -77,8 +86,8 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
         if "-ERR" in server_response:
             hangup_cause = server_response.strip().split("-ERR ")[1]
             call_response = CallResponse(call_request.conversation_id,call_request.call_at, 0, time.time() * 1000, hangup_cause)
-            print(call_response.__str__())
-            print(sendEndCallToCallControllerServer(call_request.controller_url, call_response.__str__()))
+            logger.debug(call_response.__str__())
+            logger.debug(sendEndCallToCallControllerServer(call_request.controller_url, call_response.__str__()))
             response = {
                 "status" : -1,
                 "msg" : server_response
@@ -88,7 +97,7 @@ with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as ser
 
     @server.register_function
     def phoneGatewayEndCall(json_response: str):
-        print("phoneGatewayEndCall message: {}".format(json_response))
+        logger.debug("phoneGatewayEndCall message: {}".format(json_response))
         return json.dumps({
             "status" : 0,
             "msg" : "success"
