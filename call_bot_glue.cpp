@@ -65,6 +65,7 @@ public:
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
+        m_pickup_at = switch_micro_time_now() / 1000;
     }
 
     ~GStreamer()
@@ -125,15 +126,21 @@ public:
         cJSON *jPickupAt = cJSON_CreateNumber(m_pickup_at);
         cJSON *jHangupAt = cJSON_CreateNumber(hangup_at);
         cJSON *jCallAt = cJSON_CreateNumber(m_call_at);
-        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
-        cJSON *jStatus = cJSON_CreateString(hangup_cause);
+        cJSON *jConversationId = cJSON_CreateString(m_conversation_id.c_str());
+        cJSON *jBotMasterUri = cJSON_CreateString(m_botmaster_uri.c_str());
+        cJSON *jPhoneControllerUri = cJSON_CreateString(m_phonecontroller_uri.c_str());
+        cJSON *jIsBotHangup = cJSON_CreateBool(m_bot_hangup);
+        cJSON *jIsBotTransfer = cJSON_CreateBool(m_bot_transfer);
         cJSON *jHangupCause = cJSON_CreateString(hangup_cause);
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
         cJSON_AddItemToObject(jResult, "pickup_at", jPickupAt);
         cJSON_AddItemToObject(jResult, "call_at", jCallAt);
         cJSON_AddItemToObject(jResult, "hangup_at", jHangupAt);
         cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
-        cJSON_AddItemToObject(jResult, "status", jStatus);
+        cJSON_AddItemToObject(jResult, "bot_master_uri", jBotMasterUri);
+        cJSON_AddItemToObject(jResult, "phone_controller_uri", jPhoneControllerUri);
+        cJSON_AddItemToObject(jResult, "is_bot_hangup", jIsBotHangup);
+        cJSON_AddItemToObject(jResult, "is_bot_transfer", jIsBotTransfer);
         cJSON_AddItemToObject(jResult, "sip_code", jSipCode);
         cJSON_AddItemToObject(jResult, "hangup_cause", jHangupCause);
         char *json = cJSON_PrintUnformatted(jResult);
@@ -149,8 +156,8 @@ public:
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
         m_phonecontroller_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
-        // m_call_at(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start call at: %s\n", this, m_call_at.c_str());
+        m_call_at = atol(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start call at: %d\n", this, m_call_at);
 
         std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(m_botmaster_uri.c_str(), grpc::InsecureChannelCredentials());
         if (!grpcChannel)
@@ -665,7 +672,7 @@ extern "C"
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
-                long long now = switch_micro_time_now();
+                long long now = switch_micro_time_now() / 1000;
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
 
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
