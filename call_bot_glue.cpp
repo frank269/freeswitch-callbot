@@ -666,11 +666,12 @@ extern "C"
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 long long now = switch_micro_time_now();
+                const char *hangup_cause = switch_channel_cause2str(channel->hangup_cause);
 
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
                 if (status == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel->hangup_cause, switch_channel_cause2str(channel->hangup_cause)));
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, 0, hangup_cause));
                     switch_event_fire(&event);
                 }
 
