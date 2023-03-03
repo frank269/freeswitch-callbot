@@ -119,27 +119,51 @@ public:
         // cJSON_Delete(jResult);
     }
 
+    char *build_response_json(long long hangup_at, int sip_code, char *hangup_cause)
+    {
+        cJSON *jResult = cJSON_CreateObject();
+        cJSON *jPickupAt = cJSON_CreateNumber(m_pickup_at);
+        cJSON *jHangupAt = cJSON_CreateNumber(hangup_at);
+        cJSON *jCallAt = cJSON_CreateNumber(m_call_at);
+        cJSON *jConversationId = cJSON_CreateString(m_request.mutable_config()->conversation_id().c_str());
+        cJSON *jStatus = cJSON_CreateString(hangup_cause);
+        cJSON *jHangupCause = cJSON_CreateString(hangup_cause);
+        cJSON *jSipCode = cJSON_CreateNumber(sip_code);
+        cJSON_AddItemToObject(jResult, "pickup_at", jPickupAt);
+        cJSON_AddItemToObject(jResult, "call_at", jCallAt);
+        cJSON_AddItemToObject(jResult, "hangup_at", jHangupAt);
+        cJSON_AddItemToObject(jResult, "conversation_id", jConversationId);
+        cJSON_AddItemToObject(jResult, "status", jStatus);
+        cJSON_AddItemToObject(jResult, "sip_code", jSipCode);
+        cJSON_AddItemToObject(jResult, "hangup_cause", jHangupCause);
+        char *json = cJSON_PrintUnformatted(jResult);
+        cJSON_Delete(jResult);
+        return json;
+    }
+
     void createInitMessage()
     {
+        m_botmaster_uri(switch_channel_get_variable(m_switch_channel, "CALLBOT_MASTER_URI"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+        m_conversation_id(switch_channel_get_variable(m_switch_channel, "CONVERSATION_ID"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
+        m_phonecontroller_uri(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
+        // m_call_at(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start call at: %s\n", this, m_call_at.c_str());
 
-        const char *var = switch_channel_get_variable(m_switch_channel, "CALLBOT_MASTER_URI");
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p creating grpc channel to %s\n", this, var);
-        const char *var_session_id = switch_channel_get_variable(m_switch_channel, "SESSION_ID");
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, var_session_id);
-
-        std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(var, grpc::InsecureChannelCredentials());
+        std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(m_botmaster_uri.c_str(), grpc::InsecureChannelCredentials());
         if (!grpcChannel)
         {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, var);
-            throw std::runtime_error(std::string("Error creating grpc channel to ") + var);
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+            throw std::runtime_error(std::string("Error creating grpc channel to ") + m_botmaster_uri.c_str());
         }
 
         m_stub = std::move(smartivrphonegateway::SmartIVRPhonegateway::NewStub(grpcChannel));
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
-        std::string conversation_id(var_session_id);
-        streaming_config->set_conversation_id(conversation_id);
+        streaming_config->set_conversation_id(m_conversation_id);
         m_request.set_is_playing(false);
         m_request.set_key_press("");
         m_request.set_audio_content("");
@@ -283,6 +307,16 @@ public:
         }
     }
 
+    void set_bot_hangup()
+    {
+        m_bot_hangup = true;
+    }
+
+    void set_bot_transfer()
+    {
+        m_bot_transfer = true;
+    }
+
 private:
     switch_core_session_t *m_session;
     grpc::ClientContext m_context;
@@ -298,6 +332,15 @@ private:
     SimpleBuffer m_audioBuffer;
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
+
+    // master data
+    std::string m_botmaster_uri;
+    std::string m_phonecontroller_uri;
+    std::string m_conversation_id;
+    long long m_call_at = 0;
+    long long m_pickup_at = 0;
+    bool m_bot_hangup;
+    bool m_bot_transfer;
 };
 
 static std::vector<uint8_t> parse_byte_array(std::string str)
@@ -438,7 +481,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
                 //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
-
+                streamer->set_bot_transfer();
                 sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
                 if (!sip_uri)
                 {
@@ -456,6 +499,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
+                streamer->set_bot_hangup();
                 if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_END);
@@ -621,11 +665,12 @@ extern "C"
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
-                // send end call info to xmlrpc server
+                long long now = switch_micro_time_now();
+
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
                 if (status == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, switch_core_session_get_uuid(session));
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, channel->hangup_cause, switch_channel_cause2str(channel->hangup_cause)));
                     switch_event_fire(&event);
                 }
 

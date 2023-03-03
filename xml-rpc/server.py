@@ -18,7 +18,7 @@ class CallRequest():
         self.call_at = time.time() * 1000
         
     def __str__(self):
-        return "{{CALLBOT_MASTER_URI={0},SESSION_ID={1},CALLBOT_CONTROLLER_URI={2}}}{3}".format(
+        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2}}}{3}".format(
             self.grpc_server, 
             self.conversation_id,
             self.controller_url,
@@ -49,7 +49,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 with SimpleXMLRPCServer(('0.0.0.0', 9000), requestHandler=RequestHandler) as server:
     server.register_introspection_functions()
-    
+
     eslThread = ESLThread()
     eslThread.start()
 
