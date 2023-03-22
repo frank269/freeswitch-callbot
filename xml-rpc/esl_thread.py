@@ -78,6 +78,7 @@ class ESLThread(threading.Thread):
             "conversation_id" : event["conversation_id"],
             "status" : 102 if event["is_bot_transfer"] else (100 if event["is_bot_hangup"] else 101),
             "sip_code" : event["sip_code"],
+            "audio_url" : event["record_path"],
         }
         self.logger.debug("call phoneGatewayEndCall response: {0}".format(server.phoneGatewayEndCall(json.dumps(request))))
 

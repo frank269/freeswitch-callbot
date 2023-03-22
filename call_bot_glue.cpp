@@ -134,6 +134,8 @@ public:
         cJSON *jIsBotHangup = cJSON_CreateBool(m_bot_hangup);
         cJSON *jIsBotTransfer = cJSON_CreateBool(m_bot_transfer);
         cJSON *jHangupCause = cJSON_CreateString(hangup_cause);
+        cJSON *jRecordPath = cJSON_CreateString(m_record_path.c_str());
+        cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
         cJSON_AddItemToObject(jResult, "pickup_at", jPickupAt);
         cJSON_AddItemToObject(jResult, "call_at", jCallAt);
@@ -145,6 +147,8 @@ public:
         cJSON_AddItemToObject(jResult, "is_bot_transfer", jIsBotTransfer);
         cJSON_AddItemToObject(jResult, "sip_code", jSipCode);
         cJSON_AddItemToObject(jResult, "hangup_cause", jHangupCause);
+        cJSON_AddItemToObject(jResult, "record_path", jRecordPath);
+        cJSON_AddItemToObject(jResult, "record_name", jRecordName);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer hangup response json: %s.\n", json);
@@ -159,6 +163,10 @@ public:
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
         m_phonecontroller_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
+        m_record_name = std::string(switch_channel_get_variable(m_switch_channel, "record_name"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start with record name %s\n", this, m_record_name.c_str());
+        m_record_path = std::string(switch_channel_get_variable(m_switch_channel, "record_path"));
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start with record uri %s\n", this, m_record_path.c_str());
         m_call_at = atol(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p start call at: %d\n", this, m_call_at);
 
@@ -349,6 +357,8 @@ private:
     std::string m_botmaster_uri;
     std::string m_phonecontroller_uri;
     std::string m_conversation_id;
+    std::string m_record_name;
+    std::string m_record_path;
     long long m_call_at = 0;
     long long m_pickup_at = 0;
     bool m_bot_hangup;
