@@ -73,11 +73,11 @@ public:
 
     ~GStreamer()
     {
-        switch_channel_t *channel;
+        // switch_channel_t *channel;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
-        channel = switch_core_session_get_channel(m_session);
-        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-        delete channel;
+        // channel = switch_core_session_get_channel(m_session);
+        // switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        // delete channel;
     }
 
     void print_request()
@@ -208,8 +208,8 @@ public:
         print_request();
         m_streamer->Write(m_request);
 
-        stream->Finish([stream](grpc::Status status)
-                       {
+        m_streamer->Finish([stream](grpc::Status status)
+                           {
             if (status.ok()) {
                 // The RPC completed successfully
             } else {
@@ -539,8 +539,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_fire(&event);
                 }
 
-                streamer->WritesDone();
-                streamer->Finish();
+                streamer->writesDone();
+                streamer->finish();
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
