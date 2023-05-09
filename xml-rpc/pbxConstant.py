@@ -9,7 +9,7 @@ record_folder = os.getenv('RECORD_FOLDER','/var/lib/freeswitch/recordings/callbo
 record_prefix = os.getenv('RECORD_PREFIX','https://14.232.240.205/file/callbot/')
 
 outbound_number = os.getenv('OUTBOUND_NUMBER','842488898268')
-pbx_gateway_uuid = os.getenv('GATEWAY_ID','8ab65d17-7d16-4971-91b5-60035cd13340')
+pbx_public_ip = os.getenv('PUBLIC_IP','14.232.240.205:5090')
 
 class PbxHangupCause(Enum):
     NONE = 0

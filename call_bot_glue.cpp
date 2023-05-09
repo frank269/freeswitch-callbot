@@ -61,8 +61,9 @@ public:
                                                                                       m_bot_hangup(false),
                                                                                       m_bot_transfer(false),
                                                                                       m_language(lang),
-                                                                                      m_interim(interim),
-                                                                                      m_audioBuffer(CHUNKSIZE, 15)
+                                                                                      m_interim(interim)
+    //   ,
+    //   m_audioBuffer(CHUNKSIZE, 15)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -72,7 +73,11 @@ public:
 
     ~GStreamer()
     {
+        switch_channel_t *channel;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
+        channel = switch_core_session_get_channel(m_session);
+        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        delete channel;
     }
 
     void print_request()
@@ -203,31 +208,46 @@ public:
         print_request();
         m_streamer->Write(m_request);
 
-        // send any buffered audio
-        int nFrames = m_audioBuffer.getNumItems();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
-        if (nFrames)
-        {
-            char *p;
-            do
-            {
-                p = m_audioBuffer.getNextChunk();
-                if (p)
-                {
-                    write(p, CHUNKSIZE);
+        stream->Finish([stream](grpc::Status status)
+                       {
+            if (status.ok()) {
+                // The RPC completed successfully
+            } else {
+                // The RPC completed unsuccessfully
+                if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
+                    // The client connection was closed
+                    switch_channel_t *channel;
+                    channel = switch_core_session_get_channel(m_session);
+                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                    delete channel;
                 }
-            } while (p);
-        }
+            } });
+
+        // send any buffered audio
+        // int nFrames = m_audioBuffer.getNumItems();
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
+        // if (nFrames)
+        // {
+        //     char *p;
+        //     do
+        //     {
+        //         p = m_audioBuffer.getNextChunk();
+        //         if (p)
+        //         {
+        //             write(p, CHUNKSIZE);
+        //         }
+        //     } while (p);
+        // }
     }
 
     bool write(void *data, uint32_t datalen)
     {
         if (!m_connected)
         {
-            if (datalen % CHUNKSIZE == 0)
-            {
-                m_audioBuffer.add(data, datalen);
-            }
+            // if (datalen % CHUNKSIZE == 0)
+            // {
+            //     m_audioBuffer.add(data, datalen);
+            // }
             return true;
         }
         m_request.clear_audio_content();
@@ -349,7 +369,7 @@ private:
     bool m_interim;
     std::string m_language;
     std::promise<void> m_promise;
-    SimpleBuffer m_audioBuffer;
+    // SimpleBuffer m_audioBuffer;
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
@@ -518,6 +538,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_SIP, sip_uri);
                     switch_event_fire(&event);
                 }
+
+                streamer->WritesDone();
+                streamer->Finish();
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");

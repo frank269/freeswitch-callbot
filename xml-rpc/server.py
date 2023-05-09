@@ -28,25 +28,13 @@ class CallRequest():
         self.action_type = request['action_type']
         self.conversation_id = request['conversation_id']
         req_number = request['customer_number']
-        self.customer_number = "sofia/gateway/{0}/{1}".format(pbx_gateway_uuid,req_number)
-        self.display_number = request['display_number']
+        self.customer_number = "user/{0}".format(req_number) if '@' in req_number else "sofia/internal/{0}@{1}".format(req_number,pbx_public_ip)
         self.record_name = "{0}.wav".format(uuid4())
         self.local_record_path = "{0}{1}".format(record_folder,self.record_name)
         self.record_path = "{0}{1}".format(record_prefix,self.record_name)
         self.call_at = time.time() * 1000
-        self.outbound_number = request['outbound_number'] if "outbound_number" in request else outbound_number
+        self.outbound_number = request['display_number'] if "display_number" in request else outbound_number
         self.transfer = "TRANSFER_EXTENSION={0}".format(request["transfer_extension"]) if "transfer_extension" in request else ""
-        
-    # def __str__(self):
-    #     return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='record_session::{5}',record_name={6},record_path={7}}}{4}".format(
-    #         self.grpc_server, 
-    #         self.conversation_id,
-    #         self.controller_url,
-    #         self.call_at,
-    #         self.customer_number,
-    #         self.local_record_path,
-    #         self.record_name,
-    #         self.record_path)
 
     def __str__(self):
         return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='record_session::{5}',record_name={6},record_path={7},ignore_early_media=true,origination_caller_id_number={8},{9}}}{4}".format(
@@ -99,7 +87,7 @@ def sendEndCallToCallControllerServer(server_uri: str, content: str):
 def startCall(json_request: str):
     call_request = CallRequest(json_request)
     logger.debug("startCall request: {}".format(json_request))
-    # logger.debug("startCall with url: {}".format(call_request))
+    logger.debug("startCall with url: {}".format(call_request))
     server_response = sendToFreeswitchServer("http://%s:%s@%s:%s" % (pbx_username, pbx_password, pbx_host, pbx_port),
                             "originate",
                             "{0} &start_call_with_bot".format(call_request))
@@ -138,6 +126,6 @@ def run_server(host="0.0.0.0", port=9000):
         server.serve_forever()
 
 if __name__ == '__main__':
-    eslThread = ESLThread(logger)
-    eslThread.start()
+    # eslThread = ESLThread(logger)
+    # eslThread.start()
     run_server()

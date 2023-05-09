@@ -8,9 +8,10 @@ request = {
     "action_type" : 1,
     "conversation_id" : "20230220111113-adb0d967-015e-45e5-bf2a-e9038fa2e8b9",
     "customer_number" : "0979019082",
-    "display_number" : "",
-    "transfer_extension" : "sip:999999@callbot.metechvn.com"
+    "display_number" : "123456789",
+    "transfer_extension" : "sip:900009@callbot.metechvn.com"
 }
 # for i in [3]:
     # request["customer_number"] = "user/{0}@callbot.metechvn.com".format(100001+i%5)
-print(s.callControllerServiceRequest(json.dumps(request)))
+for i in range(200):
+    print(s.callControllerServiceRequest(json.dumps(request)))
