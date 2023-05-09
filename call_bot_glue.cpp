@@ -683,10 +683,11 @@ extern "C"
                 streamer->writesDone();
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
+                return SWITCH_STATUS_SUCCESS;
                 switch_status_t status;
-                if (cb->thread)
-                    switch_thread_join(&status, cb->thread);
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+                // if (cb->thread)
+                //     switch_thread_join(&status, cb->thread);
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 long long now = switch_micro_time_now() / 1000;
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
