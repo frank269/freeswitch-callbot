@@ -134,7 +134,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
 {
-	switch_core_session_t *session = switch_core_media_bug_get_session(bug);
+	// switch_core_session_t *session = switch_core_media_bug_get_session(bug);
 
 	switch (type)
 	{
