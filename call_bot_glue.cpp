@@ -524,8 +524,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_fire(&event);
                 }
 
-                streamer->writesDone();
-                streamer->finish();
+                // streamer->writesDone();
+                // streamer->finish();
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
