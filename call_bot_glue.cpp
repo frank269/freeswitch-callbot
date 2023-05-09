@@ -684,7 +684,8 @@ extern "C"
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_status_t status;
-                switch_thread_join(&status, cb->thread);
+                if (cb->thread)
+                    switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 long long now = switch_micro_time_now() / 1000;
@@ -721,7 +722,8 @@ extern "C"
             // remove audio file
             char *filename;
             asprintf(&filename, "/%s.wav", cb->sessionId);
-            remove(filename);
+            if (access(filename, F_OK) == 0)
+                remove(filename);
             free(filename);
 
             switch_mutex_unlock(cb->mutex);
