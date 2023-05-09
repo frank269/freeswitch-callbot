@@ -208,21 +208,6 @@ public:
         print_request();
         m_streamer->Write(m_request);
 
-        m_streamer->Finish([stream](grpc::Status status)
-                           {
-            if (status.ok()) {
-                // The RPC completed successfully
-            } else {
-                // The RPC completed unsuccessfully
-                if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
-                    // The client connection was closed
-                    switch_channel_t *channel;
-                    channel = switch_core_session_get_channel(m_session);
-                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-                    delete channel;
-                }
-            } });
-
         // send any buffered audio
         // int nFrames = m_audioBuffer.getNumItems();
         // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
@@ -704,6 +689,7 @@ extern "C"
             if (streamer)
             {
                 streamer->writesDone();
+                streamer->finish();
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_status_t status;
