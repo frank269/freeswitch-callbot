@@ -687,6 +687,10 @@ extern "C"
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
+                long long created_time = channel->caller_profile->times->created / 1000;
+                long long answered_time = channel->caller_profile->times->answered / 1000;
+                long long hangup_time = channel->caller_profile->times->hungup / 1000;
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %d, answered_time: %d, hangup_time: %d\n", created_time, answered_time, hangup_time);
                 long long now = switch_micro_time_now() / 1000;
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
 
