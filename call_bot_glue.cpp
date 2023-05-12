@@ -51,6 +51,14 @@ namespace
     }
 }
 
+struct audio_info
+{
+    char sessionId[MAX_SESSION_ID + 1];
+    switch_core_session_t *session;
+    switch_channel_t *channel;
+    SmartIVRResponse *response;
+};
+
 class GStreamer
 {
 public:
@@ -421,6 +429,22 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     return SWITCH_STATUS_SUCCESS;
 }
 
+static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
+{
+    // struct audio_info *ai = (struct audio_info *)obj;
+
+    // if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
+    // {
+    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file in event handler!\n");
+    // }
+    // else
+    // {
+    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: cannot play file in event handler!\n");
+    // }
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: Play file!\n");
+    return nullptr;
+}
+
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
 {
     struct cap_cb *cb = (struct cap_cb *)obj;
@@ -490,21 +514,28 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
                     //     switch_event_fire(&event);
                     // }
-                    is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
-                    if (is_playing && strcmp(is_playing, "true") == 0)
-                    {
-                        switch_channel_set_flag(channel, CF_BREAK);
-                    }
+                    switch_channel_set_flag(channel, CF_BREAK);
                 }
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
-                if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
-                }
-                else
-                {
-                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in event handler!\n");
-                }
+                // if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
+                // }
+                // else
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in event handler!\n");
+                // }
+
+                switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+                // switch_core_new_memory_pool(&cb->pool);
+
+                switch_threadattr_t *thd_attr = NULL;
+                switch_threadattr_create(&thd_attr, pool);
+                switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
+                switch_thread_t *thread;
+                // create play audio thread
+                switch_thread_create(&cb->thread, thd_attr, play_audio_thread, NULL, pool);
+
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
