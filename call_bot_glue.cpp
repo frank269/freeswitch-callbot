@@ -534,7 +534,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
                 switch_thread_t *thread;
                 // create play audio thread
-                switch_thread_create(thread, thd_attr, play_audio_thread, NULL, pool);
+                switch_thread_create(&thread, thd_attr, play_audio_thread, NULL, pool);
 
                 break;
 
