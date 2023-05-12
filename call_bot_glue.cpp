@@ -427,7 +427,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
     const char *filePath;
-    char *sip_uri;
+    const char *sip_uri;
     cJSON *transfer_json;
     switch_event_t *event;
     char *splited[2];
@@ -543,9 +543,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_SIP, sip_uri);
                 //     switch_event_fire(&event);
                 // }
-                switch_separate_string(sip_uri, ':', splited, 2);
+                switch_separate_string((char *)sip_uri, ':', splited, 2);
                 sip_uri = splited[1];
-                switch_separate_string(sip_uri, '@', splited, 2);
+                switch_separate_string((char *)sip_uri, '@', splited, 2);
                 sip_extension = splited[0];
                 sip_domain = splited[1];
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
