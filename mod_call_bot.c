@@ -108,7 +108,7 @@ static void event_process_response_handler(switch_event_t *event)
 
 static void event_hangup_handler(switch_event_t *event)
 {
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_hangup_handler: call with bot is hangup!\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
@@ -123,7 +123,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received event_stop_audio_handler with session_id %s\n", sessionId);
 	is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
 	if (is_playing && strcmp(is_playing, "true") == 0)
 	{
@@ -241,7 +241,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		if (!isStarted)
 		{
 			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "CALL_WITH_BOT Start capture....\n");
+			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
 			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 			isStarted = 1;
 		}
@@ -313,7 +313,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_api_interface_t *api_interface;
 	switch_application_interface_t *app_interface;
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API loading..\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "mod_call_bot API loading..\n");
 
 	/* create/register custom event message types */
 
@@ -338,21 +338,21 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	/* connect my internal structure to the blank pointer passed to me */
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot version 1.0.2\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot version 1.0.2\n");
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot grpc loading..\n");
 	if (SWITCH_STATUS_FALSE == call_bot_init())
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
 	switch_console_set_complete("add start_call_with_bot ::console::list_uuid start 1 2");
 
 	SWITCH_ADD_APP(app_interface, "start_call_with_bot", "Start call with bot API", "Start call with bot API", call_bot_app_function, TRANSCRIBE_API_SYNTAX, SAF_NONE);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "mod_call_bot API successfully loaded\n");
 
 	/* indicate that the module should continue to be loaded */
 	return SWITCH_STATUS_SUCCESS;

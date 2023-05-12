@@ -61,8 +61,9 @@ public:
                                                                                       m_bot_hangup(false),
                                                                                       m_bot_transfer(false),
                                                                                       m_language(lang),
-                                                                                      m_interim(interim),
-                                                                                      m_audioBuffer(CHUNKSIZE, 15)
+                                                                                      m_interim(interim)
+    //   ,
+    //   m_audioBuffer(CHUNKSIZE, 15)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -151,7 +152,7 @@ public:
         cJSON_AddItemToObject(jResult, "record_name", jRecordName);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer hangup response json: %s.\n", json);
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Gstreamer hangup response json: %s.\n", json);
         return json;
     }
 
@@ -204,30 +205,30 @@ public:
         m_streamer->Write(m_request);
 
         // send any buffered audio
-        int nFrames = m_audioBuffer.getNumItems();
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
-        if (nFrames)
-        {
-            char *p;
-            do
-            {
-                p = m_audioBuffer.getNextChunk();
-                if (p)
-                {
-                    write(p, CHUNKSIZE);
-                }
-            } while (p);
-        }
+        // int nFrames = m_audioBuffer.getNumItems();
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
+        // if (nFrames)
+        // {
+        //     char *p;
+        //     do
+        //     {
+        //         p = m_audioBuffer.getNextChunk();
+        //         if (p)
+        //         {
+        //             write(p, CHUNKSIZE);
+        //         }
+        //     } while (p);
+        // }
     }
 
     bool write(void *data, uint32_t datalen)
     {
         if (!m_connected)
         {
-            if (datalen % CHUNKSIZE == 0)
-            {
-                m_audioBuffer.add(data, datalen);
-            }
+            // if (datalen % CHUNKSIZE == 0)
+            // {
+            //     m_audioBuffer.add(data, datalen);
+            // }
             return true;
         }
         m_request.clear_audio_content();
@@ -327,13 +328,13 @@ public:
 
     void set_bot_hangup()
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer run set_bot_hangup.\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Gstreamer run set_bot_hangup.\n");
         m_bot_hangup = true;
     }
 
     void set_bot_transfer()
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Gstreamer run set_bot_transfers.\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Gstreamer run set_bot_transfers.\n");
         m_bot_transfer = true;
     }
 
@@ -349,7 +350,7 @@ private:
     bool m_interim;
     std::string m_language;
     std::promise<void> m_promise;
-    SimpleBuffer m_audioBuffer;
+    // SimpleBuffer m_audioBuffer;
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
@@ -427,7 +428,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     bool connected = streamer->waitForConnect();
     if (!connected)
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot grpc read thread exiting since we didnt connect\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
@@ -658,6 +659,7 @@ extern "C"
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
+        long long now = switch_micro_time_now() / 1000;
         switch_event_t *event;
         const char *created_time = NULL;
         const char *answered_time = NULL;
@@ -695,7 +697,7 @@ extern "C"
                 answered_time = switch_channel_get_variable(channel, "answered_time");
                 hangup_time = switch_channel_get_variable(channel, "hangup_time");
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
-                long long now = switch_micro_time_now() / 1000;
+
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
 
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
