@@ -53,10 +53,10 @@ namespace
 
 typedef struct audio_info
 {
-    char sessionId[MAX_SESSION_ID + 1];
+    char *sessionId;
     switch_core_session_t *session;
     switch_channel_t *channel;
-    SmartIVRResponse *response;
+    SmartIVRResponse response;
 } Audio_Info;
 
 class GStreamer
@@ -433,7 +433,7 @@ static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void 
 {
     struct audio_info *ai = (struct audio_info *)obj;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: Play file!\n");
-    if (play_audio(ai->sessionId, parse_byte_array(ai->response->audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
+    if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file in event handler!\n");
     }
