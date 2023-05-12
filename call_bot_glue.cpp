@@ -51,13 +51,13 @@ namespace
     }
 }
 
-struct audio_info
+typedef struct audio_info
 {
     char sessionId[MAX_SESSION_ID + 1];
     switch_core_session_t *session;
     switch_channel_t *channel;
     SmartIVRResponse *response;
-};
+} Audio_Info;
 
 class GStreamer
 {
@@ -431,17 +431,16 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
 
 static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
 {
-    // struct audio_info *ai = (struct audio_info *)obj;
-
-    // if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file in event handler!\n");
-    // }
-    // else
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: cannot play file in event handler!\n");
-    // }
+    struct audio_info *ai = (struct audio_info *)obj;
     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: Play file!\n");
+    if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file in event handler!\n");
+    }
+    else
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: cannot play file in event handler!\n");
+    }
     return nullptr;
 }
 
@@ -461,6 +460,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     switch_threadattr_t *thd_attr = NULL;
     switch_thread_t *audio_thread;
     switch_memory_pool_t *pool;
+    Audio_Info audio_info;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -533,8 +533,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 // switch_core_new_memory_pool(&cb->pool);
                 switch_threadattr_create(&thd_attr, pool);
                 switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
+                // char sessionId[MAX_SESSION_ID + 1];
+                // switch_core_session_t *session;
+                // switch_channel_t *channel;
+                // SmartIVRResponse *response;
+                audio_info = {sessionUUID, session, channel, &response};
                 // create play audio thread
-                switch_thread_create(&audio_thread, thd_attr, play_audio_thread, NULL, pool);
+                switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool);
 
                 break;
 
