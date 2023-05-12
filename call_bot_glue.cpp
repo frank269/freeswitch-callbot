@@ -387,7 +387,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write frame to session %d!\n", fsize);
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio: write %d frame to session!\n", fsize);
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
@@ -395,23 +395,23 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     std::ofstream out(fileName.c_str(), std::ios::binary);
     if (!out)
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: error create file!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio: error create file!\n");
         return status;
     }
     if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing WAV file header!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio: Error writing WAV file header!\n");
         return status;
     }
     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: Error writing audio data to WAV file!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio: Error writing audio data to WAV file!\n");
         return status;
     }
     out.close();
 
     fileName = "/" + fileName;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: write file: %s\n", fileName.c_str());
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName.c_str());
     // status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE);
     // if (status == SWITCH_STATUS_SUCCESS)
     // {
@@ -543,9 +543,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 audio_info.channel = channel;
                 audio_info.response = response;
                 // create play audio thread
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: starting thread....!\n");
                 switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool);
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: start thread done!\n");
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
