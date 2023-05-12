@@ -460,6 +460,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     const char *is_playing;
     switch_threadattr_t *thd_attr = NULL;
     switch_thread_t *audio_thread;
+    switch_memory_pool_t *pool;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -528,7 +529,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in event handler!\n");
                 // }
 
-                switch_memory_pool_t *pool = switch_core_session_get_pool(session);
+                pool = switch_core_session_get_pool(session);
                 // switch_core_new_memory_pool(&cb->pool);
                 switch_threadattr_create(&thd_attr, pool);
                 switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
