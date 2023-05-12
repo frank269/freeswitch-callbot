@@ -459,7 +459,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     const char *sip_domain;
     const char *is_playing;
     switch_threadattr_t *thd_attr = NULL;
-    switch_thread_t *thread;
+    switch_thread_t *audio_thread;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -533,7 +533,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_threadattr_create(&thd_attr, pool);
                 switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
                 // create play audio thread
-                switch_thread_create(&thread, thd_attr, play_audio_thread, NULL, pool);
+                switch_thread_create(&audio_thread, thd_attr, play_audio_thread, NULL, pool);
 
                 break;
 
