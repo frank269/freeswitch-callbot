@@ -432,10 +432,10 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
 static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
 {
     struct audio_info *ai = (struct audio_info *)obj;
-    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: Play file!\n");
+    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: Play file: %s!\n", ai->sessionId);
     if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
     {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file in event handler!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file done!\n");
     }
     else
     {
@@ -461,6 +461,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     switch_thread_t *audio_thread;
     switch_memory_pool_t *pool;
     Audio_Info audio_info;
+    switch_status_t status;
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -542,12 +543,21 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 audio_info.channel = channel;
                 audio_info.response = response;
                 // create play audio thread
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: starting thread....!\n");
                 switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool);
-
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: start thread done!\n");
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
+
+                if (streamer->isPlaying())
+                {
+                    // wait to audio play done
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+                    switch_thread_join(&status, audio_thread);
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+                }
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 // {
                 //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_WAIT);
@@ -566,6 +576,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
+                if (streamer->isPlaying())
+                {
+                    // wait to audio play done
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+                    switch_thread_join(&status, audio_thread);
+                    switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+                }
+
                 //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
                 streamer->set_bot_transfer();
                 sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
