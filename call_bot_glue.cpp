@@ -372,7 +372,7 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
     return vec;
 }
 
-static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_channel_t *channel)
+static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_core_session_t *session, switch_channel_t *channel)
 {
     switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
@@ -415,7 +415,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    switch_ivr_play_file(session, NULL, filePath, NULL);
+    switch_ivr_play_file(session, NULL, fileName.c_str(), NULL);
     switch_channel_set_variable(channel, "IS_PLAYING", "false");
 
     return SWITCH_STATUS_SUCCESS;
@@ -427,7 +427,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
     const char *filePath;
-    const char *sip_uri;
+    char *sip_uri;
     cJSON *transfer_json;
     switch_event_t *event;
     char *splited[2];
@@ -497,7 +497,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     }
                 }
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
-                if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), channel) == SWITCH_STATUS_SUCCESS)
+                if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
                 }
