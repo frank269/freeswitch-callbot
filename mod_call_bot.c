@@ -108,7 +108,7 @@ static void event_process_response_handler(switch_event_t *event)
 
 static void event_hangup_handler(switch_event_t *event)
 {
-	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
