@@ -8,3 +8,6 @@ mod_call_bot_la_CXXFLAGS = $(AM_CXXFLAGS) -std=c++11 -lprotobuf -pthread
 
 mod_call_bot_la_LIBADD   = $(switch_builddir)/libfreeswitch.la
 mod_call_bot_la_LDFLAGS  = -L/usr/local/lib -avoid-version -module -no-undefined -shared `pkg-config --libs --static protobuf grpc++ grpc`
+
+mod_call_bot_la_CFLAGS=$(SYS_XMLRPC_CFLAGS)
+mod_call_bot_la_LDFLAGS+=$(SYS_XMLRPC_LDFLAGS)

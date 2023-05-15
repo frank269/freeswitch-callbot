@@ -18,18 +18,18 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 
 	if (bug)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
 		status = call_bot_session_cleanup(session, 0, bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "callbot stopped\n");
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
+	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
 	return status;
 }
 
 static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
 							const char *details)
 {
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
+	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
 }
 
 static void event_process_response_handler(switch_event_t *event)
@@ -108,7 +108,7 @@ static void event_process_response_handler(switch_event_t *event)
 
 static void event_hangup_handler(switch_event_t *event)
 {
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
+	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
@@ -139,14 +139,14 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	switch (type)
 	{
 	case SWITCH_ABC_TYPE_INIT:
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
 		break;
 
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
 		call_bot_session_cleanup(session, 1, bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
 
@@ -177,7 +177,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (switch_channel_get_private(channel, bugname))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "removing bug from previous call_bot session\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "removing bug from previous call_bot session\n");
 		do_stop(session, bugname);
 	}
 
@@ -192,7 +192,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (!var)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR,
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR,
 						  "CALLBOT_MASTER_URI channel var must be defined\n");
 		return SWITCH_STATUS_FALSE;
 	}
@@ -200,13 +200,13 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
 	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
 		return SWITCH_STATUS_FALSE;
 	}
 
 	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error add bug.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error add bug.\n");
 		return status;
 	}
 
@@ -231,20 +231,19 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	while (switch_channel_ready(channel))
 	{
-		status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
-		if (!SWITCH_READ_ACCEPTABLE(status))
-		{
-			continue;
-		}
-
-		switch_ivr_parse_all_events(session);
 		if (!isStarted)
 		{
+			status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
+			if (!SWITCH_READ_ACCEPTABLE(status))
+			{
+				continue;
+			}
 			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
+			switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
 			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 			isStarted = 1;
 		}
+		switch_ivr_parse_all_events(session);
 	}
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 

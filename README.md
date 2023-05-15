@@ -56,6 +56,8 @@ cd /usr/src \
 && mv freeswitch-callbot mod_call_bot && cd mod_call_bot && git checkout release
 
 
+add module to configure.ac, build/modules.conf.in
+
 cd /usr/src/freeswitch && \
 ./bootstrap.sh -j \
 && cp /usr/src/freeswitch/src/mod/applications/mod_call_bot/modules.conf /usr/src/freeswitch/ \
