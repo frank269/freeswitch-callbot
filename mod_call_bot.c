@@ -231,15 +231,14 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	while (switch_channel_ready(channel))
 	{
-
+		status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
+		if (!SWITCH_READ_ACCEPTABLE(status))
+		{
+			continue;
+		}
 		switch_ivr_parse_all_events(session);
 		if (!isStarted)
 		{
-			status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
-			if (!SWITCH_READ_ACCEPTABLE(status))
-			{
-				continue;
-			}
 			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
 			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
 			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
