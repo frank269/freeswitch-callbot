@@ -146,6 +146,17 @@ public:
         cJSON *jRecordPath = cJSON_CreateString(m_record_path.c_str());
         cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
+
+        int status = 101;
+        if (m_bot_transfer == true)
+        {
+            status = 102;
+        }
+        else if (m_bot_hangup == true)
+        {
+            status = 100;
+        }
+        cJSON *jStatus = cJSON_CreateNumber(status);
         cJSON_AddItemToObject(jResult, "pickup_at", jPickupAt);
         cJSON_AddItemToObject(jResult, "call_at", jCallAt);
         cJSON_AddItemToObject(jResult, "hangup_at", jHangupAt);
@@ -158,6 +169,8 @@ public:
         cJSON_AddItemToObject(jResult, "hangup_cause", jHangupCause);
         cJSON_AddItemToObject(jResult, "record_path", jRecordPath);
         cJSON_AddItemToObject(jResult, "record_name", jRecordName);
+        cJSON_AddItemToObject(jResult, "audio_url", jRecordPath);
+        cJSON_AddItemToObject(jResult, "status", jStatus);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Gstreamer hangup response json: %s.\n", json);
