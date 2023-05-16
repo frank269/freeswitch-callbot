@@ -133,6 +133,7 @@ public:
 
     char *build_response_json(long long hangup_at, int sip_code, const char *hangup_cause)
     {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "abc------------------.\n");
         cJSON *jResult = cJSON_CreateObject();
         cJSON *jPickupAt = cJSON_CreateNumber(m_pickup_at);
         cJSON *jHangupAt = cJSON_CreateNumber(hangup_at);
@@ -146,7 +147,7 @@ public:
         cJSON *jRecordPath = cJSON_CreateString(m_record_path.c_str());
         cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
-
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "abc1------------------.\n");
         int status = 101;
         if (m_bot_transfer == true)
         {
@@ -156,6 +157,7 @@ public:
         {
             status = 100;
         }
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "abc2------------------.\n");
         cJSON *jStatus = cJSON_CreateNumber(status);
         cJSON_AddItemToObject(jResult, "pickup_at", jPickupAt);
         cJSON_AddItemToObject(jResult, "call_at", jCallAt);
