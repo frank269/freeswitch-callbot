@@ -1,5 +1,5 @@
 local jsonString = event:getHeader('mod_call_bot::hangup_json') or '';
-freeswitch.consoleLog("debug", "callbot event_hangup:" .. jsonString .. "\n")
+freeswitch.consoleLog("info", "callbot event_hangup:" .. jsonString .. "\n")
 if jsonString == '' then return; end
 
 local jsonParser = require "resources.functions.lunajson"
@@ -17,4 +17,4 @@ local handle = io.popen(curlCommand)
 local response = handle:read("*a")
 handle:close()
 -- Process the XML-RPC response
-freeswitch.consoleLog("debug", "callbot phoneGatewayEndCall response: " .. response .. "\n")
+freeswitch.consoleLog("info", "callbot phoneGatewayEndCall response: " .. response .. "\n")

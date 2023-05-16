@@ -73,7 +73,7 @@ public:
     //   ,
     //   m_audioBuffer(CHUNKSIZE, 15)
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, " Create GStreamer\n");
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
         m_pickup_at = switch_micro_time_now() / 1000;
@@ -81,7 +81,7 @@ public:
 
     ~GStreamer()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
     void print_request()
@@ -97,10 +97,10 @@ public:
         // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
         // char *json = cJSON_PrintUnformatted(jResult);
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "GStreamer %p sending message: %s\n", this, json);
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
         // free(json);
         // cJSON_Delete(jResult);
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d\n", this, m_request.is_playing());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p audio isplaying: %d\n", this, m_request.is_playing());
     }
 
     void print_response(SmartIVRResponse response)
@@ -122,11 +122,11 @@ public:
         // cJSON_AddItemToObject(jResult, "audio_content", jAudioContent);
 
         // char *json = cJSON_PrintUnformatted(jResult);
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "type: %d\n", response.type());
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "text_asr: %s\n", response.text_asr().c_str());
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "text_bot: %s\n", response.text_bot().c_str());
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "forward_sip_json: %s\n", response.forward_sip_json().c_str());
-        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "audio_content length: %d\n", response.audio_content().length());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "type: %d\n", response.type());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "text_asr: %s\n", response.text_asr().c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "text_bot: %s\n", response.text_bot().c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "forward_sip_json: %s\n", response.forward_sip_json().c_str());
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "audio_content length: %d\n", response.audio_content().length());
         // free(json);
         // cJSON_Delete(jResult);
     }
@@ -172,24 +172,24 @@ public:
         cJSON_AddItemToObject(jResult, "status", jStatus);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "Gstreamer hangup response json: %s.\n", json);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer hangup response json: %s.\n", json);
         return json;
     }
 
     void createInitMessage()
     {
         m_botmaster_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_MASTER_URI"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
         m_conversation_id = std::string(switch_channel_get_variable(m_switch_channel, "CONVERSATION_ID"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start master with session id %s\n", this, m_conversation_id.c_str());
         m_phonecontroller_uri = std::string(switch_channel_get_variable(m_switch_channel, "CALLBOT_CONTROLLER_URI"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start master with phone controller uri %s\n", this, m_phonecontroller_uri.c_str());
         m_record_name = std::string(switch_channel_get_variable(m_switch_channel, "record_name"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p start with record name %s\n", this, m_record_name.c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start with record name %s\n", this, m_record_name.c_str());
         m_record_path = std::string(switch_channel_get_variable(m_switch_channel, "record_path"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p start with record uri %s\n", this, m_record_path.c_str());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start with record uri %s\n", this, m_record_path.c_str());
         m_call_at = atol(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p start call at: %d\n", this, m_call_at);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start call at: %d\n", this, m_call_at);
 
         std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(m_botmaster_uri.c_str(), grpc::InsecureChannelCredentials());
         if (!grpcChannel)
@@ -213,7 +213,7 @@ public:
         assert(!m_connected);
         // Begin a stream.
         createInitMessage();
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p creating streamer\n", this);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
         m_connected = true;
 
@@ -226,7 +226,7 @@ public:
 
         // send any buffered audio
         // int nFrames = m_audioBuffer.getNumItems();
-        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p got stream ready, %d buffered frames\n", this, nFrames);
         // if (nFrames)
         // {
         //     char *p;
@@ -282,7 +282,7 @@ public:
         // nr_asr::StreamingRecognizeRequest request;
         // auto msg = request.mutable_control_message()->mutable_start_timers_message();
         // m_streamer->Write(request);
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p sent start timers control message\n", this);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p sent start timers control message\n", this);
     }
 
     void writesDone()
@@ -338,7 +338,7 @@ public:
             switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
             std::string dtmf_string(1, dtmf.digit);
             m_request.set_key_press(dtmf_string);
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
         else
         {
@@ -348,13 +348,13 @@ public:
 
     void set_bot_hangup()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "Gstreamer run set_bot_hangup.\n");
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_hangup.\n");
         m_bot_hangup = true;
     }
 
     void set_bot_transfer()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "Gstreamer run set_bot_transfers.\n");
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_transfers.\n");
         m_bot_transfer = true;
     }
 
@@ -399,7 +399,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     auto fsize = audio_data.size();
     std::string fileName(session_id);
     fileName += ".wav";
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "play_audio: write %d frame to session!\n", fsize);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to session!\n", fsize);
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
@@ -423,7 +423,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     out.close();
 
     fileName = "/" + fileName;
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "play_audio: write file: %s\n", fileName.c_str());
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName.c_str());
     // status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE);
     // if (status == SWITCH_STATUS_SUCCESS)
     // {
@@ -444,10 +444,10 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
 static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
 {
     struct audio_info *ai = (struct audio_info *)obj;
-    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "play_audio_thread: Play file: %s!\n", ai->sessionId);
+    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: Play file: %s!\n", ai->sessionId);
     if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
     {
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "play_audio_thread: play file done!\n");
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file done!\n");
     }
     else
     {
@@ -481,13 +481,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
-    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "grpc_read_thread running .... \n");
+    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread running .... \n");
     // Read responses
     SmartIVRResponse response;
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     while (streamer->read(&response))
     { // Returns false when no more to read.
-        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "grpc_read_thread got response .... \n");
+        // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
         switch_core_session_t *session = switch_core_session_locate(sessionUUID);
@@ -501,30 +501,30 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             SmartIVRResponseType responseType = response.type();
             if (previousType == SmartIVRResponseType::CALL_WAIT)
             {
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
                 switch_channel_stop_broadcast(channel);
                 switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
                 if (switch_ivr_play_file(session, NULL, "silence_stream://100", NULL) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread: unhold call success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: unhold call success!\n");
                 }
             }
 
             switch (responseType)
             {
             case SmartIVRResponseType::RECOGNIZE:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type RECOGNIZE.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
                 break;
 
             case SmartIVRResponseType::RESULT_ASR:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type RESULT_ASR.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_ASR.\n");
                 break;
 
             case SmartIVRResponseType::RESULT_TTS:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type RESULT_TTS.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 if (streamer->isPlaying())
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread: current playing audio, stop it first\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: current playing audio, stop it first\n");
                     // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO) == SWITCH_STATUS_SUCCESS)
                     // {
                     //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
@@ -532,10 +532,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     // }
                     switch_channel_set_flag(channel, CF_BREAK);
                 }
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread: playing audio ........\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
                 // if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
                 // {
-                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread: play file in event handler!\n");
+                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file in event handler!\n");
                 // }
                 // else
                 // {
@@ -559,7 +559,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type CALL_WAIT.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
 
                 if (streamer->isPlaying())
                 {
@@ -576,7 +576,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 // }
                 if (switch_ivr_broadcast(sessionUUID, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "event_process_response_handler: hold call success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: hold call success!\n");
                 }
                 else
                 {
@@ -585,7 +585,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 }
                 break;
             case SmartIVRResponseType::CALL_FORWARD:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type CALL_FORWARD.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
                 if (streamer->isPlaying())
                 {
                     // wait to audio play done
@@ -602,7 +602,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
                     sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url")->valuestring;
                 }
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread transfer call to %s.\n", sip_uri);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread transfer call to %s.\n", sip_uri);
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 // {
                 //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_FORWARD);
@@ -615,10 +615,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_separate_string((char *)sip_uri, '@', splited, 2);
                 sip_extension = splited[0];
                 sip_domain = splited[1];
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
                 if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "event_process_response_handler: transfer call success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
                 }
                 else
                 {
@@ -627,7 +627,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 }
                 break;
             case SmartIVRResponseType::CALL_END:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got type CALL_END.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
                 streamer->set_bot_hangup();
                 switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
@@ -638,7 +638,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 // }
                 break;
             default:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "grpc_read_thread Got unknown type.\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got unknown type.\n");
                 break;
             }
 
@@ -680,7 +680,7 @@ extern "C"
         switch_mutex_init(&cb->mutex, SWITCH_MUTEX_NESTED, switch_core_session_get_pool(session));
         if (sampleRate != 8000)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initializing resampler\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initializing resampler\n");
             cb->resampler = speex_resampler_init(channels, sampleRate, 8000, SWITCH_RESAMPLE_QUALITY, &err);
             if (0 != err)
             {
@@ -691,14 +691,14 @@ extern "C"
         }
         else
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "%s: no resampling needed for this call\n", switch_channel_get_name(channel));
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s: no resampling needed for this call\n", switch_channel_get_name(channel));
         }
         cb->responseHandler = responseHandler;
 
         // allocate vad if we are delaying connecting to the recognizer until we detect speech
         if (switch_channel_var_true(channel, "START_RECOGNIZING_ON_VAD"))
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initializing vad\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initializing vad\n");
             cb->vad = switch_vad_init(sampleRate, channels);
             if (cb->vad)
             {
@@ -732,7 +732,7 @@ extern "C"
         // switch_core_new_memory_pool(&cb->pool);
         try
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  allocating streamer\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  allocating streamer\n");
             streamer = new GStreamer(session, channels, lang, interim);
             cb->streamer = streamer;
         }
@@ -745,7 +745,7 @@ extern "C"
 
         if (!cb->vad)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  no vad so connecting to callbot immediately\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  no vad so connecting to callbot immediately\n");
             streamer->connect();
         }
 
@@ -760,7 +760,7 @@ extern "C"
         // switch_thread_create(&cb->process_thread, thd_attr, process_response_thread, cb, cb->pool);
 
         *ppUserData = cb;
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_init:  initialized! \n");
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  initialized! \n");
         return SWITCH_STATUS_SUCCESS;
     }
 
@@ -782,7 +782,7 @@ extern "C"
             if (!switch_channel_get_private(channel, cb->bugname))
             {
                 // race condition
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "%s Bug is not attached (race).\n", switch_channel_get_name(channel));
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s Bug is not attached (race).\n", switch_channel_get_name(channel));
                 switch_mutex_unlock(cb->mutex);
                 return SWITCH_STATUS_FALSE;
             }
@@ -795,15 +795,15 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_status_t status;
                 switch_thread_join(&status, cb->thread);
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
                 created_time = switch_channel_get_variable(channel, "created_time");
                 answered_time = switch_channel_get_variable(channel, "answered_time");
                 hangup_time = switch_channel_get_variable(channel, "hangup_time");
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
 
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
 
@@ -833,7 +833,7 @@ extern "C"
                 switch_core_media_bug_remove(session, &bug);
             }
 
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "call_bot_session_cleanup: Closed stream\n");
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
 
             // remove audio file
             char *filename;
@@ -846,7 +846,7 @@ extern "C"
             return SWITCH_STATUS_SUCCESS;
         }
 
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "%s Bug is not attached.\n", switch_channel_get_name(channel));
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s Bug is not attached.\n", switch_channel_get_name(channel));
         return SWITCH_STATUS_FALSE;
     }
 
@@ -872,7 +872,7 @@ extern "C"
                             switch_vad_state_t state = switch_vad_process(cb->vad, (int16_t *)frame.data, frame.samples);
                             if (state == SWITCH_VAD_STATE_START_TALKING)
                             {
-                                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "detected speech, connect to callbot master now\n");
+                                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "detected speech, connect to callbot master now\n");
                                 streamer->connect();
                                 cb->responseHandler(session, "vad_detected", cb->bugname, NULL);
                             }
