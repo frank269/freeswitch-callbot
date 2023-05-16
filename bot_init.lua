@@ -1,13 +1,14 @@
+freeswitch.consoleLog("debug", "Starting callbot init ... \n")
 local destination_number = session:getVariable("destination_number");
 --local caller_id_name = session:getVariable("caller_id_name");
 local caller_id_number = session:getVariable("caller_id_number");
 --local callbot_init_server = session:getVariable("callbot_init_server");
-freeswitch.consoleLog("err", "destination_number:" .. destination_number .. "\n")
+freeswitch.consoleLog("debug", "destination_number: " .. destination_number .. "\n")
 --freeswitch.consoleLog("err", "caller_id_name:" .. caller_id_name .. "\n")
-freeswitch.consoleLog("err", "caller_id_number:" .. caller_id_number .. "\n")
+freeswitch.consoleLog("debug", "caller_id_number: " .. caller_id_number .. "\n")
 --freeswitch.consoleLog("err", "callbot_init_server:" .. callbot_init_server .. "\n")
 
-freeswitch.consoleLog("err", "current time:" .. os.time() .. "\n")
+freeswitch.consoleLog("debug", "current time:" .. os.time() .. "\n")
 
 local random = math.random
 local function uuid()
@@ -46,21 +47,20 @@ local handle = io.popen(curlCommand)
 local response = handle:read("*a")
 handle:close()
 -- Process the XML-RPC response
-freeswitch.consoleLog("err", "response: " .. response .. "\n")
+freeswitch.consoleLog("debug", "callbot init response: " .. response .. "\n")
 -- Extract the desired value from the XML response
 local jsonString = extractValueFromXml(response, "string")
-freeswitch.consoleLog("err", "value:" .. jsonString .. "\n")
+-- freeswitch.consoleLog("debug", "callbot init value: " .. jsonString .. "\n")
 
 local jsonParser = require "resources.functions.lunajson"
 local callbot_info = jsonParser.decode(jsonString)
-freeswitch.consoleLog("err", "conversation_id:" .. callbot_info.conversation_id .. "\n")
-freeswitch.consoleLog("err", "grpc_server:" .. callbot_info.grpc_server .. "\n")
-freeswitch.consoleLog("err", "controller_url:" .. callbot_info.controller_url .. "\n")
+freeswitch.consoleLog("debug", "conversation_id: " .. callbot_info.conversation_id .. "\n")
+freeswitch.consoleLog("debug", "grpc_server: " .. callbot_info.grpc_server .. "\n")
+freeswitch.consoleLog("debug", "controller_url: " .. callbot_info.controller_url .. "\n")
 --freeswitch.consoleLog("err", "input_slots:" .. callbot_info.input_slots .. "\n")
-
-freeswitch.consoleLog("err", "record_name:" .. record_name .. "\n")
-freeswitch.consoleLog("err", "local_record_path:" .. local_record_path .. "\n")
-freeswitch.consoleLog("err", "record_path:" .. record_path .. "\n")
+freeswitch.consoleLog("debug", "record_name: " .. record_name .. "\n")
+freeswitch.consoleLog("debug", "local_record_path: " .. local_record_path .. "\n")
+freeswitch.consoleLog("debug", "record_path: " .. record_path .. "\n")
 
 session:setVariable("CALLBOT_MASTER_URI", callbot_info.grpc_server)
 session:setVariable("CONVERSATION_ID", callbot_info.conversation_id)
@@ -70,3 +70,5 @@ session:setVariable("execute_on_answer", "record_session::" .. local_record_path
 session:setVariable("record_name", record_name)
 session:setVariable("record_path", record_path)
 session:setVariable("ignore_early_media", "true")
+
+freeswitch.consoleLog("debug", "callbot init done! starting bot ...\n")
