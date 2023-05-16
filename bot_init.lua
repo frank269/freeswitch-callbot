@@ -8,7 +8,13 @@ freeswitch.consoleLog("info", "destination_number: " .. destination_number .. "\
 freeswitch.consoleLog("info", "caller_id_number: " .. caller_id_number .. "\n")
 --freeswitch.consoleLog("err", "callbot_init_server:" .. callbot_init_server .. "\n")
 
-freeswitch.consoleLog("info", "current time:" .. os.time() .. "\n")
+-- Get the current time in seconds
+local currentTimeSeconds = os.time()
+-- Get the current clock time in seconds
+local currentClockTimeSeconds = os.clock()
+-- Calculate the milliseconds by subtracting the integer part of the clock time from the current time
+local milliseconds = (currentTimeSeconds * 1000) + ((currentClockTimeSeconds - math.floor(currentClockTimeSeconds)) $freeswitch.consoleLog("info", "current time:" .. milliseconds  .. "\n")
+freeswitch.consoleLog("info", "current time:" .. milliseconds .. "\n")
 
 local random = math.random
 local function uuid()
@@ -65,7 +71,7 @@ freeswitch.consoleLog("info", "record_path: " .. record_path .. "\n")
 session:setVariable("CALLBOT_MASTER_URI", callbot_info.grpc_server)
 session:setVariable("CONVERSATION_ID", callbot_info.conversation_id)
 session:setVariable("CALLBOT_CONTROLLER_URI", callbot_info.controller_url)
-session:setVariable("CALL_AT", "1684203625280")
+session:setVariable("CALL_AT", milliseconds)
 session:setVariable("execute_on_answer", "record_session::" .. local_record_path)
 session:setVariable("record_name", record_name)
 session:setVariable("record_path", record_path)
