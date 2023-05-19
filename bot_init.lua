@@ -13,8 +13,8 @@ local currentTimeSeconds = os.time()
 -- Get the current clock time in seconds
 local currentClockTimeSeconds = os.clock()
 -- Calculate the milliseconds by subtracting the integer part of the clock time from the current time
-local milliseconds = (currentTimeSeconds * 1000) + ((currentClockTimeSeconds - math.floor(currentClockTimeSeconds)) $freeswitch.consoleLog("info", "current time:" .. milliseconds  .. "\n")
-freeswitch.consoleLog("info", "current time:" .. milliseconds .. "\n")
+local milliseconds = (currentTimeSeconds * 1000) + ((currentClockTimeSeconds - math.floor(currentClockTimeSeconds)) * 1000)
+freeswitch.consoleLog("info", "current time:" .. milliseconds  .. "\n")
 
 local random = math.random
 local function uuid()
@@ -78,3 +78,4 @@ session:setVariable("record_path", record_path)
 session:setVariable("ignore_early_media", "true")
 
 freeswitch.consoleLog("info", "callbot init done! starting bot ...\n")
+session:answer()
