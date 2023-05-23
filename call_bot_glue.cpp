@@ -352,6 +352,11 @@ public:
         m_bot_hangup = true;
     }
 
+    bool isBotTransfered()
+    {
+        return m_bot_transfer;
+    }
+
     void set_bot_transfer()
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_transfers.\n");
@@ -620,6 +625,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
+                    streamer->writesDone();
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: Close grpc stream!\n");
                 }
                 else
                 {
@@ -629,8 +636,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
-                streamer->set_bot_hangup();
-                switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                if (!streamer->isBotTransfered())
+                {
+                    streamer->set_bot_hangup();
+                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+                }
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
                 // {
                 //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_END);
