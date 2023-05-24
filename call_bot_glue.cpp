@@ -602,37 +602,38 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
                 //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
                 streamer->set_bot_transfer();
-                sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
-                if (!sip_uri)
-                {
-                    transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
-                    sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url")->valuestring;
-                }
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread transfer call to %s.\n", sip_uri);
-                // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
+                
+                // sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
+                // if (!sip_uri)
                 // {
-                //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_RESPONSE_TYPE, ACTION_CALL_FORWARD);
-                //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_SIP, sip_uri);
-                //     switch_event_fire(&event);
+                //     transfer_json = cJSON_Parse(response.forward_sip_json().c_str());
+                //     sip_uri = cJSON_GetObjectItemCaseSensitive(transfer_json, "sip_url")->valuestring;
                 // }
-                switch_separate_string((char *)sip_uri, ':', splited, 2);
-                sip_uri = splited[1];
-                switch_separate_string((char *)sip_uri, '@', splited, 2);
-                sip_extension = splited[0];
-                sip_domain = splited[1];
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
-                if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread transfer call to %s.\n", sip_uri);
+
+                if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_TRANSFER) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
-                    streamer->writesDone();
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: Close grpc stream!\n");
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
+                    switch_event_fire(&event);
                 }
-                else
-                {
-                    switch_channel_clear_flag(channel, CF_HOLD);
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_process_response_handler: transfer call failed!\n");
-                }
+
+                // switch_separate_string((char *)sip_uri, ':', splited, 2);
+                // sip_uri = splited[1];
+                // switch_separate_string((char *)sip_uri, '@', splited, 2);
+                // sip_extension = splited[0];
+                // sip_domain = splited[1];
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
+                // if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
+                //     streamer->writesDone();
+                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: Close grpc stream!\n");
+                // }
+                // else
+                // {
+                //     switch_channel_clear_flag(channel, CF_HOLD);
+                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_process_response_handler: transfer call failed!\n");
+                // }
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
