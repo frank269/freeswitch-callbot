@@ -498,6 +498,19 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         if (!session)
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+            if (audio_thread != NULL)
+            {
+                // wait to audio play done
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+                switch_thread_join(&status, audio_thread);
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+            }
+            sessionUUID = NULL;
+            event = NULL;
+            thd_attr = NULL;
+            audio_thread = NULL;
+            pool = NULL;
+            return nullptr;
         }
         else
         {
