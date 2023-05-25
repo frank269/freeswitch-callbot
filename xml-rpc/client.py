@@ -1,15 +1,15 @@
 import xmlrpc.client
 import json
-s = xmlrpc.client.ServerProxy('http://172.16.88.13:9000')
-# s = xmlrpc.client.ServerProxy('http://172.16.90.41:9000')
+# s = xmlrpc.client.ServerProxy('http://172.16.88.13:9000')
+s = xmlrpc.client.ServerProxy('http://172.16.90.41:9000')
 # s = xmlrpc.client.ServerProxy('http://10.196.24.157:9000')
 request = {
     "grpc_server" : "172.16.90.35:30066",
     "controller_url" : "http://172.16.90.35:30053/xmlrpc",
     "action_type" : 1,
     # "conversation_id" : "20230518035143-8a0a2fd5-cd86-44e1-8663-d964373292ac",
-    "conversation_id" : "20230523110305-64bc9a16-c3b5-401c-95f8-08ddf80d1e42",
-    "customer_number" : "1000@voice.metechvn.com",
+    "conversation_id" : "20230524070310-ccd3632c-0778-47d4-bbcd-15ce0682903d",
+    "customer_number" : "1000@callbot.metechvn.com",
     # "customer_number" : "0979019082",
     "display_number" : "123456789",
     # "display_number" : "842488898168",

@@ -466,16 +466,15 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
-    const char *filePath;
-    const char *sip_uri;
-    cJSON *transfer_json;
+    // const char *sip_uri;
+    // cJSON *transfer_json;
     switch_event_t *event;
-    char *splited[2];
-    const char *sip_extension;
-    const char *sip_domain;
-    const char *is_playing;
+    // char *splited[2];
+    // const char *sip_extension;
+    // const char *sip_domain;
+    // const char *is_playing;
     switch_threadattr_t *thd_attr = NULL;
-    switch_thread_t *audio_thread;
+    switch_thread_t *audio_thread = NULL;
     switch_memory_pool_t *pool;
     Audio_Info audio_info;
     switch_status_t status;
@@ -602,7 +601,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
                 //{"display_number":"0866205790","forward_type":1,"sip_url":"sip:20319@103.141.140.189:5060"}
                 streamer->set_bot_transfer();
-                
+
                 // sip_uri = switch_channel_get_variable(channel, "TRANSFER_EXTENSION");
                 // if (!sip_uri)
                 // {
@@ -659,6 +658,21 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         switch_core_session_rwunlock(session);
     }
+    if (audio_thread != NULL)
+    {
+        // wait to audio play done
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+        switch_thread_join(&status, audio_thread);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+    }
+    sessionUUID = NULL;
+    event = NULL;
+    thd_attr = NULL;
+    audio_thread = NULL;
+    pool = NULL;
+    audio_info = NULL;
+    status = NULL;
+
     return nullptr;
 }
 
