@@ -670,8 +670,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     thd_attr = NULL;
     audio_thread = NULL;
     pool = NULL;
-    audio_info = NULL;
-    status = NULL;
 
     return nullptr;
 }
