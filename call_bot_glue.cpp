@@ -148,13 +148,13 @@ public:
         cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
         int status = 101;
-        if (m_bot_error == true)
-        {
-            status = 105;
-        }
-        else if (m_bot_transfer == true)
+        if (m_bot_transfer == true)
         {
             status = 102;
+        }
+        else if (m_bot_error == true)
+        {
+            status = 105;
         }
         else if (m_bot_hangup == true)
         {
