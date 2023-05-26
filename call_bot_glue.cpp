@@ -475,6 +475,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // const char *is_playing;
     switch_threadattr_t *thd_attr = NULL;
     switch_thread_t *audio_thread = NULL;
+    switch_channel_t *channel = NULL;
     switch_memory_pool_t *pool;
     Audio_Info audio_info;
     switch_status_t status;
@@ -510,11 +511,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             thd_attr = NULL;
             audio_thread = NULL;
             pool = NULL;
+            streamer->finish();
             return nullptr;
         }
         else
         {
-            switch_channel_t *channel = switch_core_session_get_channel(session);
+            channel = switch_core_session_get_channel(session);
             SmartIVRResponseType responseType = response.type();
             if (previousType == SmartIVRResponseType::CALL_WAIT)
             {
@@ -683,6 +685,13 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     thd_attr = NULL;
     audio_thread = NULL;
     pool = NULL;
+    if (channel != NULL && !streamer->isBotTransfered())
+    {
+        streamer->set_bot_hangup();
+        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+    }
+    channel = NULL;
+    streamer->finish();
 
     return nullptr;
 }

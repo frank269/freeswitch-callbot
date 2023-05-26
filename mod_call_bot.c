@@ -194,6 +194,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 	{
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR,
 						  "CALLBOT_MASTER_URI channel var must be defined\n");
+		switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
 		return SWITCH_STATUS_FALSE;
 	}
 

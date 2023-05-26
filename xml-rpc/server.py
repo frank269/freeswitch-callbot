@@ -37,7 +37,7 @@ class CallRequest():
         self.transfer = "TRANSFER_EXTENSION={0}".format(request["transfer_extension"]) if "transfer_extension" in request else ""
 
     def __str__(self):
-        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='record_session::{5}',record_name={6},record_path={7},ignore_early_media=true,origination_caller_id_number={8},{9}}}{4}".format(
+        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='record_session::{5}',execute_on_media='lua::app/vm_detect/index.lua',vm_detect_time=25,record_name={6},record_path={7},ignore_early_media=true,origination_caller_id_number={8},{9}}}{4}".format(
             self.grpc_server,
             self.conversation_id,
             self.controller_url,
