@@ -68,6 +68,7 @@ public:
                                                                                       m_connected(false),
                                                                                       m_bot_hangup(false),
                                                                                       m_bot_transfer(false),
+                                                                                      m_bot_error(false),
                                                                                       m_language(lang),
                                                                                       m_interim(interim)
     //   ,
@@ -147,7 +148,11 @@ public:
         cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
         int status = 101;
-        if (m_bot_transfer == true)
+        if (m_bot_error == true)
+        {
+            status = 105;
+        }
+        else if (m_bot_transfer == true)
         {
             status = 102;
         }
@@ -363,6 +368,12 @@ public:
         m_bot_transfer = true;
     }
 
+    void set_bot_error()
+    {
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_error.\n");
+        m_bot_error = true;
+    }
+
 private:
     switch_core_session_t *m_session;
     grpc::ClientContext m_context;
@@ -389,6 +400,7 @@ private:
     long long m_pickup_at = 0;
     bool m_bot_hangup;
     bool m_bot_transfer;
+    bool m_bot_error;
 };
 
 static std::vector<uint8_t> parse_byte_array(std::string str)
