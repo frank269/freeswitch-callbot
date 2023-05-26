@@ -488,6 +488,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     switch_threadattr_t *thd_attr = NULL;
     switch_thread_t *audio_thread = NULL;
     switch_channel_t *channel = NULL;
+    switch_core_session_t *session = NULL;
     switch_memory_pool_t *pool;
     Audio_Info audio_info;
     switch_status_t status;
@@ -507,7 +508,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread got response .... \n");
         streamer->print_response(response);
 
-        switch_core_session_t *session = switch_core_session_locate(sessionUUID);
+        session = switch_core_session_locate(sessionUUID);
         if (!session)
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
@@ -697,13 +698,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     thd_attr = NULL;
     audio_thread = NULL;
     pool = NULL;
-    if (channel != NULL && !streamer->isBotTransfered())
+    if (session != NULL && channel != NULL && !streamer->isBotTransfered())
     {
         streamer->set_bot_error();
         streamer->set_bot_hangup();
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
     channel = NULL;
+    session = NULL;
     streamer->finish();
 
     return nullptr;
