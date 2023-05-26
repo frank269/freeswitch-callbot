@@ -262,6 +262,10 @@ public:
         add_dtmf_to_request();
         // print_request();
         bool ok = m_streamer->Write(m_request);
+        if (ok == false)
+        {
+            m_bot_error = true;
+        }
         return ok;
     }
 
@@ -700,7 +704,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     pool = NULL;
     if (session != NULL && channel != NULL && !streamer->isBotTransfered())
     {
-        streamer->set_bot_error();
         streamer->set_bot_hangup();
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
