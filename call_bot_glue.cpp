@@ -709,7 +709,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     if (finish_status.ok())
     {
         // The RPC completed successfully
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Complete ok!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Grpc completed ok!\n");
     }
     else
     {
@@ -719,7 +719,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         {
             streamer->set_bot_error();
             // The client connection was closed
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "The client connection was closed!\n");
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Grpc completed error! The client connection was closed!\n");
         }
     }
 
