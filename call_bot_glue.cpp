@@ -709,8 +709,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     }
     channel = NULL;
     session = NULL;
-    grpc::Status status = streamer->finish();
-    if (status.ok())
+    grpc::Status finish_status = streamer->finish();
+    if (finish_status.ok())
     {
         // The RPC completed successfully
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Complete ok!\n");
@@ -719,7 +719,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Complete error!\n");
         // The RPC completed unsuccessfully
-        if (status.error_code() == grpc::StatusCode::UNAVAILABLE)
+        if (finish_status.error_code() == grpc::StatusCode::UNAVAILABLE)
         {
             // The client connection was closed
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "The client connection was closed!\n");
