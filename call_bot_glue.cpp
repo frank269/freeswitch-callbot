@@ -704,7 +704,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     pool = NULL;
     if (session != NULL && channel != NULL && !streamer->isBotTransfered())
     {
-        streamer->set_bot_hangup();
+        // streamer->set_bot_hangup();
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
     channel = NULL;
