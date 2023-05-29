@@ -220,6 +220,22 @@ public:
         createInitMessage();
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
+
+        m_streamer->Finish((grpc::Status status) {
+            if (status.ok())
+            {
+                // The RPC completed successfully
+            }
+            else
+            {
+                // The RPC completed unsuccessfully
+                if (status.error_code() == grpc::StatusCode::UNAVAILABLE)
+                {
+                    // The client connection was closed
+                }
+            }
+        });
+
         m_connected = true;
 
         // read thread is waiting on this
