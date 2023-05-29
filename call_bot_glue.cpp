@@ -220,22 +220,6 @@ public:
         createInitMessage();
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
-
-        m_streamer->Finish((grpc::Status status) {
-            if (status.ok())
-            {
-                // The RPC completed successfully
-            }
-            else
-            {
-                // The RPC completed unsuccessfully
-                if (status.error_code() == grpc::StatusCode::UNAVAILABLE)
-                {
-                    // The client connection was closed
-                }
-            }
-        });
-
         m_connected = true;
 
         // read thread is waiting on this
@@ -709,9 +693,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     if (audio_thread != NULL)
     {
         // wait to audio play done
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: wait to audio play done!\n");
         switch_thread_join(&status, audio_thread);
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
     }
     sessionUUID = NULL;
     event = NULL;
@@ -725,7 +709,22 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     }
     channel = NULL;
     session = NULL;
-    streamer->finish();
+    grpc::Status status = streamer->finish();
+    if (status.ok())
+    {
+        // The RPC completed successfully
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Complete ok!\n");
+    }
+    else
+    {
+        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Complete error!\n");
+        // The RPC completed unsuccessfully
+        if (status.error_code() == grpc::StatusCode::UNAVAILABLE)
+        {
+            // The client connection was closed
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "The client connection was closed!\n");
+        }
+    }
 
     return nullptr;
 }
