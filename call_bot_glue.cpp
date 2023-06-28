@@ -353,6 +353,7 @@ public:
 
     void set_bot_hangup()
     {
+        switch_channel_set_variable(m_switch_channel, "IS_BOT_HANGUP", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_hangup.\n");
         m_bot_hangup = true;
     }
@@ -364,12 +365,14 @@ public:
 
     void set_bot_transfer()
     {
+        switch_channel_set_variable(m_switch_channel, "IS_BOT_TRANSFERED", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_transfers.\n");
         m_bot_transfer = true;
     }
 
     void set_bot_error()
     {
+        switch_channel_set_variable(m_switch_channel, "IS_BOT_ERROR", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_error.\n");
         m_bot_error = true;
     }
@@ -588,7 +591,23 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 audio_info.channel = channel;
                 audio_info.response = response;
                 // create play audio thread
-                switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool);
+                if (switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool) == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: create audio playing thread success!\n");
+                }
+                else
+                {
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot create playing audio thread!\n");
+                    thread_launch_failure();
+                    if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
+                    {
+                        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file audio in current thread!\n");
+                    }
+                    else
+                    {
+                        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in current thread!\n");
+                    }
+                };
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
@@ -644,6 +663,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
                     switch_event_fire(&event);
                 }
+                streamer->writesDone();
 
                 // switch_separate_string((char *)sip_uri, ':', splited, 2);
                 // sip_uri = splited[1];
@@ -845,9 +865,10 @@ extern "C"
     {
         long long now = switch_micro_time_now() / 1000;
         switch_event_t *event;
-        const char *created_time = NULL;
-        const char *answered_time = NULL;
-        const char *hangup_time = NULL;
+        switch_status_t status;
+        // const char *created_time = NULL;
+        // const char *answered_time = NULL;
+        // const char *hangup_time = NULL;
 
         switch_channel_t *channel = switch_core_session_get_channel(session);
 
@@ -873,24 +894,23 @@ extern "C"
                 streamer->writesDone();
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
-                switch_status_t status;
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
 
-                created_time = switch_channel_get_variable(channel, "created_time");
-                answered_time = switch_channel_get_variable(channel, "answered_time");
-                hangup_time = switch_channel_get_variable(channel, "hangup_time");
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
+                // created_time = switch_channel_get_variable(channel, "created_time");
+                // answered_time = switch_channel_get_variable(channel, "answered_time");
+                // hangup_time = switch_channel_get_variable(channel, "hangup_time");
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
 
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
-
+                // create bot hangup event
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
                 if (status == SWITCH_STATUS_SUCCESS)
                 {
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, hangup_cause, switch_channel_cause2str(hangup_cause)));
                     switch_event_fire(&event);
+                    switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
                 }
-
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
