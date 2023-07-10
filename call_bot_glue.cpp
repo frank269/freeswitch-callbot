@@ -454,16 +454,16 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // }
     // return status;
 
+    // switch_ivr_stop_displace_session(session, fileName.c_str());
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    status = switch_ivr_displace_session(session, fileName.c_str(), 0, "");
-    if (status != SWITCH_STATUS_SUCCESS)
-    {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
-                          "Couldn't play announcement '%s'\n", fileName.c_str());
-    }
+    status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
+    // status = switch_ivr_displace_session(session, fileName.c_str(), 0, "");
+    // if (status != SWITCH_STATUS_SUCCESS)
+    // {
+    //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
+    //                       "Couldn't play announcement '%s'\n", fileName.c_str());
+    // }
     switch_channel_set_variable(channel, "IS_PLAYING", "false");
-
-    switch_ivr_stop_displace_session(session, fileName.c_str());
     return status;
 }
 
@@ -501,6 +501,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     switch_memory_pool_t *pool;
     Audio_Info audio_info;
     switch_status_t status;
+    char *filename;
+    asprintf(&filename, "/%s.wav", cb->sessionId);
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -572,6 +574,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     //     switch_event_fire(&event);
                     // }
                     switch_channel_set_flag(channel, CF_BREAK);
+                    // switch_ivr_stop_displace_session(session, filename);
                     switch_thread_join(&status, audio_thread);
                 }
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
