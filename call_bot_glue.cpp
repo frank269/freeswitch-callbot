@@ -455,10 +455,16 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    switch_ivr_displace_session(session, fileName.c_str(), 0, "");
+    status = switch_ivr_displace_session(session, fileName.c_str(), 0, "");
+    if (status != SWITCH_STATUS_SUCCESS)
+    {
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
+                          "Couldn't play announcement '%s'\n", fileName.c_str());
+    }
     switch_channel_set_variable(channel, "IS_PLAYING", "false");
 
-    return SWITCH_STATUS_SUCCESS;
+    switch_ivr_stop_displace_session(session, fileName.c_str());
+    return status;
 }
 
 static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
