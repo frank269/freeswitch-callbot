@@ -455,7 +455,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    switch_ivr_play_file(session, NULL, fileName.c_str(), NULL);
+    switch_ivr_displace_session(session, fileName.c_str(), 0, "");
     switch_channel_set_variable(channel, "IS_PLAYING", "false");
 
     return SWITCH_STATUS_SUCCESS;
@@ -539,7 +539,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
                 switch_channel_stop_broadcast(channel);
                 switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
-                if (switch_ivr_play_file(session, NULL, "silence_stream://100", NULL) == SWITCH_STATUS_SUCCESS)
+                if (switch_ivr_displace_session(session, "silence_stream://100", 0, "") == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: unhold call success!\n");
                 }
