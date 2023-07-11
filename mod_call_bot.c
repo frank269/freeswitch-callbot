@@ -111,12 +111,35 @@ static void event_hangup_handler(switch_event_t *event)
 	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
 }
 
+char *copyArrayFromIndex(char *originalArray, int startIndex)
+{
+	int length = strlen(originalArray);
+	int newArrayLength = length - startIndex + 1;
+
+	char *newArray = (char *)malloc(newArrayLength * sizeof(char));
+	if (newArray == NULL)
+	{
+		printf("Memory allocation failed.\n");
+		return NULL;
+	}
+
+	strncpy(newArray, originalArray + startIndex, newArrayLength);
+	newArray[newArrayLength - 1] = '\0'; // Null-terminate the new array
+
+	return newArray;
+}
+
 static void event_start_audio_handler(switch_event_t *event)
 {
-
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_start_audio_handler: play file %s!\n", filePath);
-	const char *sessionId = filePath + 1;
+	if (!filePath)
+	{
+		return;
+	}
+
+	switch_channel_t *channel;
+	const char *sessionId = copyArrayFromIndex(strdup(filePath), 1);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
@@ -132,10 +155,14 @@ static void event_stop_audio_handler(switch_event_t *event)
 
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_stop_audio_handler: stop play file %s!\n", filePath);
+	if (!filePath)
+	{
+		return;
+	}
 
-	// switch_channel_t *channel;
+	switch_channel_t *channel;
 	// const char *is_playing;
-	const char *sessionId = filePath + 1;
+	const char *sessionId = copyArrayFromIndex(strdup(filePath), 1);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
