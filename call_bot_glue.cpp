@@ -456,8 +456,8 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
 
     // switch_ivr_stop_displace_session(session, fileName.c_str());
     // switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
-    // status = switch_ivr_displace_session(session, fileName.c_str(), 0, "");
+    // status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
+    status = switch_ivr_displace_session(session, "local_stream://foo", 0, "");
     // if (status != SWITCH_STATUS_SUCCESS)
     // {
     //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
