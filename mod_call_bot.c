@@ -114,7 +114,12 @@ static void event_hangup_handler(switch_event_t *event)
 char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
 	int length = strlen(originalArray);
-	int newArrayLength = length - startIndex + 1;
+	int newArrayLength = length - startIndex - 3;
+	if (newArrayLength < 30)
+	{
+		// printf("Memory allocation failed.\n");
+		return NULL;
+	}
 
 	char *newArray = (char *)malloc(newArrayLength * sizeof(char));
 	if (newArray == NULL)
@@ -142,6 +147,10 @@ static void event_start_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
+	if (sessionId == NULL)
+	{
+		return;
+	}
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
@@ -165,6 +174,10 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
+	if (sessionId == NULL)
+	{
+		return;
+	}
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
