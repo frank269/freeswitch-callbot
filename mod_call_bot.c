@@ -141,7 +141,7 @@ static void event_start_audio_handler(switch_event_t *event)
 	switch_channel_t *channel;
 	switch_core_session_t *session;
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_start_audio_handler: play file %s!\n", filePath);
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_start_audio_handler: play file %s!\n", filePath);
 	if (!filePath)
 	{
 		return;
