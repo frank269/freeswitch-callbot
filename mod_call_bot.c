@@ -133,6 +133,7 @@ static void event_start_audio_handler(switch_event_t *event)
 {
 	const char *sessionId;
 	switch_channel_t *channel;
+	switch_core_session_t *session;
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_start_audio_handler: play file %s!\n", filePath);
 	if (!filePath)
@@ -141,7 +142,7 @@ static void event_start_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	switch_core_session_t *session = switch_core_session_locate(sessionId);
+	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
@@ -149,15 +150,13 @@ static void event_start_audio_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_channel_set_variable(channel, "IS_PLAYING", "true");
-	free(sessionId);
-	free(channel);
-	free(filePath);
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
 {
 	const char *sessionId;
 	switch_channel_t *channel;
+	switch_core_session_t *session;
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_stop_audio_handler: stop play file %s!\n", filePath);
 	if (!filePath)
@@ -166,7 +165,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	switch_core_session_t *session = switch_core_session_locate(sessionId);
+	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
@@ -174,9 +173,6 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_channel_set_variable(channel, "IS_PLAYING", "false");
-	free(sessionId);
-	free(channel);
-	free(filePath);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
