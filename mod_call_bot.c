@@ -189,7 +189,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	switch_channel_set_variable(channel, "IS_PLAYING", "false");
 	switch_channel_set_flag(channel, CF_BREAK);
 	switch_channel_stop_broadcast(channel);
-	// switch_ivr_displace_session(session, "silence_stream://100", 0, "");
+	switch_ivr_displace_session(session, "silence_stream://100", 0, "");
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
