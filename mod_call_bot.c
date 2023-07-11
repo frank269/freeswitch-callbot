@@ -113,6 +113,7 @@ static void event_hangup_handler(switch_event_t *event)
 
 char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
+	char *newArray;
 	int length = strlen(originalArray);
 	int newArrayLength = length - startIndex - 3;
 	if (newArrayLength < 30)
@@ -121,7 +122,7 @@ char *copyArrayFromIndex(char *originalArray, int startIndex)
 		return NULL;
 	}
 
-	char *newArray = (char *)malloc(newArrayLength * sizeof(char));
+	newArray = (char *)malloc(newArrayLength * sizeof(char));
 	if (newArray == NULL)
 	{
 		printf("Memory allocation failed.\n");
