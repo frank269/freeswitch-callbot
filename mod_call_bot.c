@@ -155,7 +155,7 @@ static void event_start_audio_handler(switch_event_t *event)
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
+		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
@@ -183,7 +183,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
+		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
