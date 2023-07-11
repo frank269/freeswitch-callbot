@@ -455,7 +455,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     // switch_ivr_stop_displace_session(session, fileName.c_str());
-    switch_channel_set_variable(channel, "IS_PLAYING", "true");
+    // switch_channel_set_variable(channel, "IS_PLAYING", "true");
     status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
     // status = switch_ivr_displace_session(session, fileName.c_str(), 0, "");
     // if (status != SWITCH_STATUS_SUCCESS)
@@ -463,7 +463,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
     //                       "Couldn't play announcement '%s'\n", fileName.c_str());
     // }
-    switch_channel_set_variable(channel, "IS_PLAYING", "false");
+    // switch_channel_set_variable(channel, "IS_PLAYING", "false");
     return status;
 }
 
@@ -495,7 +495,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // const char *sip_domain;
     // const char *is_playing;
     switch_threadattr_t *thd_attr = NULL;
-    switch_thread_t *audio_thread = NULL;
+    // switch_thread_t *audio_thread = NULL;
     switch_channel_t *channel = NULL;
     switch_core_session_t *session = NULL;
     switch_memory_pool_t *pool;
@@ -523,17 +523,17 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         if (!session)
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-            if (audio_thread != NULL)
-            {
-                // wait to audio play done
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
-                switch_thread_join(&status, audio_thread);
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
-            }
+            // if (audio_thread != NULL)
+            // {
+            //     // wait to audio play done
+            //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+            //     switch_thread_join(&status, audio_thread);
+            //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+            // }
             sessionUUID = NULL;
             event = NULL;
             thd_attr = NULL;
-            audio_thread = NULL;
+            // audio_thread = NULL;
             pool = NULL;
             streamer->finish();
             return nullptr;
@@ -574,8 +574,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     //     switch_event_fire(&event);
                     // }
                     switch_channel_set_flag(channel, CF_BREAK);
+                    switch_channel_stop_broadcast(channel);
+                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
                     // switch_ivr_stop_displace_session(session, filename);
-                    switch_thread_join(&status, audio_thread);
+                    // switch_thread_join(&status, audio_thread);
                 }
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
                 // if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
@@ -600,22 +602,22 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 audio_info.channel = channel;
                 audio_info.response = response;
                 // create play audio thread
-                if (switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool) == SWITCH_STATUS_SUCCESS)
+                // if (switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool) == SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: create audio playing thread success!\n");
+                // }
+                // else
+                // {
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot create playing audio thread!\n");
+                if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: create audio playing thread success!\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file audio in current thread!\n");
                 }
                 else
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot create playing audio thread!\n");
-                    if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
-                    {
-                        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file audio in current thread!\n");
-                    }
-                    else
-                    {
-                        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in current thread!\n");
-                    }
-                };
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in current thread!\n");
+                }
+                // };
                 break;
 
             case SmartIVRResponseType::CALL_WAIT:
@@ -625,7 +627,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 {
                     // wait to audio play done
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
-                    switch_thread_join(&status, audio_thread);
+                    // switch_thread_join(&status, audio_thread);
+                    switch_channel_set_flag(channel, CF_BREAK);
+                    switch_channel_stop_broadcast(channel);
+                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
@@ -650,7 +655,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 {
                     // wait to audio play done
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
-                    switch_thread_join(&status, audio_thread);
+                    // switch_thread_join(&status, audio_thread);
+                    switch_channel_set_flag(channel, CF_BREAK);
+                    switch_channel_stop_broadcast(channel);
+                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
 
@@ -714,17 +722,20 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         switch_core_session_rwunlock(session);
     }
-    if (audio_thread != NULL)
+    if (channel != NULL)
     {
         // wait to audio play done
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: wait to audio play done!\n");
-        switch_thread_join(&status, audio_thread);
+        // switch_thread_join(&status, audio_thread);
+        switch_channel_set_flag(channel, CF_BREAK);
+        switch_channel_stop_broadcast(channel);
+        switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
     }
     sessionUUID = NULL;
     event = NULL;
     thd_attr = NULL;
-    audio_thread = NULL;
+    // audio_thread = NULL;
     pool = NULL;
     if (session != NULL && channel != NULL && !streamer->isBotTransfered())
     {
