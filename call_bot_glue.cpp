@@ -547,6 +547,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
                 switch_channel_stop_broadcast(channel);
                 switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                switch_ivr_stop_displace_session(session, "silence_stream://100");
                 if (switch_ivr_displace_session(session, "silence_stream://100", 0, "") == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: unhold call success!\n");
@@ -576,6 +577,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_channel_set_flag(channel, CF_BREAK);
                     switch_channel_stop_broadcast(channel);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                    switch_ivr_stop_displace_session(session, "silence_stream://100");
                     switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     // switch_ivr_stop_displace_session(session, filename);
                     // switch_thread_join(&status, audio_thread);
@@ -630,6 +632,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                    switch_ivr_stop_displace_session(session, "silence_stream://100");
                     switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
@@ -657,6 +660,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                    switch_ivr_stop_displace_session(session, "silence_stream://100");
                     switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
@@ -702,6 +706,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
                 switch_channel_set_flag(channel, CF_BREAK);
                 switch_channel_stop_broadcast(channel);
+                switch_ivr_stop_displace_session(session, "silence_stream://100");
                 switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                 if (!streamer->isBotTransfered())
                 {
@@ -731,6 +736,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         // switch_thread_join(&status, audio_thread);
         switch_channel_set_flag(channel, CF_BREAK);
         switch_channel_stop_broadcast(channel);
+        switch_ivr_stop_displace_session(session, "silence_stream://100");
         switch_ivr_displace_session(session, "silence_stream://100", 0, "");
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
     }
