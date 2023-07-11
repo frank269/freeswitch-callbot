@@ -454,15 +454,15 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // }
     // return status;
 
-    switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
+    // switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
     // switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    // status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
-    status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
-    // if (status != SWITCH_STATUS_SUCCESS)
-    // {
-    //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
-    //                       "Couldn't play announcement '%s'\n", fileName.c_str());
-    // }
+    status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
+    // status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
+    if (status != SWITCH_STATUS_SUCCESS)
+    {
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
+                          "Couldn't play file '%s'\n", fileName.c_str());
+    }
     // switch_channel_set_variable(channel, "IS_PLAYING", "false");
     return status;
 }
