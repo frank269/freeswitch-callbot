@@ -628,9 +628,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     // wait to audio play done
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
-                    switch_channel_set_flag(channel, CF_BREAK);
-                    switch_channel_stop_broadcast(channel);
-                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
@@ -656,9 +654,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     // wait to audio play done
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
-                    switch_channel_set_flag(channel, CF_BREAK);
-                    switch_channel_stop_broadcast(channel);
-                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
 
