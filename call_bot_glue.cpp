@@ -576,6 +576,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_channel_set_flag(channel, CF_BREAK);
                     switch_channel_stop_broadcast(channel);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                    switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     // switch_ivr_stop_displace_session(session, filename);
                     // switch_thread_join(&status, audio_thread);
                 }
@@ -589,18 +590,18 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 //     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in event handler!\n");
                 // }
 
-                pool = switch_core_session_get_pool(session);
+                // pool = switch_core_session_get_pool(session);
                 // switch_core_new_memory_pool(&cb->pool);
-                switch_threadattr_create(&thd_attr, pool);
-                switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
+                // switch_threadattr_create(&thd_attr, pool);
+                // switch_threadattr_stacksize_set(thd_attr, SWITCH_MAX_STACKS);
                 // char sessionId[MAX_SESSION_ID + 1];
                 // switch_core_session_t *session;
                 // switch_channel_t *channel;
                 // SmartIVRResponse *response;
-                audio_info.sessionId = sessionUUID;
-                audio_info.session = session;
-                audio_info.channel = channel;
-                audio_info.response = response;
+                // audio_info.sessionId = sessionUUID;
+                // audio_info.session = session;
+                // audio_info.channel = channel;
+                // audio_info.response = response;
                 // create play audio thread
                 // if (switch_thread_create(&audio_thread, thd_attr, play_audio_thread, &audio_info, pool) == SWITCH_STATUS_SUCCESS)
                 // {
@@ -629,6 +630,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                    switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
                 // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE) == SWITCH_STATUS_SUCCESS)
@@ -655,6 +657,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
                     // switch_thread_join(&status, audio_thread);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                    switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
                 }
 
@@ -725,6 +728,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         // switch_thread_join(&status, audio_thread);
         switch_channel_set_flag(channel, CF_BREAK);
         switch_channel_stop_broadcast(channel);
+        switch_ivr_displace_session(session, "silence_stream://100", 0, "");
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
     }
     sessionUUID = NULL;
