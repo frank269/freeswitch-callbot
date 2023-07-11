@@ -111,8 +111,19 @@ static void event_hangup_handler(switch_event_t *event)
 	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
 }
 
+static void event_start_audio_handler(switch_event_t *event)
+{
+
+	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_start_audio_handler: play file %s!\n", filePath);
+}
+
 static void event_stop_audio_handler(switch_event_t *event)
 {
+
+	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_stop_audio_handler: stop play file %s!\n", filePath);
+
 	// switch_channel_t *channel;
 	// const char *is_playing;
 	// const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
@@ -330,6 +341,18 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	}
 
 	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
+		return SWITCH_STATUS_GENERR;
+	}
+
+	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, null, event_start_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	{
+		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind start audio event!\n");
+		return SWITCH_STATUS_GENERR;
+	}
+
+	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_STOP, null, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
 		return SWITCH_STATUS_GENERR;
