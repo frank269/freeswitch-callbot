@@ -138,7 +138,6 @@ static void event_start_audio_handler(switch_event_t *event)
 		return;
 	}
 
-	switch_channel_t *channel;
 	const char *sessionId = copyArrayFromIndex(strdup(filePath), 1);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -146,8 +145,8 @@ static void event_start_audio_handler(switch_event_t *event)
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
 		return;
 	}
-	channel = switch_core_session_get_channel(session);
-	switch_channel_set_variable(channel, "IS_PLAYING", "false");
+	switch_channel_t *channel = switch_core_session_get_channel(session);
+	switch_channel_set_variable(channel, "IS_PLAYING", "true");
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
@@ -160,7 +159,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 		return;
 	}
 
-	switch_channel_t *channel;
+	// switch_channel_t *channel;
 	// const char *is_playing;
 	const char *sessionId = copyArrayFromIndex(strdup(filePath), 1);
 	switch_core_session_t *session = switch_core_session_locate(sessionId);
@@ -169,8 +168,8 @@ static void event_stop_audio_handler(switch_event_t *event)
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
 		return;
 	}
-	channel = switch_core_session_get_channel(session);
-	switch_channel_set_variable(channel, "IS_PLAYING", "true");
+	switch_channel_t *channel = switch_core_session_get_channel(session);
+	switch_channel_set_variable(channel, "IS_PLAYING", "false");
 	// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Received event_stop_audio_handler with session_id %s\n", sessionId);
 	// is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
 	// if (is_playing && strcmp(is_playing, "true") == 0)
