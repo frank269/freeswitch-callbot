@@ -346,13 +346,13 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 		return SWITCH_STATUS_GENERR;
 	}
 
-	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, null, event_start_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, NULL, event_start_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind start audio event!\n");
 		return SWITCH_STATUS_GENERR;
 	}
 
-	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_STOP, null, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_STOP, NULL, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
 		return SWITCH_STATUS_GENERR;
