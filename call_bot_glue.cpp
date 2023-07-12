@@ -146,6 +146,7 @@ public:
         cJSON *jHangupCause = cJSON_CreateString(hangup_cause);
         cJSON *jRecordPath = cJSON_CreateString(m_record_path.c_str());
         cJSON *jRecordName = cJSON_CreateString(m_record_name.c_str());
+        cJSON *jSessionId = cJSON_CreateString(m_sessionId);
         cJSON *jSipCode = cJSON_CreateNumber(sip_code);
         int status = 101;
         if (m_bot_transfer == true)
@@ -174,6 +175,7 @@ public:
         // cJSON_AddItemToObject(jResult, "record_path", jRecordPath);
         cJSON_AddItemToObject(jResult, "record_name", jRecordName);
         cJSON_AddItemToObject(jResult, "audio_url", jRecordPath);
+        cJSON_AddItemToObject(jResult, "session_id", jSessionId);
         cJSON_AddItemToObject(jResult, "status", jStatus);
         char *json = cJSON_PrintUnformatted(jResult);
         cJSON_Delete(jResult);
@@ -921,15 +923,6 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
-                switch_thread_join(&status, cb->thread);
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
-
-                // created_time = switch_channel_get_variable(channel, "created_time");
-                // answered_time = switch_channel_get_variable(channel, "answered_time");
-                // hangup_time = switch_channel_get_variable(channel, "hangup_time");
-                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
-
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
                 // create bot hangup event
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
@@ -939,6 +932,16 @@ extern "C"
                     switch_event_fire(&event);
                     switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
                 }
+
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
+                switch_thread_join(&status, cb->thread);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+
+                // created_time = switch_channel_get_variable(channel, "created_time");
+                // answered_time = switch_channel_get_variable(channel, "answered_time");
+                // hangup_time = switch_channel_get_variable(channel, "hangup_time");
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
+
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
