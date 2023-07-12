@@ -380,23 +380,23 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 
 	/* create/register custom event message types */
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE, event_process_response_handler, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind play audio event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
+	// if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE, event_process_response_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind play audio event!\n");
+	// 	return SWITCH_STATUS_GENERR;
+	// }
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP, event_hangup_handler, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind bot hangup event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
+	// if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP, event_hangup_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind bot hangup event!\n");
+	// 	return SWITCH_STATUS_GENERR;
+	// }
 
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
+	// if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
+	// 	return SWITCH_STATUS_GENERR;
+	// }
 
 	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, NULL, event_start_audio_handler, NULL, NULL) != SWITCH_STATUS_SUCCESS)
 	{
@@ -438,9 +438,10 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	switch_event_unbind_callback(event_process_response_handler);
+	// switch_event_unbind_callback(event_process_response_handler);
+	switch_event_unbind_callback(event_start_audio_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
-	switch_event_unbind_callback(event_hangup_handler);
+	// switch_event_unbind_callback(event_hangup_handler);
 	call_bot_cleanup();
 	return SWITCH_STATUS_SUCCESS;
 }

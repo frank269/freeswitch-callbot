@@ -923,15 +923,6 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
-                switch_thread_join(&status, cb->thread);
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
-
-                // created_time = switch_channel_get_variable(channel, "created_time");
-                // answered_time = switch_channel_get_variable(channel, "answered_time");
-                // hangup_time = switch_channel_get_variable(channel, "hangup_time");
-                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
-
                 switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
                 // create bot hangup event
                 status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
@@ -941,6 +932,16 @@ extern "C"
                     switch_event_fire(&event);
                     switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
                 }
+
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
+                switch_thread_join(&status, cb->thread);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
+
+                // created_time = switch_channel_get_variable(channel, "created_time");
+                // answered_time = switch_channel_get_variable(channel, "answered_time");
+                // hangup_time = switch_channel_get_variable(channel, "hangup_time");
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
+
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
