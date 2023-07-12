@@ -923,16 +923,6 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
-                // create bot hangup event
-                status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
-                if (status == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, hangup_cause, switch_channel_cause2str(hangup_cause)));
-                    switch_event_fire(&event);
-                    switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
-                }
-
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
@@ -942,6 +932,15 @@ extern "C"
                 // hangup_time = switch_channel_get_variable(channel, "hangup_time");
                 // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  created_time: %s, answered_time: %s, hangup_time: %s\n", created_time, answered_time, hangup_time);
 
+                switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
+                // create bot hangup event
+                status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
+                if (status == SWITCH_STATUS_SUCCESS)
+                {
+                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, hangup_cause, switch_channel_cause2str(hangup_cause)));
+                    switch_event_fire(&event);
+                    switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
+                }
                 delete streamer;
                 cb->streamer = NULL;
                 cb->thread = NULL;
