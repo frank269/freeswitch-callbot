@@ -137,30 +137,30 @@ char *copyArrayFromIndex(char *originalArray, int startIndex)
 
 static void event_start_audio_handler(switch_event_t *event)
 {
-	const char *sessionId;
-	switch_channel_t *channel;
-	switch_core_session_t *session;
-	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_start_audio_handler: play file %s!\n", filePath);
-	if (!filePath)
-	{
-		return;
-	}
+	// const char *sessionId;
+	// switch_channel_t *channel;
+	// switch_core_session_t *session;
+	// const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_start_audio_handler: play file %s!\n", filePath);
+	// if (!filePath)
+	// {
+	// 	return;
+	// }
 
-	sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	if (sessionId == NULL)
-	{
-		return;
-	}
-	session = switch_core_session_locate(sessionId);
-	if (!session)
-	{
-		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
-		return;
-	}
-	channel = switch_core_session_get_channel(session);
-	switch_channel_set_variable(channel, "IS_PLAYING", "true");
-	switch_core_session_rwunlock(session);
+	// sessionId = copyArrayFromIndex(strdup(filePath), 1);
+	// if (sessionId == NULL)
+	// {
+	// 	return;
+	// }
+	// session = switch_core_session_locate(sessionId);
+	// if (!session)
+	// {
+	// 	// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
+	// 	return;
+	// }
+	// channel = switch_core_session_get_channel(session);
+	// switch_channel_set_variable(channel, "IS_PLAYING", "true");
+	// switch_core_session_rwunlock(session);
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
@@ -188,8 +188,8 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_channel_set_variable(channel, "IS_PLAYING", "false");
-	switch_channel_set_flag(channel, CF_BREAK);
-	switch_channel_stop_broadcast(channel);
+	// switch_channel_set_flag(channel, CF_BREAK);
+	// switch_channel_stop_broadcast(channel);
 	// switch_ivr_stop_displace_session(session, "silence_stream://100");
 	// switch_ivr_displace_session(session, "silence_stream://100", 0, "");
 	switch_core_session_rwunlock(session);
