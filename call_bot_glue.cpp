@@ -743,18 +743,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // switch_ivr_displace_session(session, "silence_stream://100", 0, "");
     // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
     // }
-    sessionUUID = NULL;
-    event = NULL;
-    thd_attr = NULL;
-    // audio_thread = NULL;
-    pool = NULL;
     // if (session != NULL && channel != NULL && !streamer->isBotTransfered())
     // {
     // streamer->set_bot_hangup();
     // switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     // }
-    channel = NULL;
-    session = NULL;
     grpc::Status finish_status = streamer->finish();
     if (finish_status.ok())
     {
@@ -782,6 +775,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             }
         }
     }
+
+    sessionUUID = NULL;
+    event = NULL;
+    thd_attr = NULL;
+    // audio_thread = NULL;
+    pool = NULL;
+    channel = NULL;
+    session = NULL;
 
     return nullptr;
 }
