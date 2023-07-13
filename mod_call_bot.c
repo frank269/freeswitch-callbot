@@ -169,7 +169,6 @@ static void event_stop_audio_handler(switch_event_t *event)
 	switch_channel_t *channel;
 	switch_core_session_t *session;
 	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_stop_audio_handler: stop play file %s!\n", filePath);
 	if (!filePath)
 	{
 		return;
@@ -180,6 +179,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	{
 		return;
 	}
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s event_stop_audio_handler: stop play file %s!\n", sessionId, filePath);
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{

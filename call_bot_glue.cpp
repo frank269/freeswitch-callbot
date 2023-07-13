@@ -762,7 +762,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         if (session)
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Grpc completed ok!\n");
         else
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Grpc completed ok!\n");
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s Grpc completed ok!\n", sessionUUID);
     }
     else
     {
@@ -775,7 +775,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             if (session)
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Grpc completed error! The client connection was closed!\n");
             else
-                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Grpc completed error! The client connection was closed!\n");
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
             if (session != NULL && channel != NULL && !streamer->isBotTransfered())
             {
                 switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
