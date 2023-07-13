@@ -685,7 +685,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
                     switch_event_fire(&event);
                 }
-                streamer->writesDone();
+                // streamer->writesDone();
 
                 // switch_separate_string((char *)sip_uri, ':', splited, 2);
                 // sip_uri = splited[1];
@@ -748,11 +748,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     thd_attr = NULL;
     // audio_thread = NULL;
     pool = NULL;
-    if (session != NULL && channel != NULL && !streamer->isBotTransfered())
-    {
-        // streamer->set_bot_hangup();
-        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-    }
+    // if (session != NULL && channel != NULL && !streamer->isBotTransfered())
+    // {
+    // streamer->set_bot_hangup();
+    // switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+    // }
     channel = NULL;
     session = NULL;
     grpc::Status finish_status = streamer->finish();
@@ -770,6 +770,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             streamer->set_bot_error();
             // The client connection was closed
             switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Grpc completed error! The client connection was closed!\n");
+            if (session != NULL && channel != NULL && !streamer->isBotTransfered())
+            {
+                switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+            }
         }
     }
 
@@ -923,15 +927,15 @@ extern "C"
             {
                 streamer->writesDone();
 
-                switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
+                // switch_call_cause_t hangup_cause = switch_channel_get_cause(channel);
                 // create bot hangup event
-                status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
-                if (status == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, hangup_cause, switch_channel_cause2str(hangup_cause)));
-                    switch_event_fire(&event);
-                    switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
-                }
+                // status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP);
+                // if (status == SWITCH_STATUS_SUCCESS)
+                // {
+                //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_HANGUP_JSON, streamer->build_response_json(now, hangup_cause, switch_channel_cause2str(hangup_cause)));
+                //     switch_event_fire(&event);
+                //     switch_channel_set_variable(channel, "FIRED_EVENT_BOT_HANGUP", "true");
+                // }
 
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_thread_join(&status, cb->thread);
