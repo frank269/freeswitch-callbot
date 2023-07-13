@@ -732,17 +732,17 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
         switch_core_session_rwunlock(session);
     }
-    if (channel != NULL)
-    {
-        // wait to audio play done
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: wait to audio play done!\n");
-        // switch_thread_join(&status, audio_thread);
-        // switch_channel_set_flag(channel, CF_BREAK);
-        switch_channel_stop_broadcast(channel);
-        // switch_ivr_stop_displace_session(session, "silence_stream://100");
-        // switch_ivr_displace_session(session, "silence_stream://100", 0, "");
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
-    }
+    // if (channel != NULL)
+    // {
+    // wait to audio play done
+    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: wait to audio play done!\n");
+    // switch_thread_join(&status, audio_thread);
+    // switch_channel_set_flag(channel, CF_BREAK);
+    // switch_channel_stop_broadcast(channel);
+    // switch_ivr_stop_displace_session(session, "silence_stream://100");
+    // switch_ivr_displace_session(session, "silence_stream://100", 0, "");
+    // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "grpc_read_thread: play audio done!\n");
+    // }
     sessionUUID = NULL;
     event = NULL;
     thd_attr = NULL;
@@ -759,7 +759,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     if (finish_status.ok())
     {
         // The RPC completed successfully
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Grpc completed ok!\n");
+        if (session)
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Grpc completed ok!\n");
+        else
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Grpc completed ok!\n");
     }
     else
     {
@@ -769,7 +772,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         {
             streamer->set_bot_error();
             // The client connection was closed
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Grpc completed error! The client connection was closed!\n");
+            if (session)
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Grpc completed error! The client connection was closed!\n");
+            else
+                switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Grpc completed error! The client connection was closed!\n");
             if (session != NULL && channel != NULL && !streamer->isBotTransfered())
             {
                 switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);

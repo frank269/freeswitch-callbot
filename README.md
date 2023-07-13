@@ -74,5 +74,6 @@ cd /usr/src/freeswitch && \
 
 copy 2 file: bot_init.lua and bot_event.lua to /opt/freeswitch/scripts
 add line to: /etc/freeswitch/autoload_configs/lua.conf.xml
-<hook event="CUSTOM" subclass="mod_call_bot::bot_hangup" script="/opt/freeswitch/scripts/bot_event.lua" />
+<!-- <hook event="CUSTOM" subclass="mod_call_bot::bot_hangup" script="/opt/freeswitch/scripts/bot_event.lua" /> -->
 <hook event="CUSTOM" subclass="mod_call_bot::bot_transfer" script="/opt/freeswitch/scripts/bot_transfer.lua" />
+<hook event="CHANNEL_HANGUP_COMPLETE" script="/opt/freeswitch/scripts/bot_hangup.lua" />
