@@ -533,9 +533,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             //     switch_thread_join(&status, audio_thread);
             //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
             // }
-            free(sessionUUID);
-            free(event);
-            free(filename);
+            sessionUUID = NULL;
+            event = NULL;
             // thd_attr = NULL;
             // audio_thread = NULL;
             // pool = NULL;
@@ -776,14 +775,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             }
         }
     }
-    free(sessionUUID);
-    free(event);
-    free(filename);
+
+    sessionUUID = NULL;
+    event = NULL;
     // thd_attr = NULL;
     // audio_thread = NULL;
     // pool = NULL;
-    // channel = NULL;
-    // session = NULL;
+    channel = NULL;
+    session = NULL;
 
     return nullptr;
 }
