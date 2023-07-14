@@ -175,12 +175,11 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	filePath = NULL;
+
 	if (sessionId == NULL)
 	{
 		return;
 	}
-	free(sessionId);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s event_stop_audio_handler: stop play file %s!\n", sessionId, filePath);
 	session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -195,6 +194,8 @@ static void event_stop_audio_handler(switch_event_t *event)
 	// switch_ivr_stop_displace_session(session, "silence_stream://100");
 	// switch_ivr_displace_session(session, "silence_stream://100", 0, "");
 	switch_core_session_rwunlock(session);
+	filePath = NULL;
+	free(sessionId);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
