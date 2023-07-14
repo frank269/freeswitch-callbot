@@ -168,7 +168,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	char *sessionId;
 	switch_channel_t *channel;
 	switch_core_session_t *session;
-	char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	if (!filePath)
 	{
 		return;
