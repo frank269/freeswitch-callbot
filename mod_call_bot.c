@@ -175,7 +175,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	free(filePath);
+	filePath = NULL;
 	if (sessionId == NULL)
 	{
 		return;
