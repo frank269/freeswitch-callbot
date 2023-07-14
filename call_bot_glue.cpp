@@ -497,12 +497,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // const char *sip_extension;
     // const char *sip_domain;
     // const char *is_playing;
-    switch_threadattr_t *thd_attr = NULL;
+    // switch_threadattr_t *thd_attr = NULL;
     // switch_thread_t *audio_thread = NULL;
     switch_channel_t *channel = NULL;
     switch_core_session_t *session = NULL;
-    switch_memory_pool_t *pool;
-    Audio_Info audio_info;
+    // switch_memory_pool_t *pool;
+    // Audio_Info audio_info;
     switch_status_t status;
     char *filename;
     asprintf(&filename, "/%s.wav", cb->sessionId);
@@ -533,11 +533,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             //     switch_thread_join(&status, audio_thread);
             //     switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
             // }
-            sessionUUID = NULL;
-            event = NULL;
-            thd_attr = NULL;
+            free(sessionUUID);
+            free(event);
+            free(filename);
+            // thd_attr = NULL;
             // audio_thread = NULL;
-            pool = NULL;
+            // pool = NULL;
             streamer->finish();
             return nullptr;
         }
@@ -775,14 +776,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             }
         }
     }
-
-    sessionUUID = NULL;
-    event = NULL;
-    thd_attr = NULL;
+    free(sessionUUID);
+    free(event);
+    free(filename);
+    // thd_attr = NULL;
     // audio_thread = NULL;
-    pool = NULL;
-    channel = NULL;
-    session = NULL;
+    // pool = NULL;
+    // channel = NULL;
+    // session = NULL;
 
     return nullptr;
 }

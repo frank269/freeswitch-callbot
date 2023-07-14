@@ -135,50 +135,52 @@ char *copyArrayFromIndex(char *originalArray, int startIndex)
 	return newArray;
 }
 
-static void event_start_audio_handler(switch_event_t *event)
-{
-	// const char *sessionId;
-	// switch_channel_t *channel;
-	// switch_core_session_t *session;
-	// const char *filePath = switch_event_get_header(event, "Playback-File-Path");
-	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_start_audio_handler: play file %s!\n", filePath);
-	// if (!filePath)
-	// {
-	// 	return;
-	// }
+// static void event_start_audio_handler(switch_event_t *event)
+// {
+// const char *sessionId;
+// switch_channel_t *channel;
+// switch_core_session_t *session;
+// const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_start_audio_handler: play file %s!\n", filePath);
+// if (!filePath)
+// {
+// 	return;
+// }
 
-	// sessionId = copyArrayFromIndex(strdup(filePath), 1);
-	// if (sessionId == NULL)
-	// {
-	// 	return;
-	// }
-	// session = switch_core_session_locate(sessionId);
-	// if (!session)
-	// {
-	// 	// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
-	// 	return;
-	// }
-	// channel = switch_core_session_get_channel(session);
-	// switch_channel_set_variable(channel, "IS_PLAYING", "true");
-	// switch_core_session_rwunlock(session);
-}
+// sessionId = copyArrayFromIndex(strdup(filePath), 1);
+// if (sessionId == NULL)
+// {
+// 	return;
+// }
+// session = switch_core_session_locate(sessionId);
+// if (!session)
+// {
+// 	// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_start_audio_handler: session %s is gone!\n", sessionId);
+// 	return;
+// }
+// channel = switch_core_session_get_channel(session);
+// switch_channel_set_variable(channel, "IS_PLAYING", "true");
+// switch_core_session_rwunlock(session);
+// }
 
 static void event_stop_audio_handler(switch_event_t *event)
 {
-	const char *sessionId;
+	char *sessionId;
 	switch_channel_t *channel;
 	switch_core_session_t *session;
-	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	char *filePath = switch_event_get_header(event, "Playback-File-Path");
 	if (!filePath)
 	{
 		return;
 	}
 
 	sessionId = copyArrayFromIndex(strdup(filePath), 1);
+	free(filePath);
 	if (sessionId == NULL)
 	{
 		return;
 	}
+	free(sessionId);
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s event_stop_audio_handler: stop play file %s!\n", sessionId, filePath);
 	session = switch_core_session_locate(sessionId);
 	if (!session)
@@ -398,11 +400,11 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	// 	return SWITCH_STATUS_GENERR;
 	// }
 
-	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, NULL, event_start_audio_handler, NULL, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind start audio event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
+	// if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_START, NULL, event_start_audio_handler, NULL, NULL) != SWITCH_STATUS_SUCCESS)
+	// {
+	// 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind start audio event!\n");
+	// 	return SWITCH_STATUS_GENERR;
+	// }
 
 	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_STOP, NULL, event_stop_audio_handler, NULL, NULL) != SWITCH_STATUS_SUCCESS)
 	{
@@ -439,7 +441,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
 	// switch_event_unbind_callback(event_process_response_handler);
-	switch_event_unbind_callback(event_start_audio_handler);
+	// switch_event_unbind_callback(event_start_audio_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
 	// switch_event_unbind_callback(event_hangup_handler);
 	call_bot_cleanup();
