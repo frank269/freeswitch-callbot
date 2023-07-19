@@ -284,7 +284,6 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 static switch_status_t switch_to_silence_session(switch_core_session_t *session, switch_input_args_t *args)
 {
-	char *start_bot;
 	switch_status_t status;
 	switch_frame_t *read_frame;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
@@ -308,8 +307,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 		if (!isStarted)
 		{
-			start_bot = switch_channel_get_variable(channel, "START_BOT");
-			if (var && (strcmp(var, "true") == 0))
+			const char *start_bot = switch_channel_get_variable(channel, "START_BOT");
+			if (start_bot && (strcmp(start_bot, "true") == 0))
 			{
 				switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
 				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
