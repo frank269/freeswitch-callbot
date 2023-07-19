@@ -284,6 +284,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 static switch_status_t switch_to_silence_session(switch_core_session_t *session, switch_input_args_t *args)
 {
+	char *start_bot;
 	switch_status_t status;
 	switch_frame_t *read_frame;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
@@ -304,12 +305,17 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			continue;
 		}
 		switch_ivr_parse_all_events(session);
+
 		if (!isStarted)
 		{
-			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
-			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
-			isStarted = 1;
+			start_bot = switch_channel_get_variable(channel, "START_BOT");
+			if (var && (strcmp(var, "true") == 0))
+			{
+				switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
+				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
+				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+				isStarted = 1;
+			}
 		}
 	}
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
