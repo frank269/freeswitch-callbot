@@ -79,3 +79,4 @@ session:setVariable("ignore_early_media", "true")
 
 freeswitch.consoleLog("info", "callbot init done! starting bot ...\n")
 session:answer()
+session:setVariable("START_BOT", "true")

@@ -37,7 +37,7 @@ class CallRequest():
         self.transfer = "TRANSFER_EXTENSION={0}".format(request["transfer_extension"]) if "transfer_extension" in request else ""
 
     def __str__(self):
-        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='record_session::{5}',execute_on_media='lua::app/vm_detect/index.lua',vm_detect_time=25,record_name={6},record_path={7},ignore_early_media=true,origination_caller_id_number={8},{9}}}{4}".format(
+        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='lua::/opt/freeswitch/scripts/bot_answer.lua',execute_on_media='lua::/opt/freeswitch/scripts/bot_early_media.lua',record_name={6},local_record_path={5},record_path={7},origination_caller_id_number={8},{9}}}{4}".format(
             self.grpc_server,
             self.conversation_id,
             self.controller_url,
@@ -118,6 +118,24 @@ def run_server(host="0.0.0.0", port=9000):
         @server.register_function
         def phoneGatewayEndCall(json_response: str):
             logger.debug("phoneGatewayEndCall message: {}".format(json_response))
+            return json.dumps({
+                "status" : 0,
+                "msg" : "success"
+            })
+
+        @server.register_function
+        def voicemailDetectResult(json_str: str):
+            logger.debug("voicemailDetectResult message: {}".format(json_str))
+            request = json.loads(json_str)
+            if request and request['is_voicemail'] is True:
+                server_response = sendToFreeswitchServer("http://%s:%s@%s:%s" % (pbx_username, pbx_password, pbx_host, pbx_port),
+                                "uuid_setvar",
+                                "{0} IS_VOICE_MAIL true".format(request['conversion_id']))
+                logger.debug("uuid_setvar {} response: {}".format(request['conversion_id'], server_response))
+                server_response = sendToFreeswitchServer("http://%s:%s@%s:%s" % (pbx_username, pbx_password, pbx_host, pbx_port),
+                                "uuid_kill",
+                                "{0}".format(request['conversion_id']))
+                logger.debug("uuid_kill {} response: {}".format(request['conversion_id'], server_response))
             return json.dumps({
                 "status" : 0,
                 "msg" : "success"

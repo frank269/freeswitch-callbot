@@ -8,6 +8,7 @@ local phone_controller_uri = event:getHeader('variable_CALLBOT_CONTROLLER_URI') 
 local is_bot_hangup = event:getHeader('variable_IS_BOT_HANGUP') or 'false';
 local is_bot_transfer = event:getHeader('variable_IS_BOT_TRANSFERED') or 'false';
 local is_bot_error = event:getHeader('variable_IS_BOT_ERROR') or 'false';
+local is_voice_mail = event:getHeader('variable_IS_VOICE_MAIL') or 'false';
 local sip_code = event:getHeader('variable_hangup_cause_q850') or '16';
 local hangup_cause = event:getHeader('Hangup-Cause') or '';
 local record_name = event:getHeader('variable_record_name') or '';
@@ -16,12 +17,18 @@ local audio_url = event:getHeader('variable_record_path') or '';
 if conversation_id == '' then return; end
 
 local status = 101;
-if is_bot_transfer == 'true' then
+if is_voice_mail == 'true' then
+    status = 103;
+    sip_code = '600';
+    hangup_cause = 'VOICEMAIL_DETECTED'
+elseif is_bot_transfer == 'true' then
     status = 102;
 elseif is_bot_error == 'true' then
     status = 105;
 elseif is_bot_hangup == 'true' then
     status = 100;
+elseif pickup_at == '0' then
+    status = 103;
 end
 
 local jsonParser = require "resources.functions.lunajson"

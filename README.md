@@ -72,8 +72,77 @@ cd /usr/src/freeswitch && \
 
 -DCMAKE_TOOLCHAIN_FILE=/usr/src/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-copy 2 file: bot_init.lua and bot_event.lua to /opt/freeswitch/scripts
+copy all *.lua file to /opt/freeswitch/scripts
+
 add line to: /etc/freeswitch/autoload_configs/lua.conf.xml
 <!-- <hook event="CUSTOM" subclass="mod_call_bot::bot_hangup" script="/opt/freeswitch/scripts/bot_event.lua" /> -->
 <hook event="CUSTOM" subclass="mod_call_bot::bot_transfer" script="/opt/freeswitch/scripts/bot_transfer.lua" />
 <hook event="CHANNEL_HANGUP_COMPLETE" script="/opt/freeswitch/scripts/bot_hangup.lua" />
+
+
+
+
+
+
+execute_on_media='lua::app/vm_detect/index.lua'
+
+
+
+
+
+
+
+
+if session == nil then
+  return;
+end
+freeswitch.consoleLog('err', "start detect voicemail\n");
+local uuid = session:get_uuid();
+local vm_detect_time = session:getVariable('vm_detect_time') or '60';
+local record_debug = session:getVariable('record_debug') or 'false';
+local is_auto_call = session:getVariable('is_auto_call') or 'true';
+local max_duration = session:getVariable('max_duration') or '';
+local domain_name = session:getVariable('domain_name') or session:getVariable('context') or '';
+local recordings_dir = (freeswitch.getGlobalVariable('recordings_dir') or '/var/lib/freeswitch/recordings') .. '/debug/' .. domain_name .. '/' .. (os.date('%Y/%m/%d/%H'));
+
+require "resources.functions.file_exists";
+require "resources.functions.mkdir"
+
+-- os.execute('mkdir -p ' .. recordings_dir);
+if record_debug ~= nil and record_debug == 'true' then
+  mkdir(recordings_dir);
+end
+
+local api = freeswitch.API();
+
+if is_auto_call == 'true' then
+  if record_debug ~= nil and record_debug == 'true' then
+    local record_path = recordings_dir .. '/' .. uuid .. '.wav';
+    api:executeString('uuid_record ' .. uuid .. ' start ' .. record_path .. ' ' .. vm_detect_time);
+    freeswitch.consoleLog('err', 'Recording debug will be save to ' .. record_path .. "\n");
+  end
+  session:sleep(5000);
+--  api:executeString('avmd load outbound');
+  session:execute('avmd_start::detection_mode=2');
+
+  local stop_vm_file = (scripts_dir or '') .. '/app/vm_detect/stop.lua';
+  if file_exists(stop_vm_file) then
+    local sched_result = api:executeString('sched_api +' .. vm_detect_time .. ' vm_detect lua ' .. stop_vm_file .. ' ' .. uuid) or '-ERR';
+    if sched_result:sub(1, 4) ~= '-ERR' then
+      api:executeString('uuid_setvar ' .. uuid .. ' vm_sched_id ' .. sched_result:sub(11));
+    end
+  else
+    local sched_result = api:executeString('sched_api +30 vm_detect avmd ' .. uuid .. ' stop') or '-ERR';
+    if sched_result:sub(1, 4) ~= '-ERR' then
+      api:executeString('uuid_setvar ' .. uuid .. ' vm_sched_id ' .. sched_result:sub(11));
+    end
+  end
+end
+
+if max_duration ~= '' and tonumber(max_duration) > 1 then
+  local sched_result = api:executeString('sched_api +' .. max_duration
+    .. ' max_duration lua app/hangup/hangup.lua ' .. uuid .. ' MAX_DURATION') or '-ERR';
+  if sched_result:sub(1, 4) ~= '-ERR' then
+    api:executeString('uuid_setvar ' .. uuid .. ' dur_sched_id ' .. sched_result:sub(11));
+  end
+end
