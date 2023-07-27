@@ -5,7 +5,7 @@ if uuid == '' then return; end
 local conversation_id = session:getVariable("CONVERSATION_ID") or '';
 local server_url = "http://172.16.90.35:30008/voicemail/v1/submit_task"
 local auth_token = "iaKglGRsR8wlzx5hEcJJ3U2GlgaaMIqA"
-local callback_url = "http://172.16.90.41:9001"
+local callback_url = "http://172.16.90.41:9000"
 local record_path = "/var/lib/freeswitch/recordings/record_on_media/" .. uuid .. ".wav";
 local public_path = "https://callbot-audio.metechvn.com/file/record_on_media/" .. uuid .. ".wav";
 

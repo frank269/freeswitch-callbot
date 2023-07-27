@@ -458,6 +458,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
 
     // switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
+    switch_channel_stop_broadcast(channel);
     status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
     // status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
     if (status != SWITCH_STATUS_SUCCESS)
@@ -645,6 +646,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
                 //     switch_event_fire(&event);
                 // }
+                switch_channel_stop_broadcast(channel);
                 if (switch_ivr_broadcast(sessionUUID, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
                 {
                     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: hold call success!\n");
