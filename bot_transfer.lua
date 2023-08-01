@@ -9,6 +9,7 @@ local jsonParser = require "resources.functions.lunajson"
 local transfer_data = jsonParser.decode(jsonString)
 
 local session = freeswitch.Session(sessionUuid)
+session:execute("stop_displace_session","/city.mp3")
 --session:setAutoHangup(false)
 if transfer_data.forward_type == 1 then
     if string.find(transfer_data.sip_url, "sip:") and string.find(transfer_data.sip_url, "@") then

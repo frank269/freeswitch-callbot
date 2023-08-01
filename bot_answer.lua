@@ -29,3 +29,4 @@ freeswitch.consoleLog("info", uuid .. " start bot!")
 local record_path = session:getVariable('local_record_path') or '';
 session:execute("record_session", record_path)
 session:setVariable("START_BOT", "true")
+session:execute("displace_session","/city.mp3 mlfw")
