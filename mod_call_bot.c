@@ -350,8 +350,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 					continue;
 				}
 
-				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Codec Activated L16@%uhz %u channels %dms\n",
-								  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
+				// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Codec Activated L16@%uhz %u channels %dms\n",
+				// 				  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
 
 				write_frame.codec = &codec;
 				switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
@@ -361,7 +361,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 				write_frame.samples = write_frame.datalen / sizeof(int16_t);
 				// switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
 				switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
-				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Done!\n");
+				// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Done!\n");
 			}
 		}
 
