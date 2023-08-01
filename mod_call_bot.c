@@ -291,7 +291,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 	int sval = 0;
 	const char *var;
 	uint32_t rate = 0;
-	uint32_t bpf = 0;
+	// uint32_t bpf = 0;
 	unsigned char *abuf = NULL;
 	switch_frame_t write_frame = {0};
 	switch_codec_t codec = {0};
@@ -329,7 +329,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		{
 			switch_core_session_get_read_impl(session, &read_impl);
 			rate = read_impl.actual_samples_per_second;
-			bpf = read_impl.decoded_bytes_per_packet;
+			// bpf = read_impl.decoded_bytes_per_packet;
 
 			if (rate && (var = switch_channel_get_variable(channel, SWITCH_SEND_SILENCE_WHEN_IDLE_VARIABLE)) && (sval = atoi(var)))
 			{
@@ -347,7 +347,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 				{
 					switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
 									  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
-					break;
+					continue;
 				}
 
 				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Codec Activated L16@%uhz %u channels %dms\n",
@@ -359,13 +359,9 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 				write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
 				write_frame.datalen = imp.decoded_bytes_per_packet;
 				write_frame.samples = write_frame.datalen / sizeof(int16_t);
+				switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
+				switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
 			}
-		}
-
-		if (rate && write_frame.data && sval)
-		{
-			switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
-			switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
 		}
 
 		if (switch_channel_test_flag(channel, CF_BREAK))
