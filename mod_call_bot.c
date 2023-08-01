@@ -365,11 +365,11 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			}
 		}
 
-		if (switch_channel_test_flag(channel, CF_BREAK))
-		{
-			switch_channel_clear_flag(channel, CF_BREAK);
-			break;
-		}
+		// if (switch_channel_test_flag(channel, CF_BREAK))
+		// {
+		// 	switch_channel_clear_flag(channel, CF_BREAK);
+		// 	break;
+		// }
 	}
 
 	if (write_frame.codec)
