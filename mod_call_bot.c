@@ -296,7 +296,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 	switch_frame_t write_frame = {0};
 	switch_codec_t codec = {0};
 	switch_codec_implementation_t imp = {0};
-	switch_codec_implementation_t read_impl = {0};
+	// switch_codec_implementation_t read_impl = {0};
 
 	if (switch_channel_pre_answer(channel) != SWITCH_STATUS_SUCCESS)
 	{
@@ -325,43 +325,44 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			}
 		}
 
-		if (!rate && switch_channel_media_ready(channel))
+		if (switch_channel_media_ready(channel))
 		{
-			switch_core_session_get_read_impl(session, &read_impl);
-			rate = read_impl.actual_samples_per_second;
+			switch_core_session_get_read_impl(session, &imp);
+			rate = imp.actual_samples_per_second;
 			// bpf = read_impl.decoded_bytes_per_packet;
 
-			if (rate && (var = switch_channel_get_variable(channel, SWITCH_SEND_SILENCE_WHEN_IDLE_VARIABLE)) && (sval = atoi(var)))
+			// if (rate && (var = switch_channel_get_variable(channel, SWITCH_SEND_SILENCE_WHEN_IDLE_VARIABLE)) && (sval = atoi(var)))
+			// {
+			// switch_core_session_get_read_impl(session, &imp);
+
+			if (switch_core_codec_init(&codec,
+									   "L16",
+									   NULL,
+									   NULL,
+									   imp.actual_samples_per_second,
+									   imp.microseconds_per_packet / 1000,
+									   imp.number_of_channels,
+									   SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+									   switch_core_session_get_pool(session)) != SWITCH_STATUS_SUCCESS)
 			{
-				switch_core_session_get_read_impl(session, &imp);
-
-				if (switch_core_codec_init(&codec,
-										   "L16",
-										   NULL,
-										   NULL,
-										   imp.actual_samples_per_second,
-										   imp.microseconds_per_packet / 1000,
-										   imp.number_of_channels,
-										   SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
-										   switch_core_session_get_pool(session)) != SWITCH_STATUS_SUCCESS)
-				{
-					switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
-									  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
-					continue;
-				}
-
-				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Codec Activated L16@%uhz %u channels %dms\n",
+				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
 								  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
-
-				write_frame.codec = &codec;
-				switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
-				write_frame.data = abuf;
-				write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-				write_frame.datalen = imp.decoded_bytes_per_packet;
-				write_frame.samples = write_frame.datalen / sizeof(int16_t);
-				switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
-				switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+				continue;
 			}
+
+			switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Codec Activated L16@%uhz %u channels %dms\n",
+							  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
+
+			write_frame.codec = &codec;
+			switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
+			write_frame.data = abuf;
+			write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
+			write_frame.datalen = imp.decoded_bytes_per_packet;
+			write_frame.samples = write_frame.datalen / sizeof(int16_t);
+			// switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
+			switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+			switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Done!\n");
+			// }
 		}
 
 		if (switch_channel_test_flag(channel, CF_BREAK))
