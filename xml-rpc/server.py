@@ -118,6 +118,8 @@ def run_server(host="0.0.0.0", port=9000):
         @server.register_function
         def phoneGatewayEndCall(json_response: str):
             logger.debug("phoneGatewayEndCall message: {}".format(json_response))
+            response = json.loads(json_response)
+            print("audio_url: {}, time: {}".format(response["audio_url"], (response["hangup_at"] - response["pickup_at"])/1000))
             return json.dumps({
                 "status" : 0,
                 "msg" : "success"

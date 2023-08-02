@@ -359,7 +359,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
 			write_frame.datalen = imp.decoded_bytes_per_packet;
 			write_frame.samples = write_frame.datalen / sizeof(int16_t);
-			// switch_generate_sln_silence((int16_t *)write_frame.data, write_frame.samples, read_impl.number_of_channels, sval);
+			memset((int16_t *)write_frame.data, 0, write_frame.samples * 2);
 			switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
 			// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Done!\n");
 			// }

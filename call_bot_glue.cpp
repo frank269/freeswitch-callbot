@@ -906,7 +906,7 @@ extern "C"
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
-        long long now = switch_micro_time_now() / 1000;
+        // long long now = switch_micro_time_now();
         switch_event_t *event;
         switch_status_t status;
         // const char *created_time = NULL;
@@ -914,7 +914,7 @@ extern "C"
         // const char *hangup_time = NULL;
 
         switch_channel_t *channel = switch_core_session_get_channel(session);
-
+        // switch_channel_set_variable_printf(channel, "bot_hangup_time", "%lld", now);
         if (bug)
         {
             struct cap_cb *cb = (struct cap_cb *)switch_core_media_bug_get_user_data(bug);
