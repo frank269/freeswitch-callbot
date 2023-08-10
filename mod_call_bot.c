@@ -289,10 +289,10 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	unsigned char isStarted = 0;
 
-	unsigned char *abuf = NULL;
-	switch_frame_t write_frame = {0};
-	switch_codec_t codec = {0};
-	switch_codec_implementation_t imp = {0};
+	// unsigned char *abuf = NULL;
+	// switch_frame_t write_frame = {0};
+	// switch_codec_t codec = {0};
+	// switch_codec_implementation_t imp = {0};
 
 	if (switch_channel_pre_answer(channel) != SWITCH_STATUS_SUCCESS)
 	{
@@ -321,33 +321,33 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			}
 		}
 
-		if (switch_channel_media_ready(channel))
-		{
-			switch_core_session_get_read_impl(session, &imp);
+		// if (switch_channel_media_ready(channel))
+		// {
+		// 	switch_core_session_get_read_impl(session, &imp);
 
-			if (switch_core_codec_init(&codec,
-									   "L16",
-									   NULL,
-									   NULL,
-									   imp.actual_samples_per_second,
-									   imp.microseconds_per_packet / 1000,
-									   imp.number_of_channels,
-									   SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
-									   switch_core_session_get_pool(session)) != SWITCH_STATUS_SUCCESS)
-			{
-				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
-								  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
-				continue;
-			}
-			write_frame.codec = &codec;
-			switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
-			write_frame.data = abuf;
-			write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
-			write_frame.datalen = imp.decoded_bytes_per_packet;
-			write_frame.samples = write_frame.datalen / sizeof(int16_t);
-			memset((int16_t *)write_frame.data, 0, write_frame.samples * 2);
-			switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
-		}
+		// 	if (switch_core_codec_init(&codec,
+		// 							   "L16",
+		// 							   NULL,
+		// 							   NULL,
+		// 							   imp.actual_samples_per_second,
+		// 							   imp.microseconds_per_packet / 1000,
+		// 							   imp.number_of_channels,
+		// 							   SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+		// 							   switch_core_session_get_pool(session)) != SWITCH_STATUS_SUCCESS)
+		// 	{
+		// 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
+		// 						  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
+		// 		continue;
+		// 	}
+		// 	write_frame.codec = &codec;
+		// 	switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
+		// 	write_frame.data = abuf;
+		// 	write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
+		// 	write_frame.datalen = imp.decoded_bytes_per_packet;
+		// 	write_frame.samples = write_frame.datalen / sizeof(int16_t);
+		// 	memset((int16_t *)write_frame.data, 0, write_frame.samples * 2);
+		// 	switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
+		// }
 
 		// if (switch_channel_test_flag(channel, CF_BREAK))
 		// {
@@ -356,12 +356,12 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// }
 	}
 
-	if (write_frame.codec)
-	{
-		switch_core_codec_destroy(&codec);
-	}
-	switch_safe_free(abuf);
-	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
+	// if (write_frame.codec)
+	// {
+	// 	switch_core_codec_destroy(&codec);
+	// }
+	// switch_safe_free(abuf);
+	// switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 
 	return SWITCH_STATUS_SUCCESS;
 }

@@ -22,4 +22,4 @@ request = {
 while(True):
     for i in range(50):
         print(s.callControllerServiceRequest(json.dumps(request)))
-    time.sleep(25)
+    time.sleep(30)
