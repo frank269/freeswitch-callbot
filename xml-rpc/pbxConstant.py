@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 
-pbx_host = os.getenv('PBX_HOST', "172.16.88.38")
+pbx_host = os.getenv('PBX_HOST', "172.16.88.13")
 pbx_username = os.getenv('PBX_USERNAME','freeswitch')
 pbx_password = os.getenv('PBX_PASSWORD','works')
 pbx_port = os.getenv('PBX_PORT','8080')
@@ -9,7 +9,7 @@ record_folder = os.getenv('RECORD_FOLDER','/var/lib/freeswitch/recordings/callbo
 record_prefix = os.getenv('RECORD_PREFIX','https://14.232.240.205/file/callbot/')
 
 outbound_number = os.getenv('OUTBOUND_NUMBER','842488898268')
-pbx_public_ip = os.getenv('PUBLIC_IP','14.232.240.205:5090')
+pbx_public_ip = os.getenv('PUBLIC_IP','172.16.88.13:5090')
 
 class PbxHangupCause(Enum):
     NONE = 0

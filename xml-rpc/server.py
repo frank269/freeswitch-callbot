@@ -56,8 +56,8 @@ class CallResponse():
         self.call_at = call_at
         self.pickup_at = pickup_at
         self.hangup_at = hangup_at
-        self.status = 103 if hangup_cause in USER_NO_RESPONSE_CAUSE else 104
-        self.sip_code = HangupCauseToSip[hangup_cause] if HangupCauseToSip[hangup_cause] else 480
+        self.status = 105 if hangup_cause == "CRASH" else (103 if hangup_cause in USER_NO_RESPONSE_CAUSE else 104)
+        self.sip_code = PbxHangupCause[hangup_cause].value if PbxHangupCause[hangup_cause] else 480
 
     def __str__(self):
         return json.dumps({
@@ -77,8 +77,11 @@ class SimpleThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
 def sendToFreeswitchServer(server_uri: str, functionName: str, content: str):
-    serv = xmlrpc.client.ServerProxy(server_uri)
-    return serv.freeswitch.api(functionName, content)
+    try:
+        serv = xmlrpc.client.ServerProxy(server_uri)
+        return serv.freeswitch.api(functionName, content)
+    except:
+        return "-ERR CRASH"
 
 def sendEndCallToCallControllerServer(server_uri: str, content: str):
     serv = xmlrpc.client.ServerProxy(server_uri)
@@ -93,11 +96,11 @@ def startCall(json_request: str):
                             "{0} &start_call_with_bot".format(call_request))
     logger.debug("startCall server_response: {}".format(server_response))
 
-    # if "-ERR" in server_response:
-    #     hangup_cause = server_response.strip().split("-ERR ")[1]
-    #     call_response = CallResponse(call_request.conversation_id,call_request.call_at, 0, time.time() * 1000, hangup_cause)
-    #     logger.debug(call_response.__str__())
-    #     logger.debug(sendEndCallToCallControllerServer(call_request.controller_url, call_response.__str__()))
+    if "-ERR" in server_response:
+        hangup_cause = server_response.strip().split("-ERR ")[1]
+        call_response = CallResponse(call_request.conversation_id,call_request.call_at, 0, time.time() * 1000, hangup_cause)
+        logger.debug(call_response.__str__())
+        logger.debug(sendEndCallToCallControllerServer(call_request.controller_url, call_response.__str__()))
     # logger.debug("startCall done call!")
 
 def run_server(host="0.0.0.0", port=9000):
