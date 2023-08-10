@@ -356,11 +356,11 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// }
 	}
 
-	if (write_frame.codec)
-	{
-		switch_core_codec_destroy(&codec);
-	}
-	switch_safe_free(abuf);
+	// if (write_frame.codec)
+	// {
+	// 	switch_core_codec_destroy(&codec);
+	// }
+	// switch_safe_free(abuf);
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 
 	return SWITCH_STATUS_SUCCESS;
