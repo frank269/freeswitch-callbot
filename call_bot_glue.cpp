@@ -795,8 +795,8 @@ extern "C"
             free(filename);
 
             switch_mutex_unlock(cb->mutex);
-            streamer = NULL;
-            cb = NULL;
+            // streamer = NULL;
+            // cb = NULL;
 
             return SWITCH_STATUS_SUCCESS;
         }
@@ -855,9 +855,9 @@ extern "C"
                 }
                 switch_mutex_unlock(cb->mutex);
             }
-            streamer = NULL;
+            // streamer = NULL;
         }
-        cb = NULL;
+        // cb = NULL;
         return SWITCH_TRUE;
     }
 }
