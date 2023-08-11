@@ -31,15 +31,7 @@ typedef struct WAV_HEADER
     /* "data" sub-chunk */
     uint8_t Subchunk2ID[4] = {'d', 'a', 't', 'a'}; // "data"  string
     uint32_t Subchunk2Size;                        // Sampled data length
-
-    ~WAV_HEADER()
-    {
-        delete RIFF;
-        delete WAVE;
-        delete fmt;
-        delete Subchunk2ID;
-    }
-};
+} wav_hdr;
 
 using smartivrphonegateway::Config;
 using smartivrphonegateway::SmartIVRRequest;
@@ -412,7 +404,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     fileName += ".wav";
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to session!\n", fsize);
     // write byte to pcm file
-    WAV_HEADER *wav = new WAV_HEADER;
+    wav_hdr *wav = new wav_hdr;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
     std::ofstream out(fileName.c_str(), std::ios::binary);
@@ -444,7 +436,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
                           "Couldn't play file '%s'\n", fileName.c_str());
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
-    delete wav;
+    delete wav_hdr;
     return status;
 }
 
