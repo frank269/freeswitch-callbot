@@ -71,7 +71,6 @@ static void event_stop_audio_handler(switch_event_t *event)
 
 	if (sessionId == NULL)
 	{
-		free((void *)filePath);
 		free(sessionId);
 		return;
 	}
@@ -79,14 +78,12 @@ static void event_stop_audio_handler(switch_event_t *event)
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		free((void *)filePath);
 		free(sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_channel_set_variable(channel, "IS_PLAYING", "false");
 	switch_core_session_rwunlock(session);
-	free((void *)filePath);
 	free(sessionId);
 }
 

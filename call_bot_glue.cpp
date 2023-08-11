@@ -82,6 +82,9 @@ public:
 
     ~GStreamer()
     {
+        m_switch_channel = NULL;
+        m_session = NULL;
+        m_sessionId = NULL;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
@@ -395,7 +398,6 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 
 static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_core_session_t *session, switch_channel_t *channel)
 {
-    switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
     std::string fileName(session_id);
@@ -422,10 +424,9 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
         return status;
     }
     out.close();
-
     fileName = "/" + fileName;
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName.c_str());
-    
+
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
     switch_channel_stop_broadcast(channel);
     status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
@@ -435,6 +436,10 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
                           "Couldn't play file '%s'\n", fileName.c_str());
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
+    fsize = NULL;
+    wav = NULL;
+    out = NULL;
+    fileName = NULL;
     return status;
 }
 
@@ -449,6 +454,7 @@ static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void 
     {
         switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: cannot play file in event handler!\n");
     }
+    ai = NULL;
     return nullptr;
 }
 
@@ -457,11 +463,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     struct cap_cb *cb = (struct cap_cb *)obj;
     GStreamer *streamer = (GStreamer *)cb->streamer;
     char *sessionUUID = cb->sessionId;
-    switch_event_t *event;
+    switch_event_t *event = NULL;
     switch_channel_t *channel = NULL;
     switch_core_session_t *session = NULL;
     switch_status_t status;
-    char *filename;
+    char *filename = NULL;
     asprintf(&filename, "/%s.wav", cb->sessionId);
 
     bool connected = streamer->waitForConnect();
@@ -564,7 +570,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
                     switch_event_fire(&event);
                 }
-                
+
                 break;
             case SmartIVRResponseType::CALL_END:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
@@ -617,7 +623,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     event = NULL;
     channel = NULL;
     session = NULL;
-
+    filename = NULL;
+    streamer = NULL;
+    cb = NULL;
     return nullptr;
 }
 
@@ -735,7 +743,6 @@ extern "C"
 
     switch_status_t call_bot_session_cleanup(switch_core_session_t *session, int channelIsClosing, switch_media_bug_t *bug)
     {
-        switch_event_t *event;
         switch_status_t status;
 
         switch_channel_t *channel = switch_core_session_get_channel(session);
@@ -791,6 +798,8 @@ extern "C"
             free(filename);
 
             switch_mutex_unlock(cb->mutex);
+            streamer = NULL;
+            cb = NULL;
 
             return SWITCH_STATUS_SUCCESS;
         }
@@ -849,7 +858,9 @@ extern "C"
                 }
                 switch_mutex_unlock(cb->mutex);
             }
+            streamer = NULL;
         }
+        cb = NULL;
         return SWITCH_TRUE;
     }
 }
