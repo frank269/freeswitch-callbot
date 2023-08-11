@@ -405,15 +405,15 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to session!\n", fsize);
     // write byte to pcm file
     wav_hdr *wav = new wav_hdr;
-    wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
-    wav.Subchunk2Size = fsize;
+    wav->ChunkSize = fsize + sizeof(wav_hdr) - 8;
+    wav->Subchunk2Size = fsize;
     std::ofstream out(fileName.c_str(), std::ios::binary);
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: error create file!\n");
         return status;
     }
-    if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
+    if (!out.write(reinterpret_cast<const char *>(wav), sizeof(*wav)))
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: Error writing WAV file header!\n");
         return status;
@@ -436,7 +436,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
                           "Couldn't play file '%s'\n", fileName.c_str());
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
-    delete wav_hdr;
+    delete wav;
     return status;
 }
 
