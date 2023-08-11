@@ -621,8 +621,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     channel = NULL;
     session = NULL;
     filename = NULL;
-    streamer = NULL;
-    cb = NULL;
+    // streamer = NULL;
+    // cb = NULL;
     return nullptr;
 }
 
