@@ -20,6 +20,6 @@ request = {
 # for i in [3]:
     # request["customer_number"] = "user/{0}@callbot.metechvn.com".format(100001+i%5)
 while(True):
-    for i in range(50):
+    for i in range(1):
         print(s.callControllerServiceRequest(json.dumps(request)))
     time.sleep(60)
