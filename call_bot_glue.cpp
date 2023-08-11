@@ -84,7 +84,7 @@ public:
     {
         m_switch_channel = NULL;
         m_session = NULL;
-        delete m_sessionId;
+        // delete m_sessionId;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
