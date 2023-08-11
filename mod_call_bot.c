@@ -71,7 +71,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 
 	if (sessionId == NULL)
 	{
-		free((char *)filePath);
+		// free((char *)filePath);
 		free(sessionId);
 		return;
 	}
@@ -79,14 +79,14 @@ static void event_stop_audio_handler(switch_event_t *event)
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		free((char *)filePath);
+		// free((char *)filePath);
 		free(sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
 	switch_channel_set_variable(channel, "IS_PLAYING", "false");
 	switch_core_session_rwunlock(session);
-	free((char *)filePath);
+	// free((char *)filePath);
 	free(sessionId);
 }
 
@@ -254,7 +254,6 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 	}
 	switch_safe_free(abuf);
 	switch_safe_free(read_frame);
-	switch_safe_free(write_frame);
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 
 	return SWITCH_STATUS_SUCCESS;
