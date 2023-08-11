@@ -310,7 +310,7 @@ SWITCH_STANDARD_API(call_bot_function)
 
 done:
 	switch_safe_free(mycmd);
-	*argv = NULL;
+	// *argv = NULL;
 	return SWITCH_STATUS_SUCCESS;
 }
 
