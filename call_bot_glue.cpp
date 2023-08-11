@@ -84,7 +84,7 @@ public:
     {
         m_switch_channel = NULL;
         m_session = NULL;
-        m_sessionId = NULL;
+        &m_sessionId = NULL;
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
@@ -436,10 +436,10 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
                           "Couldn't play file '%s'\n", fileName.c_str());
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
-    fsize = NULL;
-    wav = NULL;
-    out = NULL;
-    fileName = NULL;
+    delete fsize;
+    delete wav;
+    delete out;
+    delete fileName;
     return status;
 }
 
