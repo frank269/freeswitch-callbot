@@ -9,7 +9,7 @@ request = {
     "controller_url" : "http://10.196.24.157:9000/RPC2",
     "action_type" : 1,
     # "conversation_id" : "20230518035143-8a0a2fd5-cd86-44e1-8663-d964373292ac",
-    "conversation_id" : "20230810100836-ffb0fbbd-0548-42af-b5da-297068d1fabf",
+    "conversation_id" : "20230810150214-c5206bb9-12c1-4291-a5a6-69d71fba4b06",
     # "customer_number" : "1000@voice.metechvn.com",
     "customer_number" : "0979019082",
     # "customer_number" : "0373944950",
@@ -22,4 +22,4 @@ request = {
 while(True):
     for i in range(50):
         print(s.callControllerServiceRequest(json.dumps(request)))
-    time.sleep(30)
+    time.sleep(60)

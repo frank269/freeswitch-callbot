@@ -15,14 +15,11 @@ if detect_voicemail == '1' then
     freeswitch.consoleLog("info", "action on answer phase, stop recording... !, record path: " .. record_path .. " \n")
     session:execute("stop_record_session", record_path)
     freeswitch.consoleLog("info", uuid .. " send api to detect voice mail!")
-    local jsonRequest = string.format('{"token": "%s","conversion_id":"%s","callback_url":"%s","audio_url":"%s"}',auth_token,uuid,callback_url,public_path)
-    local curlCommand = string.format('curl -X POST -H "Content-Type: application/json" -d \'%s\' %s', jsonRequest, server_url)
-    freeswitch.consoleLog("info", uuid .. " detect voice mail response: " .. jsonRequest .. "\n")
-    -- Execute the cURL command
-    local handle = io.popen(curlCommand)
-    local response = handle:read("*a")
-    handle:close()
-    -- Process the XML-RPC response
+
+    local jsonRequest = string.format('{"token": "%s","conversion_id":"%s","callback_url":"%s","audio_url":"%s","bot_conversation_id":"%s"}',auth_token,uuid,callback_url,public_path,conversation_id)
+    
+    local api = freeswitch.API();
+    local response = api:executeString("curl ".. server_url .. " timeout 3 content-type 'application/json' post '"..jsonRequest.."'") or '';
     freeswitch.consoleLog("info", uuid .. " detect voice mail response: " .. response .. "\n")
 end
 

@@ -106,11 +106,40 @@ local jsonRequest = jsonParser.encode(event);
 -- Send hangup callback
 local functionName = "phoneGatewayEndCall"
 local xmlPayload = string.format('<?xml version="1.0"?>\n<methodCall>\n<methodName>%s</methodName>\n<params>\n<param>\n<value>\n<string>%s</string>\n</value>\n</param>\n</params>\n</methodCall>', functionName, jsonRequest)
-local curlCommand = string.format('curl -X POST -H "Content-Type: application/xml" -d \'%s\' %s', xmlPayload, phone_controller_uri)
+
+local api = freeswitch.API();
+local response = api:executeString("curl ".. phone_controller_uri .. " timeout 3 content-type 'application/xml' post '"..xmlPayload.."'") or '';
+
+-- local curlCommand = string.format('curl -X POST -H "Content-Type: application/xml" -d \'%s\' %s', xmlPayload, phone_controller_uri)
 -- Execute the cURL command
-local handle = io.popen(curlCommand)
-freeswitch.consoleLog("info", "callbot phoneGatewayEndCall request: " .. conversation_id .. " - " .. jsonRequest .. "\n")
-local response = handle:read("*a")
-handle:close()
+-- local handle = io.popen(curlCommand)
+-- freeswitch.consoleLog("info", "callbot phoneGatewayEndCall request: " .. conversation_id .. " - " .. jsonRequest .. "\n")
+-- local response = handle:read("*a")
+-- handle:close()
 -- Process the XML-RPC response
 freeswitch.consoleLog("info", "callbot phoneGatewayEndCall response: " .. conversation_id .. " - " .. response .. "\n")
+
+jsonParser = null;
+event = null;
+jsonRequest = null;
+functionName = null;
+xmlPayload = null;
+api = null;
+response = null;
+status = null;
+sip_code = null;
+channel_uuid = null;
+call_at = null;
+pickup_at = null;
+hangup_at = null;
+conversation_id = null;
+bot_master_uri = null;
+phone_controller_uri = null;
+is_bot_hangup = null;
+is_bot_transfer = null;
+is_bot_error = null;
+is_voice_mail = null;
+-- local sip_code = null;
+hangup_cause = null;
+record_name = null;
+audio_url = null;

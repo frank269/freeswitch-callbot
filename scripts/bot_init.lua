@@ -47,11 +47,15 @@ local record_path = record_prefix .. record_name
 local functionName = "init_callin"
 local jsonRequest = string.format('{"callcenter_phone": "%s","customer_phone":"%s"}',destination_number,caller_id_number)
 local xmlPayload = string.format('<?xml version="1.0"?>\n<methodCall>\n<methodName>%s</methodName>\n<params>\n<param>\n<value>\n<string>%s</string>\n</value>\n</param>\n</params>\n</methodCall>', functionName, jsonRequest)
-local curlCommand = string.format('curl -X POST -H "Content-Type: application/xml" -d \'%s\' %s', xmlPayload, serverUrl)
+
+local api = freeswitch.API();
+local response = api:executeString("curl ".. serverUrl .. " timeout 3 content-type 'application/xml' post '"..xmlPayload.."'") or '';
+
+-- local curlCommand = string.format('curl -X POST -H "Content-Type: application/xml" --connection-timeout 5 --max-time 5 -d \'%s\' %s', xmlPayload, serverUrl)
 -- Execute the cURL command
-local handle = io.popen(curlCommand)
-local response = handle:read("*a")
-handle:close()
+-- local handle = io.popen(curlCommand)
+-- local response = handle:read("*a")
+-- handle:close()
 -- Process the XML-RPC response
 freeswitch.consoleLog("info", "callbot init response: " .. response .. "\n")
 -- Extract the desired value from the XML response
