@@ -416,12 +416,16 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 
 static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_core_session_t *session, switch_channel_t *channel)
 {
+    long long now = switch_micro_time_now();
     switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
-    std::string fileName(session_id);
+    std::string fileName("/tmp/");
+    fileName << session_id;
+    fileName += "-";
+    fileName << now;
     fileName += ".wav";
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to session!\n", fsize);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to file: %s!\n", fsize, fileName.c_str());
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
@@ -444,7 +448,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     }
     out.close();
 
-    fileName = "/" + fileName;
+    // fileName = "/tmp/" + fileName;
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName.c_str());
     // status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE);
     // if (status == SWITCH_STATUS_SUCCESS)
@@ -457,8 +461,9 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     // switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
+    switch_channel_set_variable(channel, "CUR_FILE", fileName.c_str());
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    switch_channel_stop_broadcast(channel);
+    // switch_channel_stop_broadcast(channel);
     status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
     // status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
     if (status != SWITCH_STATUS_SUCCESS)
@@ -505,8 +510,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // switch_memory_pool_t *pool;
     // Audio_Info audio_info;
     switch_status_t status;
-    char *filename;
-    asprintf(&filename, "/%s.wav", cb->sessionId);
 
     bool connected = streamer->waitForConnect();
     if (!connected)
@@ -975,12 +978,6 @@ extern "C"
             }
 
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
-
-            // remove audio file
-            char *filename;
-            asprintf(&filename, "/%s.wav", cb->sessionId);
-            remove(filename);
-            free(filename);
 
             switch_mutex_unlock(cb->mutex);
 

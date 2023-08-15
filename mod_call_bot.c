@@ -115,12 +115,11 @@ char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
 	char *newArray;
 	int length = strlen(originalArray);
-	int newArrayLength = length - startIndex - 3;
-	if (newArrayLength < 30)
+	if (length < 40)
 	{
-		// printf("Memory allocation failed.\n");
 		return NULL;
 	}
+	int newArrayLength = 36;
 
 	newArray = (char *)malloc(newArrayLength * sizeof(char));
 	if (newArray == NULL)
@@ -174,7 +173,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 		return;
 	}
 
-	sessionId = copyArrayFromIndex(strdup(filePath), 1);
+	sessionId = copyArrayFromIndex(strdup(filePath), 5);
 
 	if (sessionId == NULL)
 	{
@@ -188,7 +187,14 @@ static void event_stop_audio_handler(switch_event_t *event)
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
-	switch_channel_set_variable(channel, "IS_PLAYING", "false");
+
+	const char *curFile = switch_channel_get_variable(channel, "CUR_FILE");
+	if (curFile && (strcmp(curFile, filePath) == 0))
+	{
+		switch_channel_set_variable(channel, "IS_PLAYING", "false");
+		switch_channel_set_variable(channel, "CUR_FILE", "");
+		remove(filePath);
+	};
 	// switch_channel_set_flag(channel, CF_BREAK);
 	// switch_channel_stop_broadcast(channel);
 	// switch_ivr_stop_displace_session(session, "silence_stream://100");
