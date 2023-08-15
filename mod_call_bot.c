@@ -114,12 +114,12 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
 	char *newArray;
+	int newArrayLength = 36;
 	int length = strlen(originalArray);
 	if (length < 40)
 	{
 		return NULL;
 	}
-	int newArrayLength = 36;
 
 	newArray = (char *)malloc(newArrayLength * sizeof(char));
 	if (newArray == NULL)
@@ -167,7 +167,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	char *sessionId;
 	switch_channel_t *channel;
 	switch_core_session_t *session;
-	const char *filePath = switch_event_get_header(event, "Playback-File-Path");
+	const char *curFile, *filePath = switch_event_get_header(event, "Playback-File-Path");
 	if (!filePath)
 	{
 		return;
@@ -188,7 +188,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	}
 	channel = switch_core_session_get_channel(session);
 
-	const char *curFile = switch_channel_get_variable(channel, "CUR_FILE");
+	curFile = switch_channel_get_variable(channel, "CUR_FILE");
 	if (curFile && (strcmp(curFile, filePath) == 0))
 	{
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
@@ -201,6 +201,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	// switch_ivr_displace_session(session, "silence_stream://100", 0, "");
 	switch_core_session_rwunlock(session);
 	filePath = NULL;
+	curFile = NULL;
 	free(sessionId);
 }
 
