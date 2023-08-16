@@ -460,7 +460,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
     switch_channel_set_variable(channel, "CUR_FILE", fileName);
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: session %s set playing to true!\n", session_id);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: session %s set playing to true!\n", session_id);
     // switch_channel_stop_broadcast(channel);
     status = switch_ivr_broadcast(session_id, fileName, SMF_ECHO_ALEG | SMF_HOLD_BLEG);
     // status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
@@ -574,7 +574,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
                 if (streamer->isPlaying())
                 {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: current playing audio, stop it first\n");
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: audio is playing currently, stop it first\n");
                     // if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO) == SWITCH_STATUS_SUCCESS)
                     // {
                     //     switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
@@ -583,6 +583,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                     // switch_channel_set_flag(channel, CF_BREAK);
                     switch_channel_stop_broadcast(channel);
                     switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: audio is playing currently, stop done\n");
                     // switch_ivr_stop_displace_session(session, "silence_stream://100");
                     // switch_ivr_displace_session(session, "silence_stream://100", 0, "");
                     // switch_ivr_stop_displace_session(session, filename);
