@@ -420,8 +420,8 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
-    char *fileName;
-    asprintf(&fileName, "/tmp/%s-%lld.wav\n", session_id, now);
+    char *fileName = (char *)malloc(62 * sizeof(char));
+    sprintf(fileName, "/tmp/%s-%lld.wav\n", session_id, now);
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to file: %s!\n", fsize, fileName);
     // write byte to pcm file
     wav_hdr wav;
