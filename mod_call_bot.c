@@ -177,13 +177,19 @@ static void event_stop_audio_handler(switch_event_t *event)
 
 	if (sessionId == NULL)
 	{
+		filePath = NULL;
+		curFile = NULL;
 		return;
 	}
 	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s event_stop_audio_handler: stop play file %s!\n", sessionId, filePath);
+	remove(filePath);
 	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
 		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
+		filePath = NULL;
+		curFile = NULL;
+		free(sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
@@ -193,7 +199,7 @@ static void event_stop_audio_handler(switch_event_t *event)
 	{
 		switch_channel_set_variable(channel, "IS_PLAYING", "false");
 		switch_channel_set_variable(channel, "CUR_FILE", "");
-		remove(filePath);
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s set playing to false!\n", sessionId);
 	};
 	// switch_channel_set_flag(channel, CF_BREAK);
 	// switch_channel_stop_broadcast(channel);
