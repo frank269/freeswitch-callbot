@@ -420,17 +420,14 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
-    std::string fileName("/tmp/");
-    fileName << session_id;
-    fileName += "-";
-    fileName << now;
-    fileName += ".wav";
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to file: %s!\n", fsize, fileName.c_str());
+    char *fileName;
+    asprintf(&fileName, "/tmp/%s-%lld.wav\n", session_id, now);
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to file: %s!\n", fsize, fileName);
     // write byte to pcm file
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
-    std::ofstream out(fileName.c_str(), std::ios::binary);
+    std::ofstream out(fileName, std::ios::binary);
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: error create file!\n");
@@ -449,7 +446,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     out.close();
 
     // fileName = "/tmp/" + fileName;
-    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName.c_str());
+    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write file: %s\n", fileName);
     // status = switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE);
     // if (status == SWITCH_STATUS_SUCCESS)
     // {
@@ -461,18 +458,19 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     // return status;
 
     // switch_ivr_stop_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav");
-    switch_channel_set_variable(channel, "CUR_FILE", fileName.c_str());
+    switch_channel_set_variable(channel, "CUR_FILE", fileName);
     switch_channel_set_variable(channel, "IS_PLAYING", "true");
     // switch_channel_stop_broadcast(channel);
-    status = switch_ivr_broadcast(session_id, fileName.c_str(), SMF_ECHO_ALEG | SMF_HOLD_BLEG);
+    status = switch_ivr_broadcast(session_id, fileName, SMF_ECHO_ALEG | SMF_HOLD_BLEG);
     // status = switch_ivr_displace_session(session, "/3eb58bc7-08d6-405b-867c-16417d684f7e.wav", 0, "mrf");
     if (status != SWITCH_STATUS_SUCCESS)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
-                          "Couldn't play file '%s'\n", fileName.c_str());
+                          "Couldn't play file '%s'\n", fileName);
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
     // switch_channel_set_variable(channel, "IS_PLAYING", "false");
+    fileName = NULL;
     return status;
 }
 
