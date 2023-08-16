@@ -114,7 +114,7 @@ static void responseHandler(switch_core_session_t *session, const char *json, co
 char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
 	char *newArray;
-	int newArrayLength = 36;
+	int newArrayLength = 37;
 	int length = strlen(originalArray);
 	if (length < 40)
 	{
