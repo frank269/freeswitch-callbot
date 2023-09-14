@@ -39,14 +39,11 @@ struct cap_cb
     switch_mutex_t *mutex;
     char bugname[MAX_BUG_LEN + 1];
     char sessionId[MAX_SESSION_ID + 1];
-    // char *base;
     SpeexResamplerState *resampler;
     void *streamer;
     responseHandler_t responseHandler;
     switch_thread_t *thread;
-    // switch_thread_t *play_audio_thread;
     int end_of_utterance;
-    // int play_file;
     switch_vad_t *vad;
     uint32_t samples_per_second;
 };
