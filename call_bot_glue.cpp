@@ -262,7 +262,7 @@ public:
         m_request.set_audio_content(data, datalen);
         m_request.set_is_playing(isPlaying());
         add_dtmf_to_request();
-        // print_request();
+        print_request();
         bool ok = m_streamer->Write(m_request);
         return ok;
     }
