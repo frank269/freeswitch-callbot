@@ -218,7 +218,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			if (start_bot && (strcmp(start_bot, "true") == 0))
 			{
 				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
-				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+				// status =
+				start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 				isStarted = 1;
 			}
 		}
