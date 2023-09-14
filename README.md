@@ -80,7 +80,9 @@ add line to: /etc/freeswitch/autoload_configs/lua.conf.xml
 <hook event="CHANNEL_HANGUP_COMPLETE" script="/opt/freeswitch/scripts/bot_hangup.lua" />
 
 
-
+configure.ac
+build/modules.conf.in
+modules.conf
 
 
 

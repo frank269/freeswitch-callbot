@@ -416,7 +416,8 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 
 static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_core_session_t *session, switch_channel_t *channel)
 {
-    switch_event_t *event;
+    long long now = switch_micro_time_now();
+    // switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
     std::string fileName(session_id);

@@ -40,19 +40,16 @@ end
 local serverUrl = "http://172.16.90.35:30053/xmlrpc"
 local record_folder = "/var/lib/freeswitch/recordings/callbot/"
 local record_prefix = "https://172.16.88.13/file/callbot/"
-local record_name = uuid() .. ".wav"
+local record_name = os.date('%Y/%m/%d/%H/') .. uuid() .. ".wav"
 local local_record_path = record_folder .. record_name
 local record_path = record_prefix .. record_name
 
 local functionName = "init_callin"
 local jsonRequest = string.format('{"callcenter_phone": "%s","customer_phone":"%s"}',destination_number,caller_id_number)
 local xmlPayload = string.format('<?xml version="1.0"?>\n<methodCall>\n<methodName>%s</methodName>\n<params>\n<param>\n<value>\n<string>%s</string>\n</value>\n</param>\n</params>\n</methodCall>', functionName, jsonRequest)
-local curlCommand = string.format('curl -X POST -H "Content-Type: application/xml" -d \'%s\' %s', xmlPayload, serverUrl)
--- Execute the cURL command
-local handle = io.popen(curlCommand)
-local response = handle:read("*a")
-handle:close()
--- Process the XML-RPC response
+
+local api = freeswitch.API();
+local response = api:executeString("curl ".. serverUrl .. " timeout 3 content-type 'application/xml' post '"..xmlPayload.."'");
 freeswitch.consoleLog("info", "callbot init response: " .. response .. "\n")
 -- Extract the desired value from the XML response
 local jsonString = extractValueFromXml(response, "string")
