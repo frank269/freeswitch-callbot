@@ -187,7 +187,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 static switch_status_t switch_to_silence_session(switch_core_session_t *session, switch_input_args_t *args)
 {
 	// switch_status_t status;
-	// switch_frame_t *read_frame;
+	switch_frame_t *read_frame;
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	unsigned char isStarted = 0;
 
@@ -205,12 +205,13 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	while (switch_channel_ready(channel))
 	{
-		// status = switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
+		// status =
+		switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
 		// if (!SWITCH_READ_ACCEPTABLE(status))
 		// {
 		// 	continue;
 		// }
-		// switch_ivr_parse_all_events(session);
+		switch_ivr_parse_all_events(session);
 
 		if (!isStarted)
 		{
@@ -257,15 +258,15 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// 	switch_channel_clear_flag(channel, CF_BREAK);
 		// 	break;
 		// }
-		switch_cond_next();
-		switch_yield(1000);
+		// switch_cond_next();
+		switch_yield(100);
 	}
 
 	// if (write_frame.codec)
 	// {
 	// 	switch_core_codec_destroy(&codec);
 	// }
-	// read_frame = NULL;
+	read_frame = NULL;
 	// switch_safe_free(abuf);
 	// switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 
