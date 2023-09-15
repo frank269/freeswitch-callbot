@@ -259,7 +259,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// 	switch_channel_clear_flag(channel, CF_BREAK);
 		// 	break;
 		// }
-		switch_cond_next();
+		// switch_cond_next();
 		switch_yield(1000);
 	}
 
