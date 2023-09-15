@@ -114,13 +114,13 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	{
 		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
 		call_bot_session_cleanup(session, 1, bug);
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "capture_callback SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
 
 	case SWITCH_ABC_TYPE_READ:
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_READ.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "capture_callback SWITCH_ABC_TYPE_READ.\n");
 		return call_bot_frame(bug, user_data);
 	}
 	break;
@@ -259,8 +259,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// 	switch_channel_clear_flag(channel, CF_BREAK);
 		// 	break;
 		// }
-		// switch_cond_next();
-		switch_yield(100);
+		switch_cond_next();
+		switch_yield(1000);
 	}
 
 	// if (write_frame.codec)

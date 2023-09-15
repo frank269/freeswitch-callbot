@@ -4,7 +4,7 @@ import time
 # s = xmlrpc.client.ServerProxy('https://a25c-1-55-211-83.ngrok-free.app')
 # s = xmlrpc.client.ServerProxy('http://172.16.90.41:9000')
 # s = xmlrpc.client.ServerProxy('http://10.196.24.157:9000')
-s = xmlrpc.client.ServerProxy('http://172.16.88.13:9000')
+s = xmlrpc.client.ServerProxy('http://172.16.86.25:9000')
 request = {
     "grpc_server" : "172.16.90.35:30066",
     "controller_url" : "http://10.196.24.157:9000/RPC2",
@@ -21,6 +21,6 @@ request = {
 # for i in [3]:
     # request["customer_number"] = "user/{0}@callbot.metechvn.com".format(100001+i%5)
 while(True):
-    for i in range(50):
+    for i in range(1):
         print(s.callControllerServiceRequest(json.dumps(request)))
     time.sleep(60)
