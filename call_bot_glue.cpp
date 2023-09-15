@@ -255,6 +255,10 @@ public:
         {
             return false;
         }
+        if (datalen % CHUNKSIZE == 0)
+        {
+            m_audioBuffer.add(data, datalen);
+        }
 
         if (m_audioBuffer.getNumItems() == MAXCHUNKS)
         {
@@ -266,13 +270,7 @@ public:
             m_streamer->Write(m_request);
             m_audioBuffer.clearData();
         }
-        else
-        {
-            if (datalen % CHUNKSIZE == 0)
-            {
-                m_audioBuffer.add(data, datalen);
-            }
-        }
+
         return true;
     }
 

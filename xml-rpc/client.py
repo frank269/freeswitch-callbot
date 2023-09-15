@@ -10,7 +10,7 @@ request = {
     "controller_url" : "http://10.196.24.157:9000/RPC2",
     "action_type" : 1,
     # "conversation_id" : "20230518035143-8a0a2fd5-cd86-44e1-8663-d964373292ac",
-    "conversation_id" : "20230810150214-c5206bb9-12c1-4291-a5a6-69d71fba4b06",
+    "conversation_id" : "20230915153418-0eeb8dc9-3ffb-48b8-9004-d858c302b82e",
     # "customer_number" : "1000@voice.metechvn.com",
     "customer_number" : "0979019082",
     # "customer_number" : "0373944950",
