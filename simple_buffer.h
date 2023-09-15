@@ -57,6 +57,11 @@ public:
     return m_pData;
   }
 
+  void clearData()
+  {
+    numItems = 0;
+  }
+
   uint32_t getNumItems() { return numItems; }
 
 private:

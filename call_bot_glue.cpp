@@ -264,6 +264,7 @@ public:
             add_dtmf_to_request();
             print_request();
             m_streamer->Write(m_request);
+            m_audioBuffer.clearData();
         }
         else
         {
