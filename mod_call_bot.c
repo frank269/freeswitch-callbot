@@ -205,7 +205,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	while (switch_channel_ready(channel))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Call Bot is running .............\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call Bot is running .............\n");
 		// status =
 		switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
 		// if (!SWITCH_READ_ACCEPTABLE(status))
@@ -219,7 +219,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 			const char *start_bot = switch_channel_get_variable(channel, "START_BOT");
 			if (start_bot && (strcmp(start_bot, "true") == 0))
 			{
-				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
+				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
 				// status =
 				start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
 				isStarted = 1;
