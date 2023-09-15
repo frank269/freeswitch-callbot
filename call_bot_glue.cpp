@@ -1034,7 +1034,6 @@ extern "C"
                         {
                             streamer->write(frame.data, sizeof(spx_int16_t) * frame.samples);
                         }
-                        switch_yield(1000);
                     }
                 }
                 switch_mutex_unlock(cb->mutex);

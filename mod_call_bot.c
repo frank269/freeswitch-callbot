@@ -205,7 +205,7 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 
 	while (switch_channel_ready(channel))
 	{
-		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call Bot is running .............\n");
+		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Call Bot is running .............\n");
 		// status =
 		switch_core_session_read_frame(session, &read_frame, SWITCH_IO_FLAG_NONE, 0);
 		// if (!SWITCH_READ_ACCEPTABLE(status))
@@ -259,8 +259,8 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		// 	switch_channel_clear_flag(channel, CF_BREAK);
 		// 	break;
 		// }
-		// switch_cond_next();
-		switch_yield(1000);
+		switch_cond_next();
+		switch_yield(100000);
 	}
 
 	// if (write_frame.codec)
