@@ -12,6 +12,8 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
+#define MAXCHUNKS (5)
+
 typedef struct WAV_HEADER
 {
     /* RIFF Chunk Descriptor */
@@ -70,9 +72,8 @@ public:
                                                                                       m_bot_transfer(false),
                                                                                       m_bot_error(false),
                                                                                       m_language(lang),
-                                                                                      m_interim(interim)
-    //   ,
-    //   m_audioBuffer(CHUNKSIZE, 15)
+                                                                                      m_interim(interim),
+                                                                                      m_audioBuffer(CHUNKSIZE, MAXCHUNKS)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -252,19 +253,26 @@ public:
     {
         if (!m_connected)
         {
-            // if (datalen % CHUNKSIZE == 0)
-            // {
-            //     m_audioBuffer.add(data, datalen);
-            // }
-            return true;
+            return false;
         }
-        m_request.clear_audio_content();
-        m_request.set_audio_content(data, datalen);
-        m_request.set_is_playing(isPlaying());
-        add_dtmf_to_request();
-        print_request();
-        bool ok = m_streamer->Write(m_request);
-        return ok;
+
+        if (m_audioBuffer.getNumItems() == MAXCHUNKS)
+        {
+            m_request.clear_audio_content();
+            m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * MAXCHUNKS);
+            m_request.set_is_playing(isPlaying());
+            add_dtmf_to_request();
+            print_request();
+            m_streamer->Write(m_request);
+        }
+        else
+        {
+            if (datalen % CHUNKSIZE == 0)
+            {
+                m_audioBuffer.add(data, datalen);
+            }
+        }
+        return true;
     }
 
     uint32_t nextMessageSize(void)
@@ -391,7 +399,7 @@ private:
     bool m_interim;
     std::string m_language;
     std::promise<void> m_promise;
-    // SimpleBuffer m_audioBuffer;
+    SimpleBuffer m_audioBuffer;
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
