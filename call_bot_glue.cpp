@@ -102,7 +102,7 @@ public:
         // switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "GStreamer %p sending message: %s\n", this, json);
         // free(json);
         // cJSON_Delete(jResult);
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p audio isplaying: %d\n", this, m_request.is_playing());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -267,7 +267,11 @@ public:
             m_request.set_is_playing(isPlaying());
             add_dtmf_to_request();
             print_request();
-            m_streamer->Write(m_request);
+            if (!m_streamer->Write(m_request))
+            {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
+                return false;
+            }
             m_audioBuffer.clearData();
         }
 

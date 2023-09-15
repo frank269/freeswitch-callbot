@@ -3,13 +3,14 @@ import json
 import time
 # s = xmlrpc.client.ServerProxy('https://a25c-1-55-211-83.ngrok-free.app')
 # s = xmlrpc.client.ServerProxy('http://172.16.90.41:9000')
-s = xmlrpc.client.ServerProxy('http://10.196.24.157:9000')
+# s = xmlrpc.client.ServerProxy('http://10.196.24.157:9000')
+s = xmlrpc.client.ServerProxy('http://172.16.88.13:9000')
 request = {
     "grpc_server" : "172.16.90.35:30066",
     "controller_url" : "http://10.196.24.157:9000/RPC2",
     "action_type" : 1,
     # "conversation_id" : "20230518035143-8a0a2fd5-cd86-44e1-8663-d964373292ac",
-    "conversation_id" : "20230810100836-ffb0fbbd-0548-42af-b5da-297068d1fabf",
+    "conversation_id" : "20230915143122-3850c7d8-09c3-4d5f-a7db-5f715bc83b27",
     # "customer_number" : "1000@voice.metechvn.com",
     "customer_number" : "0979019082",
     # "customer_number" : "0373944950",
@@ -20,6 +21,6 @@ request = {
 # for i in [3]:
     # request["customer_number"] = "user/{0}@callbot.metechvn.com".format(100001+i%5)
 while(True):
-    for i in range(50):
+    for i in range(1):
         print(s.callControllerServiceRequest(json.dumps(request)))
     time.sleep(30)
