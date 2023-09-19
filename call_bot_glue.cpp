@@ -12,7 +12,8 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
-#define MAXCHUNKS (5)
+#define MAXCHUNKS (50)        // 1 sec
+#define INTERVAL (1000000000) // 1 sec
 
 typedef struct WAV_HEADER
 {
@@ -67,6 +68,7 @@ public:
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
         m_pickup_at = switch_micro_time_now() / 1000;
+        last_write = switch_micro_time_now();
     }
 
     ~GStreamer()
@@ -197,7 +199,7 @@ public:
             m_audioBuffer.add(data, datalen);
         }
 
-        if (m_audioBuffer.getNumItems() == MAXCHUNKS)
+        if (m_audioBuffer.getNumItems() == MAXCHUNKS || switch_micro_time_now() - last_write > INTERVAL)
         {
             m_request.clear_audio_content();
             m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
@@ -209,6 +211,7 @@ public:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
+            last_write = switch_micro_time_now();
             m_audioBuffer.clearData();
         }
 
@@ -346,6 +349,7 @@ private:
     bool m_bot_hangup;
     bool m_bot_transfer;
     bool m_bot_error;
+    long long last_write;
 };
 
 static std::vector<uint8_t> parse_byte_array(std::string str)
@@ -391,7 +395,7 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     if (status != SWITCH_STATUS_SUCCESS)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_WARNING,
-                          "Couldn't play file '%s'\n", fileName.c_str());
+                          "Couldn't play file '%s'\n", fileName);
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
     fileName = NULL;
