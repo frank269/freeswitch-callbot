@@ -37,7 +37,7 @@ class CallRequest():
         self.transfer = "TRANSFER_EXTENSION={0}".format(request["transfer_extension"]) if "transfer_extension" in request else ""
 
     def __str__(self):
-        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='lua::/opt/freeswitch/scripts/bot_answer.lua',execute_on_media='lua::/opt/freeswitch/scripts/bot_early_media.lua',record_name={6},local_record_path={5},record_path={7},origination_caller_id_number={8},{9}}}{4}".format(
+        return "{{CALLBOT_MASTER_URI={0},CONVERSATION_ID={1},CALLBOT_CONTROLLER_URI={2},CALL_AT={3},execute_on_answer='lua::/opt/freeswitch/scripts/bot_answer.lua',execute_on_media='lua::/opt/freeswitch/scripts/bot_early_media.lua',record_name={6},local_record_path={5},record_path={7},origination_caller_id_number={8},detect_voicemail={10},batch_per_seconds={11},{9}}}{4}".format(
             self.grpc_server,
             self.conversation_id,
             self.controller_url,
@@ -47,7 +47,9 @@ class CallRequest():
             self.record_name,
             self.record_path,
             self.outbound_number,
-            self.transfer)
+            self.transfer,
+            detect_voicemail,
+            batch_per_seconds)
 
 
 class CallResponse():

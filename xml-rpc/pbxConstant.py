@@ -8,6 +8,9 @@ pbx_port = os.getenv('PBX_PORT','8080')
 record_folder = os.getenv('RECORD_FOLDER','/var/lib/freeswitch/recordings/callbot/')
 record_prefix = os.getenv('RECORD_PREFIX','https://14.232.240.205/file/callbot/')
 
+detect_voicemail = os.getenv('DETECT_VOICEMAIL','1')
+batch_per_seconds = os.getenv('BPS','10')
+
 outbound_number = os.getenv('OUTBOUND_NUMBER','842488898268')
 pbx_public_ip = os.getenv('PUBLIC_IP','172.16.88.13:5090')
 
