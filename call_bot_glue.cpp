@@ -53,30 +53,22 @@ class GStreamer
 {
 public:
     GStreamer(
-        switch_core_session_t *session, uint32_t channels, char *lang, int interim) : m_session(session),
-                                                                                      m_writesDone(false),
-                                                                                      m_connected(false),
-                                                                                      m_bot_hangup(false),
-                                                                                      m_bot_transfer(false),
-                                                                                      m_bot_error(false),
-                                                                                      m_language(lang),
-                                                                                      m_interim(interim),
-                                                                                      m_audioBuffer(CHUNKSIZE, 50 / ((switch_channel_get_variable(m_switch_channel, "batch_per_seconds") && atol(switch_channel_get_variable(m_switch_channel, "batch_per_seconds")) > 0) ? atol(switch_channel_get_variable(m_switch_channel, "batch_per_seconds")) : BPS))
+        switch_core_session_t *session, uint32_t channels, char *lang, int interim, int bps = 10) : m_session(session),
+                                                                                                    m_writesDone(false),
+                                                                                                    m_connected(false),
+                                                                                                    m_bot_hangup(false),
+                                                                                                    m_bot_transfer(false),
+                                                                                                    m_bot_error(false),
+                                                                                                    m_language(lang),
+                                                                                                    m_interim(interim),
+                                                                                                    m_audioBuffer(CHUNKSIZE, 50 / bps)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
         m_pickup_at = switch_micro_time_now() / 1000;
         last_write = switch_micro_time_now();
-        const char *var = switch_channel_get_variable(m_switch_channel, "batch_per_seconds");
-        if (var && atol(var) > 0)
-        {
-            m_max_chunks = 50 / atol(var);
-        }
-        else
-        {
-            m_max_chunks = 50 / BPS;
-        }
+        m_max_chunks = 50 / bps;
         m_interval = m_max_chunks * 20000;
     }
 
@@ -87,7 +79,7 @@ public:
 
     void print_request()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -674,7 +666,13 @@ extern "C"
         try
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_init:  allocating streamer\n");
-            streamer = new GStreamer(session, channels, lang, interim);
+            const char *var = switch_channel_get_variable(channel, "batch_per_seconds");
+            int bps = 10;
+            if (var && atol(var) > 0)
+            {
+                bps = atol(var);
+            }
+            streamer = new GStreamer(session, channels, lang, interim, bps);
             cb->streamer = streamer;
         }
         catch (std::exception &e)
