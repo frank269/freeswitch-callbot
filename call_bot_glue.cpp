@@ -12,8 +12,8 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
-#define MAXCHUNKS (50)        // 1 sec
-#define INTERVAL (1000000000) // 1 sec
+#define MAXCHUNKS (5)        // 0.1 sec
+#define INTERVAL (100000000) // 0.1 sec
 
 typedef struct WAV_HEADER
 {
@@ -199,6 +199,7 @@ public:
             m_audioBuffer.add(data, datalen);
         }
 
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Time: %lld!\n", switch_micro_time_now() - last_write);
         if (m_audioBuffer.getNumItems() == MAXCHUNKS || switch_micro_time_now() - last_write > INTERVAL)
         {
             m_request.clear_audio_content();

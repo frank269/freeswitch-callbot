@@ -64,6 +64,7 @@ cd /usr/src/freeswitch && \
   --localstatedir=/var \
   --sysconfdir=/etc \
   --with-openssl \
+  --disable-libvpx \
   --enable-portable-binary \
   --enable-core-pgsql-support \
   --disable-dependency-tracking \
