@@ -12,7 +12,7 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
-#define BPS (1) // batch per second
+#define BPS (10) // batch per second
 
 typedef struct WAV_HEADER
 {
@@ -60,16 +60,24 @@ public:
                                                                                       m_bot_transfer(false),
                                                                                       m_bot_error(false),
                                                                                       m_language(lang),
-                                                                                      m_interim(interim),
-                                                                                      m_audioBuffer(CHUNKSIZE, 50 / BPS)
+                                                                                      m_interim(interim)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
         m_pickup_at = switch_micro_time_now() / 1000;
         last_write = switch_micro_time_now();
-        m_max_chunks = 50 / BPS;
+        const char *var = switch_channel_get_variable(m_switch_channel, "batch_per_seconds");
+        if (var && atol(var) > 0)
+        {
+            m_max_chunks = 50 / atol(var);
+        }
+        else
+        {
+            m_max_chunks = 50 / BPS;
+        }
         m_interval = m_max_chunks * 20000;
+        m_audioBuffer = new SimpleBuffer(CHUNKSIZE, m_max_chunks)
     }
 
     ~GStreamer()
