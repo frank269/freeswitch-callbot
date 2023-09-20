@@ -12,7 +12,7 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
-#define BFS (1) // batch per second
+#define BPS (1) // batch per second
 
 typedef struct WAV_HEADER
 {
