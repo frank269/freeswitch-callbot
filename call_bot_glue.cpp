@@ -12,8 +12,7 @@
 #include <fstream>
 #include <iostream>
 #define CHUNKSIZE (320)
-#define MAXCHUNKS (5)        // 0.1 sec
-#define INTERVAL (100000000) // 0.1 sec
+#define BFS (1) // batch per second
 
 typedef struct WAV_HEADER
 {
@@ -62,13 +61,15 @@ public:
                                                                                       m_bot_error(false),
                                                                                       m_language(lang),
                                                                                       m_interim(interim),
-                                                                                      m_audioBuffer(CHUNKSIZE, 15)
+                                                                                      m_audioBuffer(CHUNKSIZE, 50 / BPS)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
         m_switch_channel = switch_core_session_get_channel(m_session);
         m_pickup_at = switch_micro_time_now() / 1000;
         last_write = switch_micro_time_now();
+        m_max_chunks = 50 / BPS;
+        m_interval = m_max_chunks * 20000;
     }
 
     ~GStreamer()
@@ -199,8 +200,8 @@ public:
             m_audioBuffer.add(data, datalen);
         }
 
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Time: %lld!\n", switch_micro_time_now() - last_write);
-        if (m_audioBuffer.getNumItems() == MAXCHUNKS || switch_micro_time_now() - last_write > INTERVAL)
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Time: %lld!\n", switch_micro_time_now() - last_write);
+        if (m_audioBuffer.getNumItems() == m_max_chunks || switch_micro_time_now() - last_write > m_interval)
         {
             m_request.clear_audio_content();
             m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
@@ -351,6 +352,8 @@ private:
     bool m_bot_transfer;
     bool m_bot_error;
     long long last_write;
+    int m_max_chunks;
+    int m_interval;
 };
 
 static std::vector<uint8_t> parse_byte_array(std::string str)

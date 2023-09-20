@@ -85,7 +85,7 @@ configure.ac
 build/modules.conf.in
 modules.conf
 
-
+protoc --proto_path=. --cpp_out=. smartivrphonegateway.proto
 
 execute_on_media='lua::app/vm_detect/index.lua'
 
