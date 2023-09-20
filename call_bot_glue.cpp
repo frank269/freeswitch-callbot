@@ -60,7 +60,8 @@ public:
                                                                                       m_bot_transfer(false),
                                                                                       m_bot_error(false),
                                                                                       m_language(lang),
-                                                                                      m_interim(interim)
+                                                                                      m_interim(interim),
+                                                                                      m_audioBuffer(CHUNKSIZE, 50 / ((switch_channel_get_variable(m_switch_channel, "batch_per_seconds") && atol(switch_channel_get_variable(m_switch_channel, "batch_per_seconds")) > 0) ? atol(switch_channel_get_variable(m_switch_channel, "batch_per_seconds")) : BPS))
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -77,7 +78,6 @@ public:
             m_max_chunks = 50 / BPS;
         }
         m_interval = m_max_chunks * 20000;
-        m_audioBuffer = new SimpleBuffer(CHUNKSIZE, m_max_chunks)
     }
 
     ~GStreamer()
