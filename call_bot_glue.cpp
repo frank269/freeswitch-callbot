@@ -195,6 +195,7 @@ public:
         {
             return false;
         }
+        add_dtmf_to_request();
         if (datalen % CHUNKSIZE == 0)
         {
             m_audioBuffer.add(data, datalen);
@@ -206,7 +207,6 @@ public:
             m_request.clear_audio_content();
             m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
             m_request.set_is_playing(isPlaying());
-            add_dtmf_to_request();
             print_request();
             if (!m_streamer->Write(m_request))
             {
@@ -289,7 +289,15 @@ public:
             switch_dtmf_t dtmf = {0};
             switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
             std::string dtmf_string(1, dtmf.digit);
+            m_request.set_is_playing(isPlaying());
             m_request.set_key_press(dtmf_string);
+            m_request.clear_audio_content();
+            if (!m_streamer->Write(m_request))
+            {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
+                return false;
+            }
+
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
         else

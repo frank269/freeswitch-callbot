@@ -90,62 +90,11 @@ protoc --proto_path=. --cpp_out=. smartivrphonegateway.proto
 execute_on_media='lua::app/vm_detect/index.lua'
 
 
+location ~* /file/(.*)(\.wav|\.mp3){
+        root            /var/lib/freeswitch/recordings;
+        try_files       /$1.wav /$1.mp3 =404;
+}
 
 
-
-
-
-
-if session == nil then
-  return;
-end
-freeswitch.consoleLog('err', "start detect voicemail\n");
-local uuid = session:get_uuid();
-local vm_detect_time = session:getVariable('vm_detect_time') or '60';
-local record_debug = session:getVariable('record_debug') or 'false';
-local is_auto_call = session:getVariable('is_auto_call') or 'true';
-local max_duration = session:getVariable('max_duration') or '';
-local domain_name = session:getVariable('domain_name') or session:getVariable('context') or '';
-local recordings_dir = (freeswitch.getGlobalVariable('recordings_dir') or '/var/lib/freeswitch/recordings') .. '/debug/' .. domain_name .. '/' .. (os.date('%Y/%m/%d/%H'));
-
-require "resources.functions.file_exists";
-require "resources.functions.mkdir"
-
--- os.execute('mkdir -p ' .. recordings_dir);
-if record_debug ~= nil and record_debug == 'true' then
-  mkdir(recordings_dir);
-end
-
-local api = freeswitch.API();
-
-if is_auto_call == 'true' then
-  if record_debug ~= nil and record_debug == 'true' then
-    local record_path = recordings_dir .. '/' .. uuid .. '.wav';
-    api:executeString('uuid_record ' .. uuid .. ' start ' .. record_path .. ' ' .. vm_detect_time);
-    freeswitch.consoleLog('err', 'Recording debug will be save to ' .. record_path .. "\n");
-  end
-  session:sleep(5000);
---  api:executeString('avmd load outbound');
-  session:execute('avmd_start::detection_mode=2');
-
-  local stop_vm_file = (scripts_dir or '') .. '/app/vm_detect/stop.lua';
-  if file_exists(stop_vm_file) then
-    local sched_result = api:executeString('sched_api +' .. vm_detect_time .. ' vm_detect lua ' .. stop_vm_file .. ' ' .. uuid) or '-ERR';
-    if sched_result:sub(1, 4) ~= '-ERR' then
-      api:executeString('uuid_setvar ' .. uuid .. ' vm_sched_id ' .. sched_result:sub(11));
-    end
-  else
-    local sched_result = api:executeString('sched_api +30 vm_detect avmd ' .. uuid .. ' stop') or '-ERR';
-    if sched_result:sub(1, 4) ~= '-ERR' then
-      api:executeString('uuid_setvar ' .. uuid .. ' vm_sched_id ' .. sched_result:sub(11));
-    end
-  end
-end
-
-if max_duration ~= '' and tonumber(max_duration) > 1 then
-  local sched_result = api:executeString('sched_api +' .. max_duration
-    .. ' max_duration lua app/hangup/hangup.lua ' .. uuid .. ' MAX_DURATION') or '-ERR';
-  if sched_result:sub(1, 4) ~= '-ERR' then
-    api:executeString('uuid_setvar ' .. uuid .. ' dur_sched_id ' .. sched_result:sub(11));
-  end
-end
+fsctl max_sessions 
+fsctl sps 1000
