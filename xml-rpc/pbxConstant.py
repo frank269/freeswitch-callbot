@@ -9,7 +9,7 @@ record_folder = os.getenv('RECORD_FOLDER','/var/lib/freeswitch/recordings/callbo
 record_prefix = os.getenv('RECORD_PREFIX','https://14.232.240.205/file/callbot/')
 
 detect_voicemail = os.getenv('DETECT_VOICEMAIL','0')
-background_sound = os.getenv('BACKGROUND_SOUND','0')
+background_sound = os.getenv('BACKGROUND_SOUND','')
 batch_per_seconds = os.getenv('BPS','10')
 
 outbound_number = os.getenv('OUTBOUND_NUMBER','842488898268')
