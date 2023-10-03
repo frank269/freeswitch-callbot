@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 
-pbx_host = os.getenv('PBX_HOST', "172.16.88.13")
+pbx_host = os.getenv('PBX_HOST', "172.16.88.12")
 pbx_username = os.getenv('PBX_USERNAME','freeswitch')
 pbx_password = os.getenv('PBX_PASSWORD','works')
 pbx_port = os.getenv('PBX_PORT','8080')

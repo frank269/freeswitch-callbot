@@ -5,6 +5,22 @@ if jsonString == '' then return; end
 local jsonParser = require "resources.functions.lunajson"
 local hangup_event = jsonParser.decode(jsonString)
 
+
+local sessionUuid = hangup_event.session_id;
+
+freeswitch.consoleLog("err", "sessionId: " .. sessionUuid .. "\n")
+
+local session = freeswitch.Session(sessionUuid)
+
+if (session == nil) then
+  freeswitch.consoleLog("err", "sessionId is gone\n")
+  return
+end
+
+--local hangup_time = session:getVariable("hangup_cause")
+--freeswitch.consoleLog("err", "hangup_time: " .. hangup_time .. "\n")
+
+
 -- Send hangup callback
 local serverUrl = hangup_event.phone_controller_uri
 local functionName = "phoneGatewayEndCall"

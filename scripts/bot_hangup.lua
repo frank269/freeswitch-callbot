@@ -1,6 +1,6 @@
 local channel_uuid = event:getHeader('Unique-ID') or '';
 local call_at = event:getHeader('variable_CALL_AT') or '0';
--- local pickup_at = event:getHeader('Caller-Channel-Answered-Time') or '0';
+--local pickup_at = event:getHeader('Caller-Channel-Answered-Time') or '0';
 local pickup_at = event:getHeader('variable_PICKUP_AT') or '0';
 local hangup_at = event:getHeader('Caller-Channel-Hangup-Time') or '0';
 local conversation_id = event:getHeader('variable_CONVERSATION_ID') or '';
@@ -35,7 +35,7 @@ end
 local jsonParser = require "resources.functions.lunajson"
 local event = {
     call_at = math.floor(tonumber(call_at)),
-    pickup_at = math.floor(tonumber(pickup_at)/1000),
+    pickup_at = math.floor(tonumber(pickup_at)),
     hangup_at = math.floor(tonumber(hangup_at)/1000),
     conversation_id = conversation_id,
     bot_master_uri = bot_master_uri,

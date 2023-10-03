@@ -159,10 +159,16 @@ public:
         if (!grpcChannel)
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
-            throw std::runtime_error(std::string("Error creating grpc channel to ") + m_botmaster_uri.c_str());
+            switch_channel_hangup(m_switch_channel, SWITCH_CAUSE_NORMAL_CLEARING);
         }
 
         m_stub = std::move(smartivrphonegateway::SmartIVRPhonegateway::NewStub(grpcChannel));
+
+        if (!m_stub)
+        {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+            switch_channel_hangup(m_switch_channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        }
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
         auto streaming_config = m_request.mutable_config();
@@ -179,6 +185,11 @@ public:
         createInitMessage();
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p creating streamer\n", this);
         m_streamer = m_stub->CallToBot(&m_context);
+        if (!m_streamer)
+        {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+            switch_channel_hangup(m_switch_channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        }
         m_connected = true;
 
         // read thread is waiting on this
