@@ -218,7 +218,7 @@ public:
             m_request.clear_audio_content();
             m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
             m_request.set_is_playing(isPlaying());
-            print_request();
+            // print_request();
             if (!m_streamer->Write(m_request))
             {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
@@ -588,8 +588,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
         }
     }
-    if (session != NULL && channel != NULL && !streamer->isBotTransfered())
+    if (session != NULL && !streamer->isBotTransfered())
     {
+        channel = switch_core_session_get_channel(session);
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
 
