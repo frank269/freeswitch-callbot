@@ -293,6 +293,19 @@ public:
         }
     }
 
+    bool isVoiceMail()
+    {
+        const char *var = switch_channel_get_variable(m_switch_channel, "IS_VOICE_MAIL");
+        if (var && (strcmp(var, "true") == 0))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     void add_dtmf_to_request()
     {
         if (switch_channel_has_dtmf(m_switch_channel))
@@ -456,7 +469,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // Read responses
     SmartIVRResponse response;
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
-    while (streamer->read(&response))
+    while (streamer->read(&response) && !streamer->isVoiceMail())
     { // Returns false when no more to read.
         streamer->print_response(response);
         session = switch_core_session_locate(sessionUUID);
@@ -588,7 +601,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
         }
     }
-    if (!streamer->isBotTransfered())
+    if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
         session = switch_core_session_locate(sessionUUID);
         if (session)
