@@ -588,10 +588,14 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
         }
     }
-    if (session != NULL && !streamer->isBotTransfered())
+    if (!streamer->isBotTransfered())
     {
-        channel = switch_core_session_get_channel(session);
-        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        session = switch_core_session_locate(sessionUUID);
+        if (session)
+        {
+            channel = switch_core_session_get_channel(session);
+            switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+        }
     }
 
     sessionUUID = NULL;
