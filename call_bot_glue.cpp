@@ -216,6 +216,7 @@ public:
         if (m_audioBuffer.getNumItems() == m_max_chunks || switch_micro_time_now() - last_write > m_interval)
         {
             m_request.clear_audio_content();
+            m_request.set_key_press("");
             m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
             m_request.set_is_playing(isPlaying());
             // print_request();
@@ -466,119 +467,118 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "callbot grpc read thread exiting since we didnt connect\n");
         return nullptr;
     }
+
+    session = switch_core_session_locate(sessionUUID);
+    if (!session)
+    {
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
+        sessionUUID = NULL;
+        event = NULL;
+        streamer->finish();
+        return nullptr;
+    }
+
+    channel = switch_core_session_get_channel(session);
+
     // Read responses
     SmartIVRResponse response;
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     while (streamer->read(&response) && !streamer->isVoiceMail())
     { // Returns false when no more to read.
         streamer->print_response(response);
-        session = switch_core_session_locate(sessionUUID);
-        if (!session)
+        SmartIVRResponseType responseType = response.type();
+        if (previousType == SmartIVRResponseType::CALL_WAIT)
         {
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: session %s is gone!\n", cb->sessionId);
-            sessionUUID = NULL;
-            event = NULL;
-            streamer->finish();
-            return nullptr;
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
+            switch_channel_stop_broadcast(channel);
+            switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
         }
-        else
+
+        switch (responseType)
         {
-            channel = switch_core_session_get_channel(session);
-            SmartIVRResponseType responseType = response.type();
-            if (previousType == SmartIVRResponseType::CALL_WAIT)
+        case SmartIVRResponseType::RECOGNIZE:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
+            break;
+
+        case SmartIVRResponseType::RESULT_ASR:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_ASR.\n");
+            break;
+
+        case SmartIVRResponseType::RESULT_TTS:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
+            if (streamer->isPlaying())
             {
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: before type is CALL_WAIT unhold call now!\n");
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: current playing audio, stop it first\n");
                 switch_channel_stop_broadcast(channel);
                 switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: stop done\n");
             }
-
-            switch (responseType)
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
+            if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
             {
-            case SmartIVRResponseType::RECOGNIZE:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RECOGNIZE.\n");
-                break;
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file audio in current thread!\n");
+            }
+            else
+            {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in current thread!\n");
+            }
+            break;
 
-            case SmartIVRResponseType::RESULT_ASR:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_ASR.\n");
-                break;
+        case SmartIVRResponseType::CALL_WAIT:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
 
-            case SmartIVRResponseType::RESULT_TTS:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type RESULT_TTS.\n");
-                if (streamer->isPlaying())
-                {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: current playing audio, stop it first\n");
-                    switch_channel_stop_broadcast(channel);
-                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 5000, NULL);
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: stop done\n");
-                }
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: playing audio ........\n");
-                if (play_audio(sessionUUID, parse_byte_array(response.audio_content()), session, channel) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: play file audio in current thread!\n");
-                }
-                else
-                {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: cannot play file in current thread!\n");
-                }
-                break;
-
-            case SmartIVRResponseType::CALL_WAIT:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_WAIT.\n");
-
-                if (streamer->isPlaying())
-                {
-                    // wait to audio play done
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
-                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
-                }
-                switch_channel_stop_broadcast(channel);
-                if (switch_ivr_broadcast(sessionUUID, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: hold call success!\n");
-                }
-                else
-                {
-                    switch_channel_clear_flag(channel, CF_HOLD);
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_process_response_handler: hold call failed!\n");
-                }
-                break;
-            case SmartIVRResponseType::CALL_FORWARD:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
-                if (streamer->isPlaying())
-                {
-                    // wait to audio play done
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
-                    switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
-                    switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
-                }
-
-                streamer->set_bot_transfer();
-                if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_TRANSFER) == SWITCH_STATUS_SUCCESS)
-                {
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
-                    switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
-                    switch_event_fire(&event);
-                }
-
-                break;
-            case SmartIVRResponseType::CALL_END:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
-                switch_channel_stop_broadcast(channel);
-                if (!streamer->isBotTransfered())
-                {
-                    streamer->set_bot_hangup();
-                    switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-                }
-                break;
-            default:
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got unknown type.\n");
-                break;
+            if (streamer->isPlaying())
+            {
+                // wait to audio play done
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+                switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
+            }
+            switch_channel_stop_broadcast(channel);
+            if (switch_ivr_broadcast(sessionUUID, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
+            {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_process_response_handler: hold call success!\n");
+            }
+            else
+            {
+                switch_channel_clear_flag(channel, CF_HOLD);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_process_response_handler: hold call failed!\n");
+            }
+            break;
+        case SmartIVRResponseType::CALL_FORWARD:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_FORWARD.\n");
+            if (streamer->isPlaying())
+            {
+                // wait to audio play done
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: wait to audio play done!\n");
+                switch_channel_wait_for_flag(channel, CF_BROADCAST, SWITCH_FALSE, 60000, NULL);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "grpc_read_thread: play audio done!\n");
             }
 
-            previousType = responseType;
+            streamer->set_bot_transfer();
+            if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_TRANSFER) == SWITCH_STATUS_SUCCESS)
+            {
+                switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
+                switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
+                switch_event_fire(&event);
+            }
+
+            break;
+        case SmartIVRResponseType::CALL_END:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
+            switch_channel_stop_broadcast(channel);
+            if (!streamer->isBotTransfered())
+            {
+                streamer->set_bot_hangup();
+                switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
+            }
+            break;
+        default:
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got unknown type.\n");
+            break;
         }
-        switch_core_session_rwunlock(session);
+
+        previousType = responseType;
     }
     grpc::Status finish_status = streamer->finish();
     if (finish_status.ok())
@@ -603,13 +603,10 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     }
     if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
-        session = switch_core_session_locate(sessionUUID);
-        if (session)
-        {
-            channel = switch_core_session_get_channel(session);
-            switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-        }
+        switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
+
+    switch_core_session_rwunlock(session);
 
     sessionUUID = NULL;
     event = NULL;
@@ -739,6 +736,7 @@ extern "C"
     {
         switch_event_t *event;
         switch_status_t status;
+        const char *curFile;
 
         switch_channel_t *channel = switch_core_session_get_channel(session);
         if (bug)
@@ -783,6 +781,12 @@ extern "C"
             {
                 switch_core_media_bug_remove(session, &bug);
             }
+
+            curFile = switch_channel_get_variable(channel, "CUR_FILE");
+            if (curFile)
+            {
+                remove(curFile);
+            };
 
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
             switch_mutex_unlock(cb->mutex);
