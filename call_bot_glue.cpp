@@ -357,6 +357,11 @@ public:
         m_bot_error = true;
     }
 
+    void set_disconnect()
+    {
+        m_connected = false;
+    }
+
 private:
     switch_core_session_t *m_session;
     grpc::ClientContext m_context;
@@ -602,6 +607,9 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
         }
     }
+
+    streamer->set_disconnect();
+
     if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
