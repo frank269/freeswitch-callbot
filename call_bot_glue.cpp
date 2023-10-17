@@ -260,6 +260,7 @@ public:
         {
             m_streamer->WritesDone();
             m_writesDone = true;
+            m_connected = false;
         }
     }
 
@@ -274,6 +275,7 @@ public:
     {
         assert(!m_connected);
         m_promise.set_value();
+        m_connected = false;
     }
 
     bool isConnected()
@@ -353,6 +355,11 @@ public:
         switch_channel_set_variable(m_switch_channel, "IS_BOT_ERROR", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_error.\n");
         m_bot_error = true;
+    }
+
+    void set_connected(bool connected)
+    {
+        m_connected = connected;
     }
 
 private:
@@ -556,6 +563,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             }
 
             streamer->set_bot_transfer();
+            streamer->set_connected(false);
+            
             if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_TRANSFER) == SWITCH_STATUS_SUCCESS)
             {
                 switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
