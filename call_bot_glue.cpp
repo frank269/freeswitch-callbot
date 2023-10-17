@@ -222,7 +222,7 @@ public:
             // print_request();
             if (!m_streamer->Write(m_request))
             {
-                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
             last_write = switch_micro_time_now();
@@ -485,7 +485,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     // Read responses
     SmartIVRResponse response;
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
-    while (streamer->read(&response) && !streamer->isVoiceMail())
+    while (streamer->read(&response) && !streamer->isVoiceMail() && !streamer->isBotTransfered())
     { // Returns false when no more to read.
         streamer->print_response(response);
         SmartIVRResponseType responseType = response.type();
