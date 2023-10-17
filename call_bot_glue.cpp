@@ -202,7 +202,7 @@ public:
 
     bool write(void *data, uint32_t datalen)
     {
-        if (!m_connected)
+        if (!m_connected || m_bot_transfer)
         {
             return false;
         }
@@ -355,11 +355,6 @@ public:
         switch_channel_set_variable(m_switch_channel, "IS_BOT_ERROR", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_error.\n");
         m_bot_error = true;
-    }
-
-    void set_disconnect()
-    {
-        m_connected = false;
     }
 
 private:
@@ -607,8 +602,6 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
                 switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed error! The client connection was closed!\n", sessionUUID);
         }
     }
-
-    streamer->set_disconnect();
 
     if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
