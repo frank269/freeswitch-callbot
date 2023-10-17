@@ -222,7 +222,7 @@ public:
             // print_request();
             if (!m_streamer->Write(m_request))
             {
-                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
+                // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
             last_write = switch_micro_time_now();
@@ -355,11 +355,6 @@ public:
         switch_channel_set_variable(m_switch_channel, "IS_BOT_ERROR", "true");
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Gstreamer run set_bot_error.\n");
         m_bot_error = true;
-    }
-
-    void set_connected(bool connected)
-    {
-        m_connected = connected;
     }
 
 private:
@@ -563,15 +558,12 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
             }
 
             streamer->set_bot_transfer();
-            streamer->set_connected(false);
-            
             if (switch_event_create_subclass(&event, SWITCH_EVENT_CUSTOM, EVENT_BOT_TRANSFER) == SWITCH_STATUS_SUCCESS)
             {
                 switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_SESSION_ID, sessionUUID);
                 switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, HEADER_TRANSFER_JSON, response.forward_sip_json().c_str());
                 switch_event_fire(&event);
             }
-
             break;
         case SmartIVRResponseType::CALL_END:
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread Got type CALL_END.\n");
