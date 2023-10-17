@@ -260,7 +260,6 @@ public:
         {
             m_streamer->WritesDone();
             m_writesDone = true;
-            m_connected = false;
         }
     }
 
@@ -273,8 +272,10 @@ public:
 
     void cancelConnect()
     {
-        m_connected = false;
-        m_promise.set_value();
+        if (!m_connected)
+        {
+            m_promise.set_value();
+        }
     }
 
     bool isConnected()
@@ -607,7 +608,7 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
     }
 
-    streamer->writesDone();
+    streamer->set_disconnect();
 
     if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
