@@ -250,6 +250,14 @@ public:
         return m_streamer->Read(response);
     }
 
+    void tryCancel() // cancel read
+    {
+        if (m_connected)
+        {
+            m_context->TryCancel()
+        }
+    }
+
     grpc::Status finish()
     {
         return m_streamer->Finish();
@@ -767,7 +775,7 @@ extern "C"
             if (streamer)
             {
                 streamer->writesDone();
-
+                streamer->tryCancel();
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: GStreamer (%p) waiting for read thread to complete\n", (void *)streamer);
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
