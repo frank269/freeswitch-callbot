@@ -606,6 +606,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     }
     else
     {
+        if (session)
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Grpc completed with status code: %d!\n", finish_status.error_code());
+        else
+            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Grpc completed with status code: %d!\n", sessionUUID, finish_status.error_code());
+
         if (finish_status.error_code() == grpc::StatusCode::UNAVAILABLE)
         {
             streamer->set_bot_error();
