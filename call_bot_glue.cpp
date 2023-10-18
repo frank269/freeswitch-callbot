@@ -204,6 +204,7 @@ public:
     {
         if (isVoiceMail())
         {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p:  voicemail detected, hanging up ...\n", this);
             switch_channel_hangup(m_switch_channel, SWITCH_CAUSE_NORMAL_CLEARING);
         }
 
