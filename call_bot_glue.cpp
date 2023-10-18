@@ -487,6 +487,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
     SmartIVRResponseType previousType = SmartIVRResponseType::CALL_END;
     while (streamer->read(&response) && !streamer->isVoiceMail() && !streamer->isBotTransfered())
     { // Returns false when no more to read.
+        if (streamer->isVoiceMail())
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: voicemail detected!\n");
         streamer->print_response(response);
         SmartIVRResponseType responseType = response.type();
         if (previousType == SmartIVRResponseType::CALL_WAIT)
@@ -581,6 +583,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
         previousType = responseType;
     }
+    if (streamer->isVoiceMail())
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: voicemail detected - break!\n");
     grpc::Status finish_status = streamer->finish();
     if (finish_status.ok())
     {
@@ -605,6 +609,8 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
 
     if (!streamer->isBotTransfered() || streamer->isVoiceMail())
     {
+        if (streamer->isVoiceMail())
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "grpc_read_thread: voicemail detected - hangup!\n");
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
     }
 
