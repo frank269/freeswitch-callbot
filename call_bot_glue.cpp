@@ -254,7 +254,7 @@ public:
     {
         if (m_connected)
         {
-            m_context::TryCancel()
+            m_context.TryCancel()
         }
     }
 
