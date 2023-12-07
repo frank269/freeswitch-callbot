@@ -89,7 +89,7 @@ public:
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "text_bot: %s\n", response.text_bot().c_str());
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "forward_sip_json: %s\n", response.forward_sip_json().c_str());
         if (response.has_status())
-            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "status: %d\n", response().status().code());
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "status: %d\n", response.status().code());
     }
 
     char *build_response_json(long long hangup_at, int sip_code, const char *hangup_cause)
