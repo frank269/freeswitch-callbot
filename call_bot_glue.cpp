@@ -626,6 +626,11 @@ static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *
         }
     }
 
+    if (response != NULL && response.has_status() && response.status().code() == 1)
+    {
+        streamer->set_bot_error();
+    }
+
     if (!streamer->isBotTransfered())
     {
         switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
