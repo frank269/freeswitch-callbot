@@ -21,17 +21,7 @@ local public_path = "https://" ..public_ip.. "/file/record_on_media/" .. uuid ..
 local detect_voicemail = session:getVariable("detect_voicemail") or '0';
 if detect_voicemail == '1' then
   session:sleep(500);
-  freeswitch.consoleLog("info", "action on answer phase, stop recording... !, record path: " .. record_path .. " \n")
-  session:execute("stop_record_session", record_path)
-  freeswitch.consoleLog("info", uuid .. " send api to detect voice mail!")
-  local jsonRequest = string.format('{"token": "%s","conversion_id":"%s","callback_url":"%s","audio_url":"%s"}',auth_token,uuid,callback_url,public_path)
-  local api = freeswitch.API();
-  local response = api:executeString("curl ".. server_url .. " timeout 3 content-type 'application/json' post '"..jsonRequest.."'") or '';
-  freeswitch.consoleLog("info", uuid .. " detect voice mail request: " .. jsonRequest .. "\n")
-  jsonRequest = null;
-  freeswitch.consoleLog("info", uuid .. " detect voice mail response: " .. response .. "\n")
-  api = null;
-  response = null;
+  session:execute("avmd_stop")
 end
 
 freeswitch.consoleLog("info", uuid .. " start bot!")

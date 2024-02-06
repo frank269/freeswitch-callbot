@@ -1,6 +1,6 @@
 local channel_uuid = event:getHeader('Unique-ID') or '';
 local call_at = event:getHeader('variable_CALL_AT') or '0';
---local pickup_at = event:getHeader('Caller-Channel-Answered-Time') or '0';
+local pickup_at_1 = event:getHeader('Caller-Channel-Answered-Time') or '0';
 local pickup_at = event:getHeader('variable_PICKUP_AT') or '0';
 local hangup_at = event:getHeader('Caller-Channel-Hangup-Time') or '0';
 local conversation_id = event:getHeader('variable_CONVERSATION_ID') or '';
@@ -10,15 +10,37 @@ local is_bot_hangup = event:getHeader('variable_IS_BOT_HANGUP') or 'false';
 local is_bot_transfer = event:getHeader('variable_IS_BOT_TRANSFERED') or 'false';
 local is_bot_error = event:getHeader('variable_IS_BOT_ERROR') or 'false';
 local is_voice_mail = event:getHeader('variable_IS_VOICE_MAIL') or 'false';
-local sip_code = event:getHeader('variable_hangup_cause_q850') or '16';
+local sip_code_q850 = event:getHeader('variable_hangup_cause_q850') or '16';
 local hangup_cause = event:getHeader('Hangup-Cause') or '';
 local record_name = event:getHeader('variable_record_name') or '';
 local audio_url = event:getHeader('variable_record_path') or '';
+local system_hangup_reason = event:getHeader('variable_system_hangup_reason') or '';
 
 if conversation_id == '' then return; end
 
+hangup_at = math.floor(tonumber(hangup_at)/1000);
+pickup_at = math.floor(tonumber(pickup_at));
+pickup_at_1 = math.floor(tonumber(pickup_at_1)/1000);
+if pickup_at > hangup_at then
+        pickup_at = pickup_at_1;
+end
+
+
+local function hangupCauseToSipcode(sip_code_q850)
+    if sip_code_q850 == '16' then
+        return 200
+    elseif sip_code_q850 == '17' then
+        return 486
+    elseif sip_code_q850 == '18' then
+        return 408
+    end
+    return 480
+end
+
+local sip_code = hangupCauseToSipcode(sip_code_q850)
+
 local status = 101;
-if is_voice_mail == 'true' then
+if system_hangup_reason == 'VOICEMAIL' then
     status = 103;
     sip_code = '600';
     hangup_cause = 'VOICEMAIL_DETECTED'
@@ -28,15 +50,15 @@ elseif is_bot_error == 'true' then
     status = 105;
 elseif is_bot_hangup == 'true' then
     status = 100;
-elseif pickup_at == '0' then
+elseif pickup_at == 0 then
     status = 103;
 end
 
 local jsonParser = require "resources.functions.lunajson"
 local event = {
     call_at = math.floor(tonumber(call_at)),
-    pickup_at = math.floor(tonumber(pickup_at)),
-    hangup_at = math.floor(tonumber(hangup_at)/1000),
+    pickup_at = pickup_at,
+    hangup_at = hangup_at,
     conversation_id = conversation_id,
     bot_master_uri = bot_master_uri,
     phone_controller_uri = phone_controller_uri,

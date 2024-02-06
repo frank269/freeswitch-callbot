@@ -16,7 +16,7 @@ local function sendEndCall(session)
   local milliseconds = (currentTimeSeconds * 1000) + ((currentClockTimeSeconds - math.floor(currentClockTimeSeconds)) * 1000)
   local hangup_at = '' .. milliseconds;
 
-  session:setVariable("PICKUP_AT", milliseconds)
+  -- session:setVariable("PICKUP_AT", milliseconds)
 
   local jsonParser = require "resources.functions.lunajson"
   local event = {
@@ -60,7 +60,7 @@ local session = freeswitch.Session(sessionUuid)
 local local_record_path = session:getVariable("local_record_path") or ''
 --freeswitch.consoleLog("error", "callbot event_transfer: local record path:" .. local_record_path .. "\n")
 if local_record_path ~= '' then
-   session:execute("stop_record_session", local_record_path)
+  --  session:execute("stop_record_session", local_record_path)
 end
 -- send end call
 sendEndCall(session)
@@ -68,7 +68,7 @@ sendEndCall(session)
 
 if transfer_data.forward_type == 1 then
     local extension = 999999;
-    local context = "voice.metechvn.com"
+    local context = "callbot.metechvn.com"
     if string.find(transfer_data.sip_url, "sip:") and string.find(transfer_data.sip_url, "@") then
         extension, context = string.match(transfer_data.sip_url, "sip:(.-)@(.+)")
     end
@@ -76,6 +76,6 @@ if transfer_data.forward_type == 1 then
 elseif transfer_data.forward_type == 2 then
     session:setVariable("origination_caller_id_number", transfer_data.display_number)
     session:setVariable("effective_caller_id_number", transfer_data.display_number)
-    session:transfer(transfer_data.customer_number, "XML", "public")
+    session:transfer(transfer_data.customer_number, "XML", "callbot.metechvn.com")
    -- new_session = freeswitch.Session("sofia/gateway/c11144a9-df60-41f0-951e-3047924ee1e4/" .. transfer_data.customer_number, session);
 end
