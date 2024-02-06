@@ -1,15 +1,19 @@
 from enum import Enum
 import os
 
-pbx_host = os.getenv('PBX_HOST', "172.16.88.38")
+pbx_host = os.getenv('PBX_HOST', "172.16.88.12")
 pbx_username = os.getenv('PBX_USERNAME','freeswitch')
 pbx_password = os.getenv('PBX_PASSWORD','works')
 pbx_port = os.getenv('PBX_PORT','8080')
 record_folder = os.getenv('RECORD_FOLDER','/var/lib/freeswitch/recordings/callbot/')
 record_prefix = os.getenv('RECORD_PREFIX','https://14.232.240.205/file/callbot/')
 
+detect_voicemail = os.getenv('DETECT_VOICEMAIL','0')
+background_sound = os.getenv('BACKGROUND_SOUND','')
+batch_per_seconds = os.getenv('BPS','10')
+
 outbound_number = os.getenv('OUTBOUND_NUMBER','842488898268')
-pbx_gateway_uuid = os.getenv('GATEWAY_ID','8ab65d17-7d16-4971-91b5-60035cd13340')
+pbx_public_ip = os.getenv('PUBLIC_IP','172.16.88.13:5090')
 
 class PbxHangupCause(Enum):
     NONE = 0
@@ -95,4 +99,49 @@ class PbxHangupCause(Enum):
     STALE_DATE = 824
 
 
-CALLBOT_STATUS = {}
+HangupCauseToSip = {
+    "UNALLOCATED_NUMBER" : 404,
+    "NO_ROUTE_TRANSIT_NET" : 404,
+    "NO_ROUTE_DESTINATION" : 404,
+    "NUMBER_CHANGED" : 404,
+    "USER_BUSY" : 486,
+    "NO_USER_RESPONSE" : 408,
+    "NORMAL_UNSPECIFIED" : 480,
+    "NO_ANSWER" : 480,
+    "SUBSCRIBER_ABSENT" : 480,
+    "CALL_REJECTED" : 603,
+    "DECLINE" : 603,
+    "REDIRECTION_TO_NEW_DESTINATION" : 410,
+    "DESTINATION_OUT_OF_ORDER" : 502,
+    "INVALID_PROFILE" : 502,
+    "INVALID_NUMBER_FORMAT" : 484,
+    "INVALID_URL" : 484,
+    "INVALID_GATEWAY" : 484,
+    "FACILITY_REJECTED" : 501,
+    "FACILITY_NOT_IMPLEMENTED" : 501,
+    "SERVICE_NOT_IMPLEMENTED" : 501,
+    "REQUESTED_CHAN_UNAVAIL" : 503,
+    "NORMAL_CIRCUIT_CONGESTION" : 503,
+    "NETWORK_OUT_OF_ORDER" : 503,
+    "NORMAL_TEMPORARY_FAILURE" : 503,
+    "SWITCH_CONGESTION" : 503,
+    "GATEWAY_DOWN" : 503,
+    "BEARERCAPABILITY_NOTAVAIL" : 503,
+    "OUTGOING_CALL_BARRED" : 403,
+    "INCOMING_CALL_BARRED" : 403,
+    "BEARERCAPABILITY_NOTAUTH" : 403,
+    "BEARERCAPABILITY_NOTIMPL" : 488,
+    "INCOMPATIBLE_DESTINATION" : 488,
+    "RECOVERY_ON_TIMER_EXPIRE" : 504,
+    "CAUSE_ORIGINATOR_CANCEL" : 487,
+    "EXCHANGE_ROUTING_ERROR" : 483,
+    "BUSY_EVERYWHERE" : 600,
+    "DOES_NOT_EXIST_ANYWHERE" : 604,
+    "NOT_ACCEPTABLE" : 606,
+    "UNWANTED" : 607,
+    "NO_IDENTITY" : 428,
+    "BAD_IDENTITY_INFO" : 429,
+    "UNSUPPORTED_CERTIFICATE" : 437,
+    "INVALID_IDENTITY" : 438,
+    "STALE_DATE" : 403
+}

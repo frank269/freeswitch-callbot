@@ -18,118 +18,86 @@ static switch_status_t do_stop(switch_core_session_t *session, char *bugname)
 
 	if (bug)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Received user command command, calling call_bot_session_cleanup\n");
 		status = call_bot_session_cleanup(session, 0, bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot stopped\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "callbot stopped\n");
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
+	switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "%s Bug is not attached.\n", switch_channel_get_name(channel));
 	return status;
 }
 
 static void responseHandler(switch_core_session_t *session, const char *json, const char *bugname,
 							const char *details)
 {
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
+	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s json payload: %s.\n", bugname ? bugname : "call_bot", json);
 }
 
-static void event_process_response_handler(switch_event_t *event)
+char *copyArrayFromIndex(char *originalArray, int startIndex)
 {
-	switch_channel_t *channel;
-	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
-	const char *actionType = switch_event_get_header(event, HEADER_RESPONSE_TYPE);
-	const char *filePath = switch_event_get_header(event, HEADER_AUDIO_PATH);
-	char *sip_uri = switch_event_get_header(event, HEADER_TRANSFER_SIP);
-	char *splited[2];
-	const char *sip_extension;
-	const char *sip_domain;
+	char *newArray;
+	int newArrayLength = 37;
+	int length = strlen(originalArray);
+	if (length < 40)
+	{
+		return NULL;
+	}
 
-	switch_core_session_t *session = switch_core_session_locate(sessionId);
-	if (!session)
+	newArray = (char *)malloc(newArrayLength * sizeof(char));
+	if (newArray == NULL)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: session %s is gone!\n", sessionId);
-		return;
+		printf("Memory allocation failed.\n");
+		return NULL;
 	}
-	channel = switch_core_session_get_channel(session);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received event_process_response_handler with type: %s\n", actionType);
-	// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_stop_audio_handler with session_id %s\n", sessionId);
-	if (strcmp(actionType, ACTION_RECOGNIZE) == 0)
-	{
-	}
-	else if (strcmp(actionType, ACTION_RESULT_ASR) == 0)
-	{
-	}
-	else if (strcmp(actionType, ACTION_RESULT_TTS) == 0)
-	{
 
-		switch_channel_set_variable(channel, "IS_PLAYING", "true");
-		switch_ivr_play_file(session, NULL, filePath, NULL);
-		switch_channel_set_variable(channel, "IS_PLAYING", "false");
-	}
-	else if (strcmp(actionType, ACTION_CALL_WAIT) == 0)
-	{
-		if (switch_ivr_broadcast(sessionId, switch_channel_get_hold_music(channel), SMF_ECHO_ALEG | SMF_HOLD_BLEG | SMF_LOOP) == SWITCH_STATUS_SUCCESS)
-		{
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: hold call success!\n");
-		}
-		else
-		{
-			switch_channel_clear_flag(channel, CF_HOLD);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: hold call failed!\n");
-		}
-	}
-	else if (strcmp(actionType, ACTION_CALL_FORWARD) == 0)
-	{
-		switch_separate_string(sip_uri, ':', splited, 2);
-		sip_uri = splited[1];
-		switch_separate_string(sip_uri, '@', splited, 2);
-		sip_extension = splited[0];
-		sip_domain = splited[1];
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: transfer call with extension: %s, context: %s!\n", sip_extension, sip_domain);
-		if (switch_ivr_session_transfer(session, sip_extension, NULL, sip_domain) == SWITCH_STATUS_SUCCESS)
-		{
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_process_response_handler: transfer call success!\n");
-		}
-		else
-		{
-			switch_channel_clear_flag(channel, CF_HOLD);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_process_response_handler: transfer call failed!\n");
-		}
-	}
-	else if (strcmp(actionType, ACTION_CALL_END) == 0)
-	{
-		switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
-	}
-	else
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Received event_process_response_handler unknown action type!\n");
-	}
-	switch_core_session_rwunlock(session);
-}
+	strncpy(newArray, originalArray + startIndex, newArrayLength);
+	newArray[newArrayLength - 1] = '\0'; // Null-terminate the new array
 
-static void event_hangup_handler(switch_event_t *event)
-{
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "event_hangup_handler: call with bot is hangup!\n");
+	return newArray;
 }
 
 static void event_stop_audio_handler(switch_event_t *event)
 {
+	char *sessionId;
 	switch_channel_t *channel;
-	const char *is_playing;
-	const char *sessionId = switch_event_get_header(event, HEADER_SESSION_ID);
-	switch_core_session_t *session = switch_core_session_locate(sessionId);
+	switch_core_session_t *session;
+	const char *curFile, *filePath = switch_event_get_header(event, "Playback-File-Path");
+	if (!filePath)
+	{
+		return;
+	}
+
+	sessionId = copyArrayFromIndex(strdup(filePath), 5);
+
+	if (sessionId == NULL)
+	{
+		filePath = NULL;
+		curFile = NULL;
+		return;
+	}
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "%s event_stop_audio_handler: stop play file %s!\n", sessionId, filePath);
+	remove(filePath);
+	session = switch_core_session_locate(sessionId);
 	if (!session)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "event_stop_audio_handler: session %s is gone!\n", sessionId);
+		filePath = NULL;
+		curFile = NULL;
+		free(sessionId);
 		return;
 	}
 	channel = switch_core_session_get_channel(session);
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Received event_stop_audio_handler with session_id %s\n", sessionId);
-	is_playing = switch_channel_get_variable(channel, "IS_PLAYING");
-	if (is_playing && strcmp(is_playing, "true") == 0)
+
+	curFile = switch_channel_get_variable(channel, "CUR_FILE");
+	if (curFile && (strcmp(curFile, filePath) == 0))
 	{
-		switch_channel_set_flag(channel, CF_BREAK);
-	}
+		switch_channel_set_variable(channel, "IS_PLAYING", "false");
+		switch_channel_set_variable(channel, "CUR_FILE", "");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "event_stop_audio_handler: session %s set playing to false!\n", sessionId);
+	};
 	switch_core_session_rwunlock(session);
+	filePath = NULL;
+	curFile = NULL;
+	free(sessionId);
 }
 
 static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, switch_abc_type_t type)
@@ -139,20 +107,20 @@ static switch_bool_t capture_callback(switch_media_bug_t *bug, void *user_data, 
 	switch (type)
 	{
 	case SWITCH_ABC_TYPE_INIT:
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_INIT.\n");
 		break;
 
 	case SWITCH_ABC_TYPE_CLOSE:
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Got SWITCH_ABC_TYPE_CLOSE, calling call_bot_session_cleanup.\n");
 		call_bot_session_cleanup(session, 1, bug);
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_CLOSE.\n");
 	}
 	break;
 
 	case SWITCH_ABC_TYPE_READ:
 	{
-		// switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_READ.\n");
+		// switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "Finished SWITCH_ABC_TYPE_READ.\n");
 		return call_bot_frame(bug, user_data);
 	}
 	break;
@@ -177,7 +145,7 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (switch_channel_get_private(channel, bugname))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "removing bug from previous call_bot session\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "removing bug from previous call_bot session\n");
 		do_stop(session, bugname);
 	}
 
@@ -192,21 +160,22 @@ static switch_status_t start_capture(switch_core_session_t *session, switch_medi
 
 	if (!var)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR,
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR,
 						  "CALLBOT_MASTER_URI channel var must be defined\n");
+		switch_channel_hangup(channel, SWITCH_CAUSE_NORMAL_CLEARING);
 		return SWITCH_STATUS_FALSE;
 	}
 
 	samples_per_second = !strcasecmp(read_impl.iananame, "g722") ? read_impl.actual_samples_per_second : read_impl.samples_per_second;
 	if (SWITCH_STATUS_FALSE == call_bot_session_init(session, responseHandler, samples_per_second, flags & SMBF_STEREO ? 2 : 1, lang, interim, bugname, &pUserData))
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error initializing callbot session.\n");
 		return SWITCH_STATUS_FALSE;
 	}
 
 	if ((status = switch_core_media_bug_add(session, bugname, NULL, capture_callback, pUserData, 0, flags, &bug)) != SWITCH_STATUS_SUCCESS)
 	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Error add bug.\n");
+		switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Error add bug.\n");
 		return status;
 	}
 
@@ -222,6 +191,13 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 	switch_channel_t *channel = switch_core_session_get_channel(session);
 	unsigned char isStarted = 0;
 
+	unsigned char *abuf = NULL;
+	switch_frame_t write_frame = {0};
+	switch_codec_t codec = {0};
+	switch_codec_implementation_t imp = {0};
+
+	switch_zmalloc(abuf, SWITCH_RECOMMENDED_BUFFER_SIZE);
+
 	if (switch_channel_pre_answer(channel) != SWITCH_STATUS_SUCCESS)
 	{
 		return SWITCH_STATUS_FALSE;
@@ -236,16 +212,55 @@ static switch_status_t switch_to_silence_session(switch_core_session_t *session,
 		{
 			continue;
 		}
-
 		switch_ivr_parse_all_events(session);
+
 		if (!isStarted)
 		{
-			switch_core_session_write_frame(session, read_frame, SWITCH_IO_FLAG_NONE, 0);
-			switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
-			status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
-			isStarted = 1;
+			const char *start_bot = switch_channel_get_variable(channel, "START_BOT");
+			if (start_bot && (strcmp(start_bot, "true") == 0))
+			{
+				switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "CALL_WITH_BOT Start capture....\n");
+				status = start_capture(session, SMBF_READ_STREAM, "", 1, MY_BUG_NAME);
+				isStarted = 1;
+			}
+		}
+
+		if (switch_channel_media_ready(channel))
+		{
+			switch_core_session_get_read_impl(session, &imp);
+
+			if (switch_core_codec_init(&codec,
+									   "L16",
+									   NULL,
+									   NULL,
+									   imp.actual_samples_per_second,
+									   imp.microseconds_per_packet / 1000,
+									   imp.number_of_channels,
+									   SWITCH_CODEC_FLAG_ENCODE | SWITCH_CODEC_FLAG_DECODE, NULL,
+									   switch_core_session_get_pool(session)) != SWITCH_STATUS_SUCCESS)
+			{
+				switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "Codec Error L16@%uhz %u channels %dms\n",
+								  imp.samples_per_second, imp.number_of_channels, imp.microseconds_per_packet / 1000);
+				continue;
+			}
+			write_frame.codec = &codec;
+			write_frame.data = abuf;
+			write_frame.buflen = SWITCH_RECOMMENDED_BUFFER_SIZE;
+			write_frame.datalen = imp.decoded_bytes_per_packet;
+			write_frame.samples = write_frame.datalen / sizeof(int16_t);
+			memset((int16_t *)write_frame.data, 0, write_frame.samples * 2);
+
+			switch_core_session_write_frame(session, &write_frame, SWITCH_IO_FLAG_NONE, 0);
 		}
 	}
+
+	if (write_frame.codec)
+	{
+		switch_core_codec_destroy(&codec);
+	}
+	read_frame = NULL;
+	channel = NULL;
+	switch_safe_free(abuf);
 	switch_core_session_reset(session, SWITCH_TRUE, SWITCH_TRUE);
 
 	return SWITCH_STATUS_SUCCESS;
@@ -313,23 +328,10 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	switch_api_interface_t *api_interface;
 	switch_application_interface_t *app_interface;
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "mod_call_bot API loading..\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API loading..\n");
 
 	/* create/register custom event message types */
-
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_PROCESS_RESPONSE, event_process_response_handler, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind play audio event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
-
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_BOT_HANGUP, event_hangup_handler, NULL) != SWITCH_STATUS_SUCCESS)
-	{
-		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind bot hangup event!\n");
-		return SWITCH_STATUS_GENERR;
-	}
-
-	if (switch_event_bind(modname, SWITCH_EVENT_CUSTOM, EVENT_STOP_AUDIO, event_stop_audio_handler, NULL) != SWITCH_STATUS_SUCCESS)
+	if (switch_event_bind_removable(modname, SWITCH_EVENT_PLAYBACK_STOP, NULL, event_stop_audio_handler, NULL, NULL) != SWITCH_STATUS_SUCCESS)
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Couldn't bind stop audio event!\n");
 		return SWITCH_STATUS_GENERR;
@@ -338,21 +340,21 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
 	/* connect my internal structure to the blank pointer passed to me */
 	*module_interface = switch_loadable_module_create_module_interface(pool, modname);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "callbot version 1.0.2\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "callbot version 1.0.2\n");
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot grpc loading..\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loading..\n");
 	if (SWITCH_STATUS_FALSE == call_bot_init())
 	{
 		switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_CRIT, "Failed initializing call bot grpc\n");
 	}
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "Callbot grpc loaded\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "Callbot grpc loaded\n");
 
 	SWITCH_ADD_API(api_interface, "start_call_with_bot", "Start call with bot API", call_bot_function, TRANSCRIBE_API_SYNTAX);
 	switch_console_set_complete("add start_call_with_bot ::console::list_uuid start 1 2");
 
 	SWITCH_ADD_APP(app_interface, "start_call_with_bot", "Start call with bot API", "Start call with bot API", call_bot_app_function, TRANSCRIBE_API_SYNTAX, SAF_NONE);
 
-	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "mod_call_bot API successfully loaded\n");
+	switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_NOTICE, "mod_call_bot API successfully loaded\n");
 
 	/* indicate that the module should continue to be loaded */
 	return SWITCH_STATUS_SUCCESS;
@@ -363,9 +365,7 @@ SWITCH_MODULE_LOAD_FUNCTION(mod_call_bot_load)
   Macro expands to: switch_status_t mod_call_bot_shutdown() */
 SWITCH_MODULE_SHUTDOWN_FUNCTION(mod_call_bot_shutdown)
 {
-	switch_event_unbind_callback(event_process_response_handler);
 	switch_event_unbind_callback(event_stop_audio_handler);
-	switch_event_unbind_callback(event_hangup_handler);
 	call_bot_cleanup();
 	return SWITCH_STATUS_SUCCESS;
 }

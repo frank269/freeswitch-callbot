@@ -14,12 +14,12 @@
 #define EVENT_PROCESS_RESPONSE "mod_call_bot::process_response"
 #define EVENT_STOP_AUDIO "mod_call_bot::stop_audio"
 #define EVENT_BOT_HANGUP "mod_call_bot::bot_hangup"
+#define EVENT_BOT_TRANSFER "mod_call_bot::bot_transfer"
 
 #define HEADER_SESSION_ID "mod_call_bot::session_id"
 #define HEADER_RESPONSE_TYPE "mod_call_bot::response_type"
 #define HEADER_AUDIO_PATH "mod_call_bot::audio_path"
-#define HEADER_TRANSFER_SIP "mod_call_bot::transfer_sip"
-
+#define HEADER_TRANSFER_JSON "mod_call_bot::transfer_json"
 
 #define HEADER_HANGUP_JSON "mod_call_bot::hangup_json"
 
@@ -39,13 +39,14 @@ struct cap_cb
     switch_mutex_t *mutex;
     char bugname[MAX_BUG_LEN + 1];
     char sessionId[MAX_SESSION_ID + 1];
-    char *base;
+    // char *base;
     SpeexResamplerState *resampler;
     void *streamer;
     responseHandler_t responseHandler;
     switch_thread_t *thread;
+    // switch_thread_t *play_audio_thread;
     int end_of_utterance;
-    int play_file;
+    // int play_file;
     switch_vad_t *vad;
     uint32_t samples_per_second;
 };

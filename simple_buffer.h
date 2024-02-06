@@ -8,7 +8,7 @@ class SimpleBuffer
 {
 public:
   SimpleBuffer(uint32_t chunkSize, uint32_t numChunks) : numItems(0),
-  m_numChunks(numChunks), m_chunkSize(chunkSize)
+                                                         m_numChunks(numChunks), m_chunkSize(chunkSize)
   {
     m_pData = new char[chunkSize * numChunks];
     m_pNextWrite = m_pData;
@@ -50,6 +50,16 @@ public:
       return p;
     }
     return nullptr;
+  }
+
+  char *getData()
+  {
+    return m_pData;
+  }
+
+  void clearData()
+  {
+    numItems = 0;
   }
 
   uint32_t getNumItems() { return numItems; }

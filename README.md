@@ -64,6 +64,7 @@ cd /usr/src/freeswitch && \
   --localstatedir=/var \
   --sysconfdir=/etc \
   --with-openssl \
+  --disable-libvpx \
   --enable-portable-binary \
   --enable-core-pgsql-support \
   --disable-dependency-tracking \
@@ -71,3 +72,29 @@ cd /usr/src/freeswitch && \
 
 
 -DCMAKE_TOOLCHAIN_FILE=/usr/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+copy all *.lua file to /opt/freeswitch/scripts
+
+add line to: /etc/freeswitch/autoload_configs/lua.conf.xml
+<!-- <hook event="CUSTOM" subclass="mod_call_bot::bot_hangup" script="/opt/freeswitch/scripts/bot_event.lua" /> -->
+<hook event="CUSTOM" subclass="mod_call_bot::bot_transfer" script="/opt/freeswitch/scripts/bot_transfer.lua" />
+<hook event="CHANNEL_HANGUP_COMPLETE" script="/opt/freeswitch/scripts/bot_hangup.lua" />
+
+
+configure.ac
+build/modules.conf.in
+modules.conf
+
+protoc --proto_path=. --cpp_out=. smartivrphonegateway.proto
+
+execute_on_media='lua::app/vm_detect/index.lua'
+
+
+location ~* /file/(.*)(\.wav|\.mp3){
+        root            /var/lib/freeswitch/recordings;
+        try_files       /$1.wav /$1.mp3 =404;
+}
+
+
+fsctl max_sessions 
+fsctl sps 1000
