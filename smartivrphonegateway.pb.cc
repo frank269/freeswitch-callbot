@@ -14,68 +14,84 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
-PROTOBUF_PRAGMA_INIT_SEG
+extern PROTOBUF_INTERNAL_EXPORT_smartivrphonegateway_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Config_smartivrphonegateway_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_smartivrphonegateway_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Status_smartivrphonegateway_2eproto;
 namespace smartivrphonegateway {
-constexpr SmartIVRRequest::SmartIVRRequest(
-  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : key_press_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , audio_content_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , config_(nullptr)
-  , is_playing_(false){}
-struct SmartIVRRequestDefaultTypeInternal {
-  constexpr SmartIVRRequestDefaultTypeInternal()
-    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
-  ~SmartIVRRequestDefaultTypeInternal() {}
-  union {
-    SmartIVRRequest _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SmartIVRRequestDefaultTypeInternal _SmartIVRRequest_default_instance_;
-constexpr SmartIVRResponse::SmartIVRResponse(
-  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : text_asr_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , text_bot_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , forward_sip_json_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , audio_content_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , status_(nullptr)
-  , type_(0)
-{}
-struct SmartIVRResponseDefaultTypeInternal {
-  constexpr SmartIVRResponseDefaultTypeInternal()
-    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
-  ~SmartIVRResponseDefaultTypeInternal() {}
-  union {
-    SmartIVRResponse _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SmartIVRResponseDefaultTypeInternal _SmartIVRResponse_default_instance_;
-constexpr Config::Config(
-  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : conversation_id_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
-struct ConfigDefaultTypeInternal {
-  constexpr ConfigDefaultTypeInternal()
-    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
-  ~ConfigDefaultTypeInternal() {}
-  union {
-    Config _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ConfigDefaultTypeInternal _Config_default_instance_;
-constexpr Status::Status(
-  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : message_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , code_(0){}
-struct StatusDefaultTypeInternal {
-  constexpr StatusDefaultTypeInternal()
-    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
-  ~StatusDefaultTypeInternal() {}
-  union {
-    Status _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT StatusDefaultTypeInternal _Status_default_instance_;
+class SmartIVRRequestDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SmartIVRRequest> _instance;
+} _SmartIVRRequest_default_instance_;
+class SmartIVRResponseDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SmartIVRResponse> _instance;
+} _SmartIVRResponse_default_instance_;
+class ConfigDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Config> _instance;
+} _Config_default_instance_;
+class StatusDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Status> _instance;
+} _Status_default_instance_;
 }  // namespace smartivrphonegateway
+static void InitDefaultsscc_info_Config_smartivrphonegateway_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::smartivrphonegateway::_Config_default_instance_;
+    new (ptr) ::smartivrphonegateway::Config();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::smartivrphonegateway::Config::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Config_smartivrphonegateway_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Config_smartivrphonegateway_2eproto}, {}};
+
+static void InitDefaultsscc_info_SmartIVRRequest_smartivrphonegateway_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::smartivrphonegateway::_SmartIVRRequest_default_instance_;
+    new (ptr) ::smartivrphonegateway::SmartIVRRequest();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::smartivrphonegateway::SmartIVRRequest::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SmartIVRRequest_smartivrphonegateway_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SmartIVRRequest_smartivrphonegateway_2eproto}, {
+      &scc_info_Config_smartivrphonegateway_2eproto.base,}};
+
+static void InitDefaultsscc_info_SmartIVRResponse_smartivrphonegateway_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::smartivrphonegateway::_SmartIVRResponse_default_instance_;
+    new (ptr) ::smartivrphonegateway::SmartIVRResponse();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::smartivrphonegateway::SmartIVRResponse::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SmartIVRResponse_smartivrphonegateway_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SmartIVRResponse_smartivrphonegateway_2eproto}, {
+      &scc_info_Status_smartivrphonegateway_2eproto.base,}};
+
+static void InitDefaultsscc_info_Status_smartivrphonegateway_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::smartivrphonegateway::_Status_default_instance_;
+    new (ptr) ::smartivrphonegateway::Status();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::smartivrphonegateway::Status::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Status_smartivrphonegateway_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Status_smartivrphonegateway_2eproto}, {}};
+
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_smartivrphonegateway_2eproto[4];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_smartivrphonegateway_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_smartivrphonegateway_2eproto = nullptr;
@@ -90,6 +106,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_smartivrphonegateway_2eproto::
   PROTOBUF_FIELD_OFFSET(::smartivrphonegateway::SmartIVRRequest, key_press_),
   PROTOBUF_FIELD_OFFSET(::smartivrphonegateway::SmartIVRRequest, config_),
   PROTOBUF_FIELD_OFFSET(::smartivrphonegateway::SmartIVRRequest, audio_content_),
+  PROTOBUF_FIELD_OFFSET(::smartivrphonegateway::SmartIVRRequest, timestamp_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::smartivrphonegateway::SmartIVRResponse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -117,9 +134,9 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_smartivrphonegateway_2eproto::
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::smartivrphonegateway::SmartIVRRequest)},
-  { 9, -1, sizeof(::smartivrphonegateway::SmartIVRResponse)},
-  { 20, -1, sizeof(::smartivrphonegateway::Config)},
-  { 26, -1, sizeof(::smartivrphonegateway::Status)},
+  { 10, -1, sizeof(::smartivrphonegateway::SmartIVRResponse)},
+  { 21, -1, sizeof(::smartivrphonegateway::Config)},
+  { 27, -1, sizeof(::smartivrphonegateway::Status)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -131,42 +148,46 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_smartivrphonegateway_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\032smartivrphonegateway.proto\022\024smartivrph"
-  "onegateway\"}\n\017SmartIVRRequest\022\022\n\nis_play"
-  "ing\030\001 \001(\010\022\021\n\tkey_press\030\002 \001(\t\022,\n\006config\030\003"
-  " \001(\0132\034.smartivrphonegateway.Config\022\025\n\rau"
-  "dio_content\030\004 \001(\014\"\317\001\n\020SmartIVRResponse\0228"
-  "\n\004type\030\001 \001(\0162*.smartivrphonegateway.Smar"
-  "tIVRResponseType\022\020\n\010text_asr\030\002 \001(\t\022\020\n\010te"
-  "xt_bot\030\003 \001(\t\022\030\n\020forward_sip_json\030\004 \001(\t\022,"
-  "\n\006status\030\005 \001(\0132\034.smartivrphonegateway.St"
-  "atus\022\025\n\raudio_content\030\006 \001(\014\"!\n\006Config\022\027\n"
-  "\017conversation_id\030\001 \001(\t\"\'\n\006Status\022\014\n\004code"
-  "\030\001 \001(\005\022\017\n\007message\030\002 \001(\t*t\n\024SmartIVRRespo"
-  "nseType\022\r\n\tRECOGNIZE\020\000\022\016\n\nRESULT_ASR\020\001\022\016"
-  "\n\nRESULT_TTS\020\002\022\r\n\tCALL_WAIT\020\003\022\020\n\014CALL_FO"
-  "RWARD\020\004\022\014\n\010CALL_END\020\0052v\n\024SmartIVRPhonega"
-  "teway\022^\n\tCallToBot\022%.smartivrphonegatewa"
-  "y.SmartIVRRequest\032&.smartivrphonegateway"
-  ".SmartIVRResponse(\0010\001B|\n0smartcall.ivr.m"
-  "aster.proto.smartivr_phonegatewayB\024Smart"
-  "IVRPhonegatewayP\001Z0smartcall.ivr.master/"
-  "proto/smartivr_phonegatewayb\006proto3"
+  "onegateway\"\220\001\n\017SmartIVRRequest\022\022\n\nis_pla"
+  "ying\030\001 \001(\010\022\021\n\tkey_press\030\002 \001(\t\022,\n\006config\030"
+  "\003 \001(\0132\034.smartivrphonegateway.Config\022\025\n\ra"
+  "udio_content\030\004 \001(\014\022\021\n\ttimestamp\030\005 \001(\003\"\317\001"
+  "\n\020SmartIVRResponse\0228\n\004type\030\001 \001(\0162*.smart"
+  "ivrphonegateway.SmartIVRResponseType\022\020\n\010"
+  "text_asr\030\002 \001(\t\022\020\n\010text_bot\030\003 \001(\t\022\030\n\020forw"
+  "ard_sip_json\030\004 \001(\t\022,\n\006status\030\005 \001(\0132\034.sma"
+  "rtivrphonegateway.Status\022\025\n\raudio_conten"
+  "t\030\006 \001(\014\"!\n\006Config\022\027\n\017conversation_id\030\001 \001"
+  "(\t\"\'\n\006Status\022\014\n\004code\030\001 \001(\005\022\017\n\007message\030\002 "
+  "\001(\t*t\n\024SmartIVRResponseType\022\r\n\tRECOGNIZE"
+  "\020\000\022\016\n\nRESULT_ASR\020\001\022\016\n\nRESULT_TTS\020\002\022\r\n\tCA"
+  "LL_WAIT\020\003\022\020\n\014CALL_FORWARD\020\004\022\014\n\010CALL_END\020"
+  "\0052v\n\024SmartIVRPhonegateway\022^\n\tCallToBot\022%"
+  ".smartivrphonegateway.SmartIVRRequest\032&."
+  "smartivrphonegateway.SmartIVRResponse(\0010"
+  "\001B|\n0smartcall.ivr.master.proto.smartivr"
+  "_phonegatewayB\024SmartIVRPhonegatewayP\001Z0s"
+  "martcall.ivr.master/proto/smartivr_phone"
+  "gatewayb\006proto3"
   ;
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_smartivrphonegateway_2eproto_deps[1] = {
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_smartivrphonegateway_2eproto_sccs[4] = {
+  &scc_info_Config_smartivrphonegateway_2eproto.base,
+  &scc_info_SmartIVRRequest_smartivrphonegateway_2eproto.base,
+  &scc_info_SmartIVRResponse_smartivrphonegateway_2eproto.base,
+  &scc_info_Status_smartivrphonegateway_2eproto.base,
+};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_smartivrphonegateway_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_smartivrphonegateway_2eproto = {
-  false, false, 835, descriptor_table_protodef_smartivrphonegateway_2eproto, "smartivrphonegateway.proto", 
-  &descriptor_table_smartivrphonegateway_2eproto_once, nullptr, 0, 4,
+  false, false, descriptor_table_protodef_smartivrphonegateway_2eproto, "smartivrphonegateway.proto", 855,
+  &descriptor_table_smartivrphonegateway_2eproto_once, descriptor_table_smartivrphonegateway_2eproto_sccs, descriptor_table_smartivrphonegateway_2eproto_deps, 4, 0,
   schemas, file_default_instances, TableStruct_smartivrphonegateway_2eproto::offsets,
-  file_level_metadata_smartivrphonegateway_2eproto, file_level_enum_descriptors_smartivrphonegateway_2eproto, file_level_service_descriptors_smartivrphonegateway_2eproto,
+  file_level_metadata_smartivrphonegateway_2eproto, 4, file_level_enum_descriptors_smartivrphonegateway_2eproto, file_level_service_descriptors_smartivrphonegateway_2eproto,
 };
-PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
-descriptor_table_smartivrphonegateway_2eproto_metadata_getter(int index) {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_smartivrphonegateway_2eproto);
-  return descriptor_table_smartivrphonegateway_2eproto.file_level_metadata[index];
-}
 
 // Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_smartivrphonegateway_2eproto(&descriptor_table_smartivrphonegateway_2eproto);
+static bool dynamic_init_dummy_smartivrphonegateway_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_smartivrphonegateway_2eproto)), true);
 namespace smartivrphonegateway {
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SmartIVRResponseType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_smartivrphonegateway_2eproto);
@@ -189,6 +210,10 @@ bool SmartIVRResponseType_IsValid(int value) {
 
 // ===================================================================
 
+void SmartIVRRequest::InitAsDefaultInstance() {
+  ::smartivrphonegateway::_SmartIVRRequest_default_instance_._instance.get_mutable()->config_ = const_cast< ::smartivrphonegateway::Config*>(
+      ::smartivrphonegateway::Config::internal_default_instance());
+}
 class SmartIVRRequest::_Internal {
  public:
   static const ::smartivrphonegateway::Config& config(const SmartIVRRequest* msg);
@@ -209,12 +234,12 @@ SmartIVRRequest::SmartIVRRequest(const SmartIVRRequest& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   key_press_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_key_press().empty()) {
-    key_press_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_key_press(), 
+    key_press_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_key_press(),
       GetArena());
   }
   audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_audio_content().empty()) {
-    audio_content_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_audio_content(), 
+    audio_content_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_audio_content(),
       GetArena());
   }
   if (from._internal_has_config()) {
@@ -222,17 +247,19 @@ SmartIVRRequest::SmartIVRRequest(const SmartIVRRequest& from)
   } else {
     config_ = nullptr;
   }
-  is_playing_ = from.is_playing_;
+  ::memcpy(&timestamp_, &from.timestamp_,
+    static_cast<size_t>(reinterpret_cast<char*>(&is_playing_) -
+    reinterpret_cast<char*>(&timestamp_)) + sizeof(is_playing_));
   // @@protoc_insertion_point(copy_constructor:smartivrphonegateway.SmartIVRRequest)
 }
 
 void SmartIVRRequest::SharedCtor() {
-key_press_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&config_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&is_playing_) -
-    reinterpret_cast<char*>(&config_)) + sizeof(is_playing_));
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SmartIVRRequest_smartivrphonegateway_2eproto.base);
+  key_press_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&config_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&is_playing_) -
+      reinterpret_cast<char*>(&config_)) + sizeof(is_playing_));
 }
 
 SmartIVRRequest::~SmartIVRRequest() {
@@ -257,6 +284,11 @@ void SmartIVRRequest::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void SmartIVRRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const SmartIVRRequest& SmartIVRRequest::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SmartIVRRequest_smartivrphonegateway_2eproto.base);
+  return *internal_default_instance();
+}
+
 
 void SmartIVRRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:smartivrphonegateway.SmartIVRRequest)
@@ -264,18 +296,21 @@ void SmartIVRRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  key_press_.ClearToEmpty();
-  audio_content_.ClearToEmpty();
+  key_press_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  audio_content_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   if (GetArena() == nullptr && config_ != nullptr) {
     delete config_;
   }
   config_ = nullptr;
-  is_playing_ = false;
+  ::memset(&timestamp_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&is_playing_) -
+      reinterpret_cast<char*>(&timestamp_)) + sizeof(is_playing_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* SmartIVRRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -309,6 +344,13 @@ const char* SmartIVRRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           auto str = _internal_mutable_audio_content();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // int64 timestamp = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          timestamp_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -370,6 +412,12 @@ failure:
         4, this->_internal_audio_content(), target);
   }
 
+  // int64 timestamp = 5;
+  if (this->timestamp() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(5, this->_internal_timestamp(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -405,6 +453,13 @@ size_t SmartIVRRequest::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *config_);
+  }
+
+  // int64 timestamp = 5;
+  if (this->timestamp() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_timestamp());
   }
 
   // bool is_playing = 1;
@@ -452,6 +507,9 @@ void SmartIVRRequest::MergeFrom(const SmartIVRRequest& from) {
   if (from.has_config()) {
     _internal_mutable_config()->::smartivrphonegateway::Config::MergeFrom(from._internal_config());
   }
+  if (from.timestamp() != 0) {
+    _internal_set_timestamp(from._internal_timestamp());
+  }
   if (from.is_playing() != 0) {
     _internal_set_is_playing(from._internal_is_playing());
   }
@@ -495,6 +553,10 @@ void SmartIVRRequest::InternalSwap(SmartIVRRequest* other) {
 
 // ===================================================================
 
+void SmartIVRResponse::InitAsDefaultInstance() {
+  ::smartivrphonegateway::_SmartIVRResponse_default_instance_._instance.get_mutable()->status_ = const_cast< ::smartivrphonegateway::Status*>(
+      ::smartivrphonegateway::Status::internal_default_instance());
+}
 class SmartIVRResponse::_Internal {
  public:
   static const ::smartivrphonegateway::Status& status(const SmartIVRResponse* msg);
@@ -515,22 +577,22 @@ SmartIVRResponse::SmartIVRResponse(const SmartIVRResponse& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   text_asr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_text_asr().empty()) {
-    text_asr_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_text_asr(), 
+    text_asr_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_text_asr(),
       GetArena());
   }
   text_bot_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_text_bot().empty()) {
-    text_bot_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_text_bot(), 
+    text_bot_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_text_bot(),
       GetArena());
   }
   forward_sip_json_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_forward_sip_json().empty()) {
-    forward_sip_json_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_forward_sip_json(), 
+    forward_sip_json_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_forward_sip_json(),
       GetArena());
   }
   audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_audio_content().empty()) {
-    audio_content_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_audio_content(), 
+    audio_content_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_audio_content(),
       GetArena());
   }
   if (from._internal_has_status()) {
@@ -543,14 +605,14 @@ SmartIVRResponse::SmartIVRResponse(const SmartIVRResponse& from)
 }
 
 void SmartIVRResponse::SharedCtor() {
-text_asr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-text_bot_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-forward_sip_json_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&status_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&type_) -
-    reinterpret_cast<char*>(&status_)) + sizeof(type_));
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SmartIVRResponse_smartivrphonegateway_2eproto.base);
+  text_asr_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  text_bot_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  forward_sip_json_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  audio_content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&status_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&type_) -
+      reinterpret_cast<char*>(&status_)) + sizeof(type_));
 }
 
 SmartIVRResponse::~SmartIVRResponse() {
@@ -577,6 +639,11 @@ void SmartIVRResponse::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void SmartIVRResponse::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const SmartIVRResponse& SmartIVRResponse::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SmartIVRResponse_smartivrphonegateway_2eproto.base);
+  return *internal_default_instance();
+}
+
 
 void SmartIVRResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:smartivrphonegateway.SmartIVRResponse)
@@ -584,10 +651,10 @@ void SmartIVRResponse::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  text_asr_.ClearToEmpty();
-  text_bot_.ClearToEmpty();
-  forward_sip_json_.ClearToEmpty();
-  audio_content_.ClearToEmpty();
+  text_asr_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  text_bot_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  forward_sip_json_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  audio_content_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   if (GetArena() == nullptr && status_ != nullptr) {
     delete status_;
   }
@@ -598,6 +665,7 @@ void SmartIVRResponse::Clear() {
 
 const char* SmartIVRResponse::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -880,6 +948,8 @@ void SmartIVRResponse::InternalSwap(SmartIVRResponse* other) {
 
 // ===================================================================
 
+void Config::InitAsDefaultInstance() {
+}
 class Config::_Internal {
  public:
 };
@@ -895,14 +965,15 @@ Config::Config(const Config& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   conversation_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_conversation_id().empty()) {
-    conversation_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_conversation_id(), 
+    conversation_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_conversation_id(),
       GetArena());
   }
   // @@protoc_insertion_point(copy_constructor:smartivrphonegateway.Config)
 }
 
 void Config::SharedCtor() {
-conversation_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Config_smartivrphonegateway_2eproto.base);
+  conversation_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 Config::~Config() {
@@ -925,6 +996,11 @@ void Config::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Config::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const Config& Config::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Config_smartivrphonegateway_2eproto.base);
+  return *internal_default_instance();
+}
+
 
 void Config::Clear() {
 // @@protoc_insertion_point(message_clear_start:smartivrphonegateway.Config)
@@ -932,12 +1008,13 @@ void Config::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  conversation_id_.ClearToEmpty();
+  conversation_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* Config::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1080,6 +1157,8 @@ void Config::InternalSwap(Config* other) {
 
 // ===================================================================
 
+void Status::InitAsDefaultInstance() {
+}
 class Status::_Internal {
  public:
 };
@@ -1095,7 +1174,7 @@ Status::Status(const Status& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_message().empty()) {
-    message_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_message(), 
+    message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_message(),
       GetArena());
   }
   code_ = from.code_;
@@ -1103,8 +1182,9 @@ Status::Status(const Status& from)
 }
 
 void Status::SharedCtor() {
-message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-code_ = 0;
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Status_smartivrphonegateway_2eproto.base);
+  message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  code_ = 0;
 }
 
 Status::~Status() {
@@ -1127,6 +1207,11 @@ void Status::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Status::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const Status& Status::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Status_smartivrphonegateway_2eproto.base);
+  return *internal_default_instance();
+}
+
 
 void Status::Clear() {
 // @@protoc_insertion_point(message_clear_start:smartivrphonegateway.Status)
@@ -1134,13 +1219,14 @@ void Status::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  message_.ClearToEmpty();
+  message_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   code_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* Status::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
