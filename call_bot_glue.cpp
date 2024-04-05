@@ -223,12 +223,12 @@ public:
             m_audioBuffer.add(data, datalen);
         }
 
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datale, m_audioBuffer.getNumItems());
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
         if (m_audioBuffer.getNumItems() == m_max_chunks || switch_micro_time_now() - last_write > m_interval)
         {
             m_request.clear_audio_content();
             m_request.set_key_press("");
-            m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_max_chunks * (datalen / m_chunkSize));
+            m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_max_chunks * (datalen / CHUNKSIZE));
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
             // print_request();
