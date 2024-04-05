@@ -218,17 +218,17 @@ public:
             return false;
         }
         add_dtmf_to_request();
-        // if (datalen % CHUNKSIZE == 0)
-        {
-            m_audioBuffer.add(data, datalen);
-        }
+        
+        m_audioBuffer.add(data, datalen);
 
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
-        if (m_audioBuffer.getNumItems() == m_max_chunks || switch_micro_time_now() - last_write > m_interval)
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
+        if (switch_micro_time_now() - last_write > m_interval)
         {
+            last_write = switch_micro_time_now();
             m_request.clear_audio_content();
             m_request.set_key_press("");
-            m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_max_chunks * (datalen / CHUNKSIZE));
+            buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
+            m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
             // print_request();
@@ -237,7 +237,6 @@ public:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
-            last_write = switch_micro_time_now();
             m_audioBuffer.clearData();
         }
 
@@ -405,6 +404,7 @@ private:
     bool m_bot_transfer;
     bool m_bot_error;
     long long last_write;
+    int buffer_size;
     int m_max_chunks;
     int m_interval;
 };

@@ -52,9 +52,12 @@ public:
     return nullptr;
   }
 
-  char *getData()
+  char *getData(int size)
   {
-    return m_pData;
+    // return a copy of the data
+    char *p = new char[size];
+    memcpy(p, m_pData, size);
+    return p;
   }
 
   void clearData()
