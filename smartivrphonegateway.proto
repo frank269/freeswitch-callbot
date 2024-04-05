@@ -18,6 +18,7 @@ message SmartIVRRequest
     string key_press = 2;
     Config config = 3;
     bytes audio_content = 4;
+    int64 timestamp = 5;
 }
 
 message SmartIVRResponse
