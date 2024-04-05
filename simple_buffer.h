@@ -60,6 +60,7 @@ public:
   void clearData()
   {
     numItems = 0;
+    m_pNextWrite = m_pData;
   }
 
   uint32_t getNumItems() { return numItems; }
