@@ -79,7 +79,7 @@ public:
 
     void print_request()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -176,11 +176,11 @@ public:
         }
 
         /* set configuration parameters which are carried in the RecognitionInitMessage */
-        auto streaming_config = m_request.mutable_config();
-        streaming_config->set_conversation_id(m_conversation_id);
-        m_request.set_is_playing(false);
-        m_request.set_key_press("");
-        m_request.set_audio_content("");
+        // auto streaming_config = m_request.mutable_config();
+        // streaming_config->set_conversation_id(m_conversation_id);
+        // m_request.set_is_playing(false);
+        // m_request.set_key_press("");
+        // m_request.set_audio_content("");
     }
 
     void connect()
@@ -202,8 +202,9 @@ public:
 
         // Write the first request, containing the config only.
         print_request();
+        SmartIVRRequest m_request = SmartIVRRequest();
+        m_request.set_conversation_id(m_conversation_id);
         m_streamer->Write(m_request);
-        m_request.clear_audio_content();
     }
 
     bool write(void *data, uint32_t datalen)
@@ -221,26 +222,31 @@ public:
         add_dtmf_to_request();
         
         // m_audioBuffer.add(data, datalen);
-        m_request.audio_content().append((char *)data, datalen);
+        m_buffer.append((char *)data, datalen);
 
         // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
         if (switch_micro_time_now() - last_write > m_interval)
         {
             last_write = switch_micro_time_now();
-            m_request.set_key_press("");
+            // m_request.set_key_press("");
             // buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
             // m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
 
+            SmartIVRRequest m_request = SmartIVRRequest();
+            m_request.set_conversation_id(m_conversation_id);
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
+            m_request.set_audio_content(content);
+
             // print_request();
             if (!m_streamer->Write(m_request))
             {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
+            m_buffer.clear();
             // m_audioBuffer.clearData();
-            m_request.clear_audio_content();
+            // m_request.clear_audio_content();
         }
 
         return true;
@@ -338,20 +344,22 @@ public:
             switch_dtmf_t dtmf = {0};
             switch_channel_dequeue_dtmf(m_switch_channel, &dtmf);
             std::string dtmf_string(1, dtmf.digit);
-            m_request.set_is_playing(isPlaying());
+            // m_request.set_is_playing(isPlaying());
+            // m_request.set_key_press(dtmf_string);
+            // std::string content = m_request.audio_content();
+            // m_request.clear_audio_content();
+            SmartIVRRequest m_request = SmartIVRRequest();
             m_request.set_key_press(dtmf_string);
-            std::string content = m_request.audio_content();
-            m_request.clear_audio_content();
             if (!m_streamer->Write(m_request))
             {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
             }
-            m_request.set_audio_content(content);
+            // m_request.set_audio_content(content);
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
         else
         {
-            m_request.set_key_press("");
+            // m_request.set_key_press("");
         }
     }
 
@@ -386,7 +394,7 @@ private:
     grpc::ClientContext m_context;
     std::shared_ptr<grpc::Channel> m_channel;
     std::unique_ptr<smartivrphonegateway::SmartIVRPhonegateway::Stub> m_stub;
-    SmartIVRRequest m_request;
+    // SmartIVRRequest m_request;
     std::unique_ptr<grpc::ClientReaderWriterInterface<SmartIVRRequest, SmartIVRResponse>> m_streamer;
     bool m_writesDone;
     bool m_connected;
@@ -395,6 +403,7 @@ private:
     std::promise<void> m_promise;
     SimpleBuffer m_audioBuffer;
     char m_sessionId[256];
+    std::string m_buffer = "";
     switch_channel_t *m_switch_channel;
 
     // master data
