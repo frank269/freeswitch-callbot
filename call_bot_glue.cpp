@@ -158,7 +158,7 @@ public:
         m_record_path = std::string(switch_channel_get_variable(m_switch_channel, "record_path"));
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start with record uri %s\n", this, m_record_path.c_str());
         m_call_at = atol(switch_channel_get_variable(m_switch_channel, "CALL_AT"));
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start call at: %d\n", this, m_call_at);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer %p start call at: %lld\n", this, m_call_at);
 
         std::shared_ptr<grpc::Channel> grpcChannel = grpc::CreateChannel(m_botmaster_uri.c_str(), grpc::InsecureChannelCredentials());
         if (!grpcChannel)
@@ -203,6 +203,7 @@ public:
         // Write the first request, containing the config only.
         print_request();
         m_streamer->Write(m_request);
+        m_buffer.clear();
     }
 
     bool write(void *data, uint32_t datalen)
@@ -219,7 +220,8 @@ public:
         }
         add_dtmf_to_request();
         
-        m_audioBuffer.add(data, datalen);
+        // m_audioBuffer.add(data, datalen);
+        m_buffer.append((char *)data, datalen);
 
         // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
         if (switch_micro_time_now() - last_write > m_interval)
@@ -227,8 +229,10 @@ public:
             last_write = switch_micro_time_now();
             m_request.clear_audio_content();
             m_request.set_key_press("");
-            buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
-            m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
+            // buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
+            // m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
+            m_request.set_audio_content(m_buffer);
+
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
             // print_request();
@@ -237,7 +241,8 @@ public:
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
                 return false;
             }
-            m_audioBuffer.clearData();
+            // m_audioBuffer.clearData();
+            m_buffer.clear();
         }
 
         return true;
@@ -389,6 +394,7 @@ private:
     std::string m_language;
     std::promise<void> m_promise;
     SimpleBuffer m_audioBuffer;
+    std::string m_buffer = ""; 
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
