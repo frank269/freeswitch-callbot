@@ -60,8 +60,8 @@ public:
                                                                                                     m_bot_transfer(false),
                                                                                                     m_bot_error(false),
                                                                                                     m_language(lang),
-                                                                                                    m_interim(interim),
-                                                                                                    m_audioBuffer(CHUNKSIZE, 50 / bps)
+                                                                                                    m_interim(interim)
+                                                                                                    // m_audioBuffer(CHUNKSIZE, 50 / bps)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -79,7 +79,7 @@ public:
 
     void print_request()
     {
-        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
+        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p audio isplaying: %d, content length: %d\n", this, m_request.is_playing(), m_request.audio_content().length());
     }
 
     void print_response(SmartIVRResponse response)
@@ -218,17 +218,19 @@ public:
             return false;
         }
         add_dtmf_to_request();
-        if (datalen % CHUNKSIZE == 0)
-        {
-            m_audioBuffer.add(data, datalen);
-        }
+
+        // if (datalen % CHUNKSIZE == 0)
+        // {
+        //     m_audioBuffer.add(data, datalen);
+        // }
+        m_buffer.append((char *)data, datalen);
 
         // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Time: %lld!\n", switch_micro_time_now() - last_write);
-        if (m_audioBuffer.getNumItems() == m_max_chunks || switch_micro_time_now() - last_write > m_interval)
+        if (switch_micro_time_now() - last_write > m_interval)
         {
-            m_request.clear_audio_content();
+            // m_request.clear_audio_content();
             m_request.set_key_press("");
-            m_request.set_audio_content(m_audioBuffer.getData(), CHUNKSIZE * m_audioBuffer.getNumItems());
+            m_request.set_audio_content(m_buffer);
             m_request.set_is_playing(isPlaying());
             // print_request();
             if (!m_streamer->Write(m_request))
@@ -237,7 +239,8 @@ public:
                 return false;
             }
             last_write = switch_micro_time_now();
-            m_audioBuffer.clearData();
+            m_buffer = "";
+            // m_audioBuffer.clearData();
         }
 
         return true;
@@ -388,7 +391,8 @@ private:
     bool m_interim;
     std::string m_language;
     std::promise<void> m_promise;
-    SimpleBuffer m_audioBuffer;
+    // SimpleBuffer m_audioBuffer;
+    std::string m_buffer = "";
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
