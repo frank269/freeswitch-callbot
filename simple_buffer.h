@@ -20,20 +20,15 @@ public:
 
   void add(void *data, uint32_t datalen)
   {
-    if (datalen % m_chunkSize != 0)
-      return;
-    int numChunks = datalen / m_chunkSize;
-    for (int i = 0; i < numChunks; i++)
+    if (datalen >= m_pNextWrite - m_pData)
+    {
+      m_pNextWrite = m_pData;
+      memcpy(m_pNextWrite, data, datalen);
+    } 
+    else
     {
       memcpy(m_pNextWrite, data, datalen);
-      if (numItems < m_numChunks)
-        numItems++;
-
-      uint32_t offset = (m_pNextWrite - m_pData) / m_chunkSize;
-      if (offset >= m_numChunks - 1)
-        m_pNextWrite = m_pData;
-      else
-        m_pNextWrite += m_chunkSize;
+      m_pNextWrite += datalen;
     }
   }
 
