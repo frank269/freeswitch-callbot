@@ -203,7 +203,7 @@ public:
         // Write the first request, containing the config only.
         print_request();
         m_streamer->Write(m_request);
-        m_buffer.clear();
+        m_request.clear_audio_content();
     }
 
     bool write(void *data, uint32_t datalen)
@@ -221,17 +221,15 @@ public:
         add_dtmf_to_request();
         
         // m_audioBuffer.add(data, datalen);
-        m_buffer.append((char *)data, datalen);
+        m_request.audio_content().append((char *)data, datalen);
 
         // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
         if (switch_micro_time_now() - last_write > m_interval)
         {
             last_write = switch_micro_time_now();
-            m_request.clear_audio_content();
             m_request.set_key_press("");
             // buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
             // m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
-            m_request.set_audio_content(m_buffer);
 
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
@@ -242,7 +240,7 @@ public:
                 return false;
             }
             // m_audioBuffer.clearData();
-            m_buffer.clear();
+            m_request.clear_audio_content();
         }
 
         return true;
@@ -342,11 +340,13 @@ public:
             std::string dtmf_string(1, dtmf.digit);
             m_request.set_is_playing(isPlaying());
             m_request.set_key_press(dtmf_string);
+            std::string content = m_request.audio_content();
             m_request.clear_audio_content();
             if (!m_streamer->Write(m_request))
             {
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p stream write request failed!\n", this);
             }
+            m_request.set_audio_content(content);
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "CALL BOT received dtmf: %s.\n", m_request.key_press().c_str());
         }
         else
@@ -394,7 +394,6 @@ private:
     std::string m_language;
     std::promise<void> m_promise;
     SimpleBuffer m_audioBuffer;
-    std::string m_buffer = ""; 
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
 
