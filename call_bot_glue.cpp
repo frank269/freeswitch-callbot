@@ -203,7 +203,7 @@ public:
         // Write the first request, containing the config only.
         print_request();
         SmartIVRRequest m_request;
-        m_request.set_conversation_id(m_conversation_id);
+        m_request.mutable_config()->set_conversation_id(m_conversation_id);
         m_streamer->Write(m_request);
     }
 
@@ -233,7 +233,7 @@ public:
             // m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
 
             SmartIVRRequest m_request;
-            m_request.set_conversation_id(m_conversation_id);
+            m_request.mutable_config()->set_conversation_id(m_conversation_id);
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
             m_request.set_audio_content(m_buffer);
