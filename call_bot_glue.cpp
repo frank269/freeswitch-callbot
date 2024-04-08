@@ -202,7 +202,7 @@ public:
 
         // Write the first request, containing the config only.
         print_request();
-        SmartIVRRequest m_request;
+        SmartIVRRequest m_request = SmartIVRRequest();
         m_request.mutable_config()->set_conversation_id(m_conversation_id);
         m_streamer->Write(m_request);
     }
@@ -223,6 +223,7 @@ public:
         
         // m_audioBuffer.add(data, datalen);
         m_buffer.append((char *)data, datalen);
+        switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_DEBUG, "GStreamer %p content length: %lld\n", this, m_buffer.length());
 
         // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Data len: %lld, num_item: %d\n", datalen, m_audioBuffer.getNumItems());
         if (switch_micro_time_now() - last_write > m_interval)
@@ -232,7 +233,7 @@ public:
             // buffer_size = CHUNKSIZE * m_audioBuffer.getNumItems();
             // m_request.set_audio_content(m_audioBuffer.getData(buffer_size), buffer_size);
 
-            SmartIVRRequest m_request;
+            SmartIVRRequest m_request = SmartIVRRequest();
             m_request.mutable_config()->set_conversation_id(m_conversation_id);
             m_request.set_is_playing(isPlaying());
             m_request.set_timestamp(switch_micro_time_now() / 1000);
@@ -349,6 +350,7 @@ public:
             // std::string content = m_request.audio_content();
             // m_request.clear_audio_content();
             SmartIVRRequest m_request = SmartIVRRequest();
+            m_request.mutable_config()->set_conversation_id(m_conversation_id);
             m_request.set_key_press(dtmf_string);
             if (!m_streamer->Write(m_request))
             {
