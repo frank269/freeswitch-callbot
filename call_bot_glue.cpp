@@ -5,7 +5,6 @@
 #include <switch_json.h>
 #include <grpc++/grpc++.h>
 #include "mod_call_bot.h"
-#include "simple_buffer.h"
 #include "smartivrphonegateway.pb.h"
 #include "smartivrphonegateway.grpc.pb.h"
 
@@ -61,7 +60,6 @@ public:
                                                                                                     m_bot_error(false),
                                                                                                     m_language(lang),
                                                                                                     m_interim(interim)
-                                                                                                    // m_audioBuffer(CHUNKSIZE, 50 / bps)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, " Create GStreamer\n");
         strncpy(m_sessionId, switch_core_session_get_uuid(session), 256);
@@ -74,6 +72,12 @@ public:
 
     ~GStreamer()
     {
+        m_buffer.clear();
+        m_botmaster_uri.clear();
+        m_phonecontroller_uri.clear();
+        m_conversation_id.clear();
+        m_record_name.clear();
+        m_record_path.clear();
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "GStreamer::~GStreamer - deleting channel and stub: %p\n", (void *)this);
     }
 
@@ -218,17 +222,10 @@ public:
             return false;
         }
         add_dtmf_to_request();
-
-        // if (datalen % CHUNKSIZE == 0)
-        // {
-        //     m_audioBuffer.add(data, datalen);
-        // }
         m_buffer.append((char *)data, datalen);
 
-        // switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_INFO, "Time: %lld!\n", switch_micro_time_now() - last_write);
         if (switch_micro_time_now() - last_write > m_interval)
         {
-            // m_request.clear_audio_content();
             m_request.set_key_press("");
             m_request.set_audio_content(m_buffer);
             m_request.set_is_playing(isPlaying());
@@ -240,7 +237,6 @@ public:
             }
             last_write = switch_micro_time_now();
             m_buffer = "";
-            // m_audioBuffer.clearData();
         }
 
         return true;
@@ -268,6 +264,7 @@ public:
 
     grpc::Status finish()
     {
+        m_connected = false;
         return m_streamer->Finish();
     }
 
@@ -391,7 +388,6 @@ private:
     bool m_interim;
     std::string m_language;
     std::promise<void> m_promise;
-    // SimpleBuffer m_audioBuffer;
     std::string m_buffer = "";
     char m_sessionId[256];
     switch_channel_t *m_switch_channel;
@@ -421,13 +417,12 @@ static std::vector<uint8_t> parse_byte_array(std::string str)
 static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_data, switch_core_session_t *session, switch_channel_t *channel)
 {
     long long now = switch_micro_time_now();
-    // switch_event_t *event;
     switch_status_t status = SWITCH_STATUS_FALSE;
     auto fsize = audio_data.size();
     char *fileName = (char *)malloc(62 * sizeof(char));
     sprintf(fileName, "/tmp/%s-%lld.wav", session_id, now);
     switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "play_audio: write %d frame to file: %s!\n", fsize, fileName);
-    // write byte to pcm file
+
     wav_hdr wav;
     wav.ChunkSize = fsize + sizeof(wav_hdr) - 8;
     wav.Subchunk2Size = fsize;
@@ -435,16 +430,19 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
     if (!out)
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: error create file!\n");
+        free(fileName); // Free memory before returning
         return status;
     }
     if (!out.write(reinterpret_cast<const char *>(&wav), sizeof(wav)))
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: Error writing WAV file header!\n");
+        free(fileName); // Free memory before returning
         return status;
     }
     if (!out.write(reinterpret_cast<char *>(&audio_data[0]), fsize * sizeof(uint8_t)))
     {
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_ERROR, "play_audio: Error writing audio data to WAV file!\n");
+        free(fileName); // Free memory before returning
         return status;
     }
     out.close();
@@ -458,22 +456,9 @@ static switch_status_t play_audio(char *session_id, std::vector<uint8_t> audio_d
                           "Couldn't play file '%s'\n", fileName);
         switch_channel_set_variable(channel, "IS_PLAYING", "false");
     }
+    free(fileName); // Free memory after use
     fileName = NULL;
     return status;
-}
-
-static void *SWITCH_THREAD_FUNC play_audio_thread(switch_thread_t *thread, void *obj)
-{
-    struct audio_info *ai = (struct audio_info *)obj;
-    if (play_audio(ai->sessionId, parse_byte_array(ai->response.audio_content()), ai->session, ai->channel) == SWITCH_STATUS_SUCCESS)
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_INFO, "play_audio_thread: play file done!\n");
-    }
-    else
-    {
-        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "play_audio_thread: cannot play file in event handler!\n");
-    }
-    return nullptr;
 }
 
 static void *SWITCH_THREAD_FUNC grpc_read_thread(switch_thread_t *thread, void *obj)
