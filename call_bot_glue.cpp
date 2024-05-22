@@ -189,6 +189,7 @@ public:
 
     void connect()
     {
+        
         assert(!m_connected);
         // Begin a stream.
         createInitMessage();
@@ -197,12 +198,17 @@ public:
         if (!m_streamer)
         {
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p failed creating grpc channel to %s\n", this, m_botmaster_uri.c_str());
+            set_bot_error();
             switch_channel_hangup(m_switch_channel, SWITCH_CAUSE_NORMAL_CLEARING);
         }
         m_connected = true;
 
         // read thread is waiting on this
-        m_promise.set_value();
+        try {
+            m_promise.set_value();
+        } catch (const std::exception& e) {
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p m_promise.set_value error: %s!\n", this, e.what());
+        }
 
         // Write the first request, containing the config only.
         print_request();
@@ -236,7 +242,8 @@ public:
                 return false;
             }
             last_write = switch_micro_time_now();
-            m_buffer = "";
+            m_buffer.clear();
+            m_buffer.shrink_to_fit();
         }
 
         return true;
@@ -293,7 +300,11 @@ public:
     {
         if (!m_connected)
         {
-            m_promise.set_value();
+            try {
+                m_promise.set_value();
+            } catch (const std::exception& e) {
+                switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(m_session), SWITCH_LOG_ERROR, "GStreamer %p m_promise.set_value error: %s!\n", this, e.what());
+            }
         }
     }
 
@@ -756,13 +767,11 @@ extern "C"
         switch_event_t *event;
         switch_status_t status;
         const char *curFile;
-
         switch_channel_t *channel = switch_core_session_get_channel(session);
         if (bug)
         {
             struct cap_cb *cb = (struct cap_cb *)switch_core_media_bug_get_user_data(bug);
             switch_mutex_lock(cb->mutex);
-
             if (!switch_channel_get_private(channel, cb->bugname))
             {
                 // race condition
@@ -774,7 +783,6 @@ extern "C"
 
             // close connection and get final responses
             GStreamer *streamer = (GStreamer *)cb->streamer;
-
             if (streamer)
             {
                 streamer->writesDone();
@@ -783,10 +791,9 @@ extern "C"
                 switch_thread_join(&status, cb->thread);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup:  GStreamer (%p) read thread completed\n", (void *)streamer);
                 delete streamer;
-                cb->streamer = NULL;
-                cb->thread = NULL;
+                cb->streamer = nullptr;
+                cb->thread = nullptr;
             }
-
             if (cb->resampler)
             {
                 speex_resampler_destroy(cb->resampler);
@@ -809,10 +816,11 @@ extern "C"
 
             switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "call_bot_session_cleanup: Closed stream\n");
             switch_mutex_unlock(cb->mutex);
-
+            cb->mutex = nullptr;
+            cb->resampler = nullptr;
+            cb = nullptr;
             return SWITCH_STATUS_SUCCESS;
         }
-
         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_INFO, "%s Bug is not attached.\n", switch_channel_get_name(channel));
         return SWITCH_STATUS_FALSE;
     }
